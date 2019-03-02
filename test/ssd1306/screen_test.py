@@ -1,8 +1,7 @@
 import unittest
-from resources.bingen.font6x8 import font6x8
-from resources.bingen.font5x7 import font5x7
-from ssd1306.screen import Screen
+from bms.ssd1306.screen import Screen
 from mock_ssd1306_comm import MockSSD1306Comm
+import bms.ssd1306.fonts as fonts
 
 class SSD1306Test(unittest.TestCase):
 
@@ -66,7 +65,7 @@ class SSD1306Test(unittest.TestCase):
     def test_initial_font(self):
         self.screen.setup()
 
-        self.assertEqual(font6x8, self.screen.font)
+        self.assertEqual(fonts.font6x8(), self.screen.font)
         self.assertEqual(6, self.screen.font_width())
 
     def create_bmp(self, size):
@@ -106,13 +105,13 @@ class SSD1306Test(unittest.TestCase):
         self.assertEqual(bmp, bytearray(self.comm.data))
 
     def test_set_font(self):
-        self.screen.set_font(font5x7)
+        self.screen.set_font(fonts.font5x7())
 
-        self.assertEqual(font5x7, self.screen.font)
+        self.assertEqual(fonts.font5x7(), self.screen.font)
         self.assertEqual(5, self.screen.font_width())
 
     def test_write_string(self):
-        self.screen.write_string(42, 3, "Hello")
+        self.screen.draw_string(42, 3, "Hello")
 
         self.assertEqual(0x21, self.comm.commands.pop(0))
         self.assertEqual(42, self.comm.commands.pop(0))
@@ -156,7 +155,7 @@ class SSD1306Test(unittest.TestCase):
         self.screen.set_inverted(True)
         self.assertEqual(True, self.screen.is_inverted())
 
-        self.screen.write_string(42, 3, "Hello")
+        self.screen.draw_string(42, 3, "Hello")
 
         self.assertEqual(0x21, self.comm.commands.pop(0))
         self.assertEqual(42, self.comm.commands.pop(0))

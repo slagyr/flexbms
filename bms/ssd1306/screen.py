@@ -1,4 +1,4 @@
-from resources.bingen.font6x8 import font6x8
+import bms.ssd1306.fonts as fonts
 
 FONT_META_OFFSET = 2
 
@@ -7,7 +7,7 @@ class Screen:
 
     def __init__(self, comm):
         self.comm = comm
-        self.font = font6x8
+        self.font = fonts.font6x8()
 
     def setup(self):
         self.comm.setup()
@@ -65,7 +65,7 @@ class Screen:
         self.prepare_update(x, x + w - 1, r, r + rows - 1)
         self.comm.tx(bmp)
 
-    def write_string(self, x, r, msg):
+    def draw_string(self, x, r, msg):
         l = len(msg)
         font_w = self.font_width()
         self.prepare_update(x, x + l * font_w - 1, r, r)
