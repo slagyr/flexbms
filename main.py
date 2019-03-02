@@ -4,7 +4,7 @@
 
 from board import SCL, SDA
 import busio
-from bms import splash
+from resources.bingen import splash
 import bms.ssd1306.comm
 import bms.ssd1306.screen
 

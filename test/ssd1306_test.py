@@ -1,6 +1,6 @@
 import unittest
-from bms.ssd1306.font6x8 import font6x8
-from bms.ssd1306.font5x7 import font5x7
+from resources.bingen.font6x8 import font6x8
+from resources.bingen.font5x7 import font5x7
 from ssd1306.screen import Screen
 from mock_ssd1306_comm import MockSSD1306Comm
 

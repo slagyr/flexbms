@@ -1,4 +1,4 @@
-from bms.ssd1306.font6x8 import font6x8
+from resources.bingen.font6x8 import font6x8
 
 FONT_META_OFFSET = 2
 
