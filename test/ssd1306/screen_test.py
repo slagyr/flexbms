@@ -2,6 +2,8 @@ import unittest
 from bms.ssd1306.screen import Screen
 from mock_ssd1306_comm import MockSSD1306Comm
 import bms.ssd1306.fonts as fonts
+import bms.bin as bin
+from bms.stream import ByteStream, FileStream
 
 class SSD1306Test(unittest.TestCase):
 
@@ -44,8 +46,6 @@ class SSD1306Test(unittest.TestCase):
         self.assertIn(0x2E, self.comm.commands)  # deactivate scroll
         self.assertIn(0xAF, self.comm.commands)  # display on
 
-
-
     def test_setup_clears_screen(self):
         self.screen.setup()
 
@@ -76,9 +76,40 @@ class SSD1306Test(unittest.TestCase):
             i += 1
         return bmp
 
-    def test_full_screen_bitmap(self):
+    def test_draw_full_screen(self):
         bmp = self.create_bmp(1024)
-        self.screen.draw_bitmap(0, 0, 128, 64, bmp)
+        self.screen.draw_byxels(0, 0, 128, 8, ByteStream(bmp))
+
+        self.assertEqual(bmp, self.screen.buffer)
+
+    def test_draw_full_screen_inverted(self):
+        bmp = self.create_bmp(1024)
+        self.screen.set_inverted(True)
+        self.screen.draw_byxels(0, 0, 128, 8, ByteStream(bmp))
+
+        for i in range(1024):
+            self.assertEqual(0x42 ^ 0xFF, self.screen.buffer[i])
+
+    def test_clear(self):
+        bmp = self.create_bmp(1024)
+        self.screen.draw_byxels(0, 0, 128, 8, ByteStream(bmp))
+        self.screen.clear()
+
+        self.assertEqual(bytearray(1024), self.screen.buffer)
+
+    def test_clear_inverted(self):
+        bmp = self.create_bmp(1024)
+        self.screen.set_inverted(True)
+        self.screen.draw_byxels(0, 0, 128, 8, ByteStream(bmp))
+        self.screen.clear()
+
+        for i in range(1024):
+            self.assertEqual(255, self.screen.buffer[i])
+
+    def test_draw_and_show_full_screen(self):
+        bmp = self.create_bmp(1024)
+        self.screen.draw_byxels(0, 0, 128, 8, ByteStream(bmp))
+        self.screen.show()
 
         self.assertEqual(0x21, self.comm.commands[0])
         self.assertEqual(0, self.comm.commands[1])
@@ -90,19 +121,32 @@ class SSD1306Test(unittest.TestCase):
         self.assertEqual(1024, len(self.comm.data))
         self.assertEqual(bmp, bytearray(self.comm.data))
 
-    def test_quarter_screen_bitmap(self):
-        bmp = self.create_bmp(256)
-        self.screen.draw_bitmap(32, 2, 64, 32, bmp)
+    def test_quarter_screen_byxels(self):
+        byxels = self.create_bmp(256)
+        self.screen.draw_byxels(32, 2, 64, 4, ByteStream(byxels))
 
-        self.assertEqual(0x21, self.comm.commands[0])
-        self.assertEqual(32, self.comm.commands[1])
-        self.assertEqual(95, self.comm.commands[2])
-        self.assertEqual(0x22, self.comm.commands[3])
-        self.assertEqual(2, self.comm.commands[4])
-        self.assertEqual(5, self.comm.commands[5])
+        self.assertEqual(bytearray(128), self.screen.buffer[0:128])
+        self.assertEqual(bytearray(128), self.screen.buffer[128:256])
 
-        self.assertEqual(256, len(self.comm.data))
-        self.assertEqual(bmp, bytearray(self.comm.data))
+        self.assertEqual(bytearray(32), self.screen.buffer[256:288])
+        self.assertEqual(byxels[0:64], self.screen.buffer[288:352])
+        self.assertEqual(bytearray(32), self.screen.buffer[352:384])
+
+        self.assertEqual(bytearray(32), self.screen.buffer[384:416])
+        self.assertEqual(byxels[0:64], self.screen.buffer[416:480])
+        self.assertEqual(bytearray(32), self.screen.buffer[480:512])
+
+        self.assertEqual(bytearray(32), self.screen.buffer[512:544])
+        self.assertEqual(byxels[0:64], self.screen.buffer[544:608])
+        self.assertEqual(bytearray(32), self.screen.buffer[608:640])
+
+        self.assertEqual(bytearray(32), self.screen.buffer[640:672])
+        self.assertEqual(byxels[0:64], self.screen.buffer[672:736])
+        self.assertEqual(bytearray(32), self.screen.buffer[736:768])
+
+        self.assertEqual(bytearray(128), self.screen.buffer[768:896])
+        self.assertEqual(bytearray(128), self.screen.buffer[896:1024])
+
 
     def test_set_font(self):
         self.screen.set_font(fonts.font5x7())
@@ -111,71 +155,48 @@ class SSD1306Test(unittest.TestCase):
         self.assertEqual(5, self.screen.font_width())
 
     def test_write_string(self):
-        self.screen.draw_string(42, 3, "Hello")
+        self.screen.draw_text(42, 3, "Hello")
 
-        self.assertEqual(0x21, self.comm.commands.pop(0))
-        self.assertEqual(42, self.comm.commands.pop(0))
-        self.assertEqual(71, self.comm.commands.pop(0))
-        self.assertEqual(0x22, self.comm.commands.pop(0))
-        self.assertEqual(3, self.comm.commands.pop(0))
-        self.assertEqual(3, self.comm.commands.pop(0))
-
-        self.assertEqual(30, len(self.comm.data))
         # H
-        self.assertEqual(0, self.comm.data.pop(0))
-        self.assertEqual(0x7F, self.comm.data.pop(0))
-        self.assertEqual(0x08, self.comm.data.pop(0))
-        self.assertEqual(0x08, self.comm.data.pop(0))
-        self.assertEqual(0x08, self.comm.data.pop(0))
-        self.assertEqual(0x7F, self.comm.data.pop(0))
+        self.assertEqual(0,    self.screen.buffer[426])
+        self.assertEqual(0x7F, self.screen.buffer[427])
+        self.assertEqual(0x08, self.screen.buffer[428])
+        self.assertEqual(0x08, self.screen.buffer[429])
+        self.assertEqual(0x08, self.screen.buffer[430])
+        self.assertEqual(0x7F, self.screen.buffer[431])
         # e
-        self.assertEqual(0, self.comm.data.pop(0))
-        self.assertEqual(0x38, self.comm.data.pop(0))
-        self.assertEqual(0x54, self.comm.data.pop(0))
-        self.assertEqual(0x54, self.comm.data.pop(0))
-        self.assertEqual(0x54, self.comm.data.pop(0))
-        self.assertEqual(0x18, self.comm.data.pop(0))
-
-    def test_clear(self):
-        self.screen.clear(12, 3, 24, 3)
-
-        self.assertEqual(0x21, self.comm.commands.pop(0))
-        self.assertEqual(12, self.comm.commands.pop(0))
-        self.assertEqual(35, self.comm.commands.pop(0))
-        self.assertEqual(0x22, self.comm.commands.pop(0))
-        self.assertEqual(3, self.comm.commands.pop(0))
-        self.assertEqual(5, self.comm.commands.pop(0))
-
-        self.assertEqual(72, len(self.comm.data))
-        for i in range(0, 72):
-            self.assertEqual(0, self.comm.data.pop(0))
+        self.assertEqual(0,    self.screen.buffer[432])
+        self.assertEqual(0x38, self.screen.buffer[433])
+        self.assertEqual(0x54, self.screen.buffer[434])
+        self.assertEqual(0x54, self.screen.buffer[435])
+        self.assertEqual(0x54, self.screen.buffer[436])
+        self.assertEqual(0x18, self.screen.buffer[437])
 
     def test_inverted_text(self):
         self.assertEqual(False, self.screen.is_inverted())
         self.screen.set_inverted(True)
         self.assertEqual(True, self.screen.is_inverted())
 
-        self.screen.draw_string(42, 3, "Hello")
+        self.screen.draw_text(42, 3, "Hello")
 
-        self.assertEqual(0x21, self.comm.commands.pop(0))
-        self.assertEqual(42, self.comm.commands.pop(0))
-        self.assertEqual(71, self.comm.commands.pop(0))
-        self.assertEqual(0x22, self.comm.commands.pop(0))
-        self.assertEqual(3, self.comm.commands.pop(0))
-        self.assertEqual(3, self.comm.commands.pop(0))
-
-        self.assertEqual(30, len(self.comm.data))
         # H
-        self.assertEqual(0xFF, self.comm.data.pop(0))
-        self.assertEqual(0x80, self.comm.data.pop(0))
-        self.assertEqual(0xF7, self.comm.data.pop(0))
-        self.assertEqual(0xF7, self.comm.data.pop(0))
-        self.assertEqual(0xF7, self.comm.data.pop(0))
-        self.assertEqual(0x80, self.comm.data.pop(0))
+        self.assertEqual(0xFF, self.screen.buffer[426])
+        self.assertEqual(0x80, self.screen.buffer[427])
+        self.assertEqual(0xF7, self.screen.buffer[428])
+        self.assertEqual(0xF7, self.screen.buffer[429])
+        self.assertEqual(0xF7, self.screen.buffer[430])
+        self.assertEqual(0x80, self.screen.buffer[431])
         # e
-        self.assertEqual(0xFF, self.comm.data.pop(0))
-        self.assertEqual(0xC7, self.comm.data.pop(0))
-        self.assertEqual(0xAB, self.comm.data.pop(0))
-        self.assertEqual(0xAB, self.comm.data.pop(0))
-        self.assertEqual(0xAB, self.comm.data.pop(0))
-        self.assertEqual(0xE7, self.comm.data.pop(0))
+        self.assertEqual(0xFF, self.screen.buffer[432])
+        self.assertEqual(0xC7, self.screen.buffer[433])
+        self.assertEqual(0xAB, self.screen.buffer[434])
+        self.assertEqual(0xAB, self.screen.buffer[435])
+        self.assertEqual(0xAB, self.screen.buffer[436])
+        self.assertEqual(0xE7, self.screen.buffer[437])
+
+    # def test_splash(self):
+    #     splash = bin.load("splash")
+    #     # self.screen.set_inverted(True)
+    #     self.screen.draw_byxels(0, 0, 128, 8, ByteStream(splash))
+    #
+    #     self.screen.print_buffer()

@@ -8,6 +8,9 @@ class Screen:
     def __init__(self, comm):
         self.comm = comm
         self.font = fonts.font6x8()
+        self.buffer = bytearray(1024)
+        self.inverted = False
+
 
     def setup(self):
         self.comm.setup()
@@ -19,7 +22,7 @@ class Screen:
         self.comm.cmd(63)    # -> height of display
         self.comm.cmd(0xD3)  # set display offset
         self.comm.cmd(0x0)   # -> none
-        self.comm.cmd(0x40 | 0x0)    # set start line -> 0
+        self.comm.cmd(0x40)  # set start line -> 0
         self.comm.cmd(0x8D)  # set charge pump enabled
         self.comm.cmd(0x14)  # -> 0x14 enable, 0x10 disable
         self.comm.cmd(0x20)  # set memory addressing mode
@@ -37,7 +40,8 @@ class Screen:
         self.comm.cmd(0xA4)  # display on(0xA4 from RAM, 0xA force ON)
         self.comm.cmd(0x2E)  # deactivate scroll
         self.comm.cmd(0xAF)  # display on
-        self.clear_screen()
+        self.clear()
+        self.show()
 
     def set_font(self, font):
         self.font = font
@@ -45,12 +49,12 @@ class Screen:
     def font_width(self):
         return self.font[0]
 
-    def clear_screen(self):
-        self.clear(0, 0, 128, 8)
-
-    def clear(self, x, r, width, rows):
-        self.prepare_update(x, x + width - 1, r, r + rows - 1)
-        self.comm.tx(bytearray(width * rows))
+    def clear(self):
+        b = 0
+        if self.inverted:
+            b = 0xFF
+        for i in range(1024):
+            self.buffer[i] = b
 
     def prepare_update(self, startX, endX, startP, endP):
         self.comm.cmd(0x21)
@@ -60,38 +64,62 @@ class Screen:
         self.comm.cmd(startP)
         self.comm.cmd(endP)
 
-    def draw_bitmap(self, x, r, w, h, bmp):
-        rows = int(h / 8)
-        self.prepare_update(x, x + w - 1, r, r + rows - 1)
-        self.comm.tx(bmp)
+    def show(self):
+        self.prepare_update(0, 127, 0, 7)
+        self.comm.tx(self.buffer)
 
-    def draw_string(self, x, r, msg):
+    def draw_byxels(self, x, r, width, rows, stream):
+        if stream.size() != width * rows:
+            raise IndexError("byxel count doesn't match width and rows")
+        with stream as byxels:
+            for row in range(r, r + rows):
+                i = 128 * row + x
+                for col in range(width):
+                    self.buffer[i] = self.prep(byxels.next())
+                    i += 1
+
+    def draw_text(self, x, r, msg):
         l = len(msg)
         font_w = self.font_width()
-        self.prepare_update(x, x + l * font_w - 1, r, r)
-
-        data = bytearray()
+        buff_i = 128 * r + x
         for i in range(0, l):
             c = ord(msg[i])
             start = (c - 32) * font_w + FONT_META_OFFSET
             for j in range(0, font_w):
-                data.append(self.font[start + j])
-
-        self.comm.tx(data)
-
+                self.buffer[buff_i] = self.prep(self.font[start + j])
+                buff_i += 1
 
     def set_inverted(self, value):
-        self.comm.inverted = value
+        self.inverted = value
 
     def is_inverted(self):
-        return self.comm.inverted
+        return self.inverted
 
-# void Oled::drawCanvas(byte x, byte row, byte widthPx, byte heightPx, byte *bytes) {
-#     prepareScreenUpdate(x, x + widthPx - 1, row, row + heightPx / 8 - 1);
-#     comm->beginTransmission();
-#     int bytesInScreen = widthPx * heightPx / 8;
-#     for(int i = 0; i < bytesInScreen; i++) {
-#         comm->includeByte(bytes[i]);
-#     }
-#     comm->endTransmission();
-# }
+    def invert(self, byxel):
+        return byxel ^ 0xFF
+
+    def prep(self, byxel):
+        if self.inverted:
+            return self.invert(byxel)
+        else:
+            return byxel
+
+    def print_buffer(self):
+        for page in range(8):
+            y = 128 * page
+            for row in range(8):
+                line_no = page * 8 + row
+                txt = str(line_no) + " "
+                if line_no < 10:
+                    txt = " " + txt
+                mask = 1 << row
+                for col in range(128):
+                    if self.buffer[y + col] & mask:
+                        txt += "*"
+                    else:
+                        txt += " "
+                print(txt)
+
+
+
+
