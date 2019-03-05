@@ -2,4 +2,4 @@
 /bms/**/*.mpy
 /.build
 __pycache__
-
+.DS_Store

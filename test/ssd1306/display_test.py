@@ -1,5 +1,5 @@
 import unittest
-from bms.ssd1306.screen import Screen
+from bms.ssd1306.display import Display
 from mock_i2c import MockI2C
 import bms.ssd1306.fonts as fonts
 
@@ -8,12 +8,12 @@ class SSD1306Test(unittest.TestCase):
 
     def setUp(self):
         self.i2c = MockI2C()
-        self.screen = Screen(self.i2c)
+        self.screen = Display(self.i2c)
         self.commands = []
         self.datas = []
 
     def test_creation(self):
-        self.assertIsInstance(self.screen, Screen)
+        self.assertIsInstance(self.screen, Display)
 
     def check_writes(self):
         for write in self.i2c.writes:

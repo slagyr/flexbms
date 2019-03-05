@@ -6,7 +6,7 @@ SSD1306_DATA = 0x40
 SSD1306_ADDR = 0x3C
 
 
-class Screen:
+class Display:
 
     def __init__(self, i2c):
         self.i2c = i2c
