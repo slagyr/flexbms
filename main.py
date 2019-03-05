@@ -17,8 +17,6 @@ import bms.bin
 # mem_check("import bms.bin")
 import time
 # mem_check("import time")
-from bms.stream import ByteStream
-# mem_check("ByteStream")
 
 i2c = busio.I2C(SCL, SDA)
 mem_check("i2c")
@@ -31,7 +29,7 @@ mem_check("setup")
 gc.collect()
 mem_check("after gc")
 
-# splash = bms.bin.load("splash")
+splash = bms.bin.load("splash")
 blank = bytearray(1024)
 partial = bytearray(256)
 
@@ -50,35 +48,9 @@ while True:
     print("show         : " + str(t2 - t1))
 
     t1 = time.monotonic()
-    screen.draw_byxels(0, 0, 128, 8, bms.bin.stream("splash"))
-    # screen.draw_byxels(0, 0, 128, 8, ByteStream(splash))
+    screen.draw_byxels(0, 0, 128, 8, splash)
     t2 = time.monotonic()
-    print("draw splash  : " + str(t2 - t1))
-    screen.show()
-
-    t1 = time.monotonic()
-    with bms.bin.stream("splash") as s:
-        for i in range(s.size()):
-            s.next()
-    # screen.draw_byxels(0, 0, 128, 8, ByteStream(splash))
-    t2 = time.monotonic()
-    print("iterate through splash  : " + str(t2 - t1))
-    screen.show()
-
-    t1 = time.monotonic()
-    # screen.draw_byxels(0, 0, 128, 8, bms.bin.stream("splash"))
-    screen.draw_byxels(0, 0, 128, 8, ByteStream(blank))
-    t2 = time.monotonic()
-    print("draw blank   : " + str(t2 - t1))
-    screen.show()
-
-    t1 = time.monotonic()
-    # screen.draw_byxels(0, 0, 128, 8, ByteStream(blank))
-    with ByteStream(blank) as s:
-        for i in range(s.size()):
-            s.next()
-    t2 = time.monotonic()
-    print("iterate through blank   : " + str(t2 - t1))
+    print("draw splash b: " + str(t2 - t1))
     screen.show()
 
     t1 = time.monotonic()
@@ -88,7 +60,7 @@ while True:
     print("draw_text    : " + str(t2 - t1))
 
     t1 = time.monotonic()
-    screen.draw_byxels(32, 2, 64, 4, ByteStream(partial))
+    screen.draw_byxels(32, 2, 64, 4, partial)
     t2 = time.monotonic()
     print("partial update: " + str(t2 - t1))
     screen.show()

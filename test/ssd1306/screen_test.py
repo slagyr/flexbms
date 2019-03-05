@@ -2,7 +2,6 @@ import unittest
 from bms.ssd1306.screen import Screen
 from mock_i2c import MockI2C
 import bms.ssd1306.fonts as fonts
-from bms.stream import ByteStream
 
 
 class SSD1306Test(unittest.TestCase):
@@ -84,21 +83,21 @@ class SSD1306Test(unittest.TestCase):
 
     def test_draw_full_screen(self):
         bmp = self.create_bmp(1024)
-        self.screen.draw_byxels(0, 0, 128, 8, ByteStream(bmp))
+        self.screen.draw_byxels(0, 0, 128, 8, bmp)
 
         self.assertEqual(bmp, self.screen.buffer[1:])
 
     def test_draw_full_screen_inverted(self):
         bmp = self.create_bmp(1024)
         self.screen.inverted = True
-        self.screen.draw_byxels(0, 0, 128, 8, ByteStream(bmp))
+        self.screen.draw_byxels(0, 0, 128, 8, bmp)
 
         for i in range(1024):
             self.assertEqual(0x42 ^ 0xFF, self.screen.buffer[i + 1])
 
     def test_clear(self):
         bmp = self.create_bmp(1024)
-        self.screen.draw_byxels(0, 0, 128, 8, ByteStream(bmp))
+        self.screen.draw_byxels(0, 0, 128, 8, bmp)
         self.screen.clear()
 
         self.assertEqual(bytearray(1024), self.screen.buffer[1:])
@@ -106,7 +105,7 @@ class SSD1306Test(unittest.TestCase):
     def test_clear_inverted(self):
         bmp = self.create_bmp(1024)
         self.screen.inverted = True
-        self.screen.draw_byxels(0, 0, 128, 8, ByteStream(bmp))
+        self.screen.draw_byxels(0, 0, 128, 8, bmp)
         self.screen.clear()
 
         for i in range(1024):
@@ -114,7 +113,7 @@ class SSD1306Test(unittest.TestCase):
 
     def test_draw_and_show_full_screen(self):
         bmp = self.create_bmp(1024)
-        self.screen.draw_byxels(0, 0, 128, 8, ByteStream(bmp))
+        self.screen.draw_byxels(0, 0, 128, 8, bmp)
         self.screen.show()
 
         self.check_writes()
@@ -126,7 +125,7 @@ class SSD1306Test(unittest.TestCase):
 
     def test_quarter_screen_byxels(self):
         byxels = self.create_bmp(256)
-        self.screen.draw_byxels(32, 2, 64, 4, ByteStream(byxels))
+        self.screen.draw_byxels(32, 2, 64, 4, byxels)
 
         buffer = self.screen.buffer[1:]
 

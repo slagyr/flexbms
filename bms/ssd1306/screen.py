@@ -75,16 +75,17 @@ class Screen:
             comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x22, 0, 7]))
             comm.writeto(SSD1306_ADDR, self.buffer)
 
-    def draw_byxels(self, x, r, width, rows, stream):
-        if stream.size() != width * rows:
+    def draw_byxels(self, x, r, width, rows, byxels):
+        if len(byxels) != width * rows:
             raise IndexError("byxel count doesn't match width and rows")
-        with stream as byxels:
-            for row in range(r, r + rows):
-                i = 128 * row + x
-                for col in range(width):
-                    b = byxels.next()
-                    self.buffer[i + 1] = self.invert(b) if self.inverted else b
-                    i += 1
+        byxel_i = 0
+        for row in range(r, r + rows):
+            i = 128 * row + x
+            for col in range(width):
+                b = byxels[byxel_i]
+                self.buffer[i + 1] = self.invert(b) if self.inverted else b
+                i += 1
+                byxel_i += 1
 
     def draw_text(self, x, r, msg):
         l = len(msg)
