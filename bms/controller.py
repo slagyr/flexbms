@@ -1,12 +1,13 @@
 from bms.screens.home import HomeScreen
 from bms.screens.splash import SplashScreen
+import time
 
 
 class Controller:
     def __init__(self):
         self.display = None
         self.screen = None
-        self.last_user_event_time = 0
+        self.last_user_event_time = time.monotonic()
         self.splash_screen = SplashScreen(self)
         self.home_screen = HomeScreen(self)
 

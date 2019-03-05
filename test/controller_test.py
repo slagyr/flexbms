@@ -1,5 +1,7 @@
 import unittest
 from bms.controller import Controller
+from test.mock_i2c import MockI2C
+from bms.ssd1306.display import Display
 from test.mock_display import MockDisplay
 from bms.screens.home import HomeScreen
 from bms.screens.splash import SplashScreen
@@ -10,6 +12,7 @@ class ControllerTest(unittest.TestCase):
     def setUp(self):
         self.controller = Controller()
         self.controller.display = MockDisplay()
+        # self.controller.display = Display(MockI2C())
         self.controller.setup()
 
     def test_properties(self):
@@ -26,6 +29,7 @@ class ControllerTest(unittest.TestCase):
         self.controller.tick(0)
         self.controller.tick(3.1)
         self.assertIsInstance(self.controller.screen, HomeScreen)
+        # self.controller.display.print_buffer()
         self.assertIs(self.controller.home_screen, self.controller.screen)
         self.assertEqual(3.1, self.controller.last_user_event_time)
 

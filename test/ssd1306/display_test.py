@@ -206,3 +206,76 @@ class SSD1306Test(unittest.TestCase):
     #     self.screen.draw_byxels(0, 0, 128, 8, ByteStream(splash))
     #
     #     self.screen.print_buffer()
+
+    def test_set_pixel_first_row(self):
+        self.screen.set_pixel(0, 0, True)
+        self.assertEqual(1, self.screen.buffer[1])
+        self.screen.set_pixel(0, 0, False)
+        self.assertEqual(0, self.screen.buffer[1])
+
+        self.screen.set_pixel(1, 0, True)
+        self.assertEqual(1, self.screen.buffer[2])
+        self.screen.set_pixel(1, 0, False)
+        self.assertEqual(0, self.screen.buffer[2])
+
+        self.screen.set_pixel(0, 1, True)
+        self.assertEqual(2, self.screen.buffer[1])
+        self.screen.set_pixel(0, 1, False)
+        self.assertEqual(0, self.screen.buffer[1])
+
+        self.screen.buffer[1] = 0xFF
+        self.screen.set_pixel(0, 0, False)
+        self.assertEqual(254, self.screen.buffer[1])
+
+    def test_set_pixel_last_row(self):
+        self.screen.set_pixel(0, 63, True)
+        self.assertEqual(128, self.screen.buffer[897])
+        self.screen.set_pixel(0, 63, False)
+        self.assertEqual(0, self.screen.buffer[897])
+
+        self.screen.set_pixel(1, 63, True)
+        self.assertEqual(128, self.screen.buffer[898])
+        self.screen.set_pixel(1, 63, False)
+        self.assertEqual(0, self.screen.buffer[898])
+
+        self.screen.set_pixel(0, 62, True)
+        self.assertEqual(64, self.screen.buffer[897])
+        self.screen.set_pixel(0, 62, False)
+        self.assertEqual(0, self.screen.buffer[897])
+
+        self.screen.buffer[897] = 0xFF
+        self.screen.set_pixel(0, 63, False)
+        self.assertEqual(127, self.screen.buffer[897])
+
+    def test_set_pixel_when_inverted(self):
+        self.screen.inverted = True
+        self.screen.set_pixel(0, 0, True)
+        self.assertEqual(0, self.screen.buffer[1])
+        self.screen.set_pixel(0, 0, False)
+        self.assertEqual(1, self.screen.buffer[1])
+
+    def test_draw_horizontal_line(self):
+        self.screen.draw_hline(0, 0, 3)
+        self.assertEqual(bytearray([1, 1, 1, 0]), self.screen.buffer[1:5])
+
+        self.screen.draw_hline(124, 63, 3)
+        self.assertEqual(bytearray([0, 128, 128, 128]), self.screen.buffer[1020:1024])
+
+        self.screen.inverted = True
+        self.screen.draw_hline(0, 0, 3)
+        self.assertEqual(bytearray([0, 0, 0]), self.screen.buffer[1:4])
+
+    def test_draw_vertical_line(self):
+        self.screen.draw_vline(0, 0, 10)
+        self.assertEqual(255, self.screen.buffer[1])
+        self.assertEqual(3, self.screen.buffer[129])
+
+        self.screen.draw_vline(127, 54, 10)
+        self.assertEqual(192, self.screen.buffer[896])
+        self.assertEqual(255, self.screen.buffer[1024])
+
+        self.screen.inverted = True
+        self.screen.draw_vline(0, 0, 10)
+        self.assertEqual(0, self.screen.buffer[1])
+        self.assertEqual(0, self.screen.buffer[129])
+

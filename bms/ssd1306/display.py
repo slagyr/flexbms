@@ -5,6 +5,9 @@ SSD1306_CMND = 0x00
 SSD1306_DATA = 0x40
 SSD1306_ADDR = 0x3C
 
+X_MAX = 127
+Y_MAX = 63
+
 
 class Display:
 
@@ -32,7 +35,7 @@ class Display:
             comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xD5]))  # set display clock divide ratio
             comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x80]))  # -> suggested= ratio 0x80
             comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xA8]))  # set multiplex ratio
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 63  ]))    # -> height of display
+            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, Y_MAX]))    # -> height of display
             comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xD3]))  # set display offset
             comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x0 ]))   # -> none
             comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x40]))  # set start line -> 0
@@ -71,7 +74,7 @@ class Display:
 
     def show(self):
         with self as comm:
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x21, 0, 127]))
+            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x21, 0, X_MAX]))
             comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x22, 0, 7]))
             comm.writeto(SSD1306_ADDR, self.buffer)
 
@@ -99,8 +102,56 @@ class Display:
                 self.buffer[buff_i + 1] = self.invert(b) if self.inverted else b
                 buff_i += 1
 
+    def set_pixel(self, x, y, on):
+        if y < 0 or y > Y_MAX or x < 0 or x > X_MAX:
+            raise IOError("pixel out of bounds")
+        mask = 1 << (y % 8)
+        i = int(y / 8) * 128 + x
+        if on != self.inverted:
+            self.buffer[i + 1] |= mask
+        else:
+            self.buffer[i + 1] &= (mask ^ 0xFF)
+
     def invert(self, byxel):
         return byxel ^ 0xFF
+
+    def draw_hline(self, x, y, length):
+        if y < 0 or y > Y_MAX or x < -length or x > X_MAX:
+            return
+        mask = 1 << (y % 8)
+        start_i = int(y / 8) * 128 + x
+        for di in range(min(128 - x, length)):
+            if self.inverted:
+                self.buffer[start_i + di + 1] &= (mask ^ 0xFF)
+            else:
+                self.buffer[start_i + di + 1] |= mask
+
+    def draw_dashed_hline(self, x, y, length, on, off):
+        x1 = x
+        while x1 < x + length:
+            l = min(128 - x, on)
+            self.draw_hline(x1, y, l)
+            x1 = x1 + on + off
+
+    def draw_vline(self, x, y, length):
+        if y < -length or y > Y_MAX or x < 0 or x > X_MAX:
+            return
+        for dy in range(min(64 - y, length)):
+            self.set_pixel(x, y + dy, True)
+
+    def draw_rect(self, x, y, w, h):
+        if y < -h or y > Y_MAX or x < -w or x > X_MAX:
+            return
+        self.draw_hline(x, y, w)
+        self.draw_hline(x, y + h - 1, w)
+        self.draw_vline(x, y, h)
+        self.draw_vline(x + w - 1, y, h)
+
+    def fill_rect(self, x, y, w, h):
+        if y < -h or y > Y_MAX or x < -w or x > X_MAX:
+            return
+        for i in range(y, y + h):
+            self.draw_hline(x, i, w)
 
     def print_buffer(self):
         for page in range(8):
