@@ -12,8 +12,11 @@ class BQ76940Test(unittest.TestCase):
 
     def prep_setup(self):
         self.i2c.scan_result = [0x08] # BQ76940 I@C Address
+        self.i2c.registers[0x00] = 0b00000000 # SYS_STAT
         self.i2c.registers[0x04] = 0b00000000 # SYSCTRL1
         self.i2c.registers[0x05] = 0b00000000 # SYSCTRL2
+        self.i2c.registers[0x06] = 0b00000000 # PROTECT1
+        self.i2c.registers[0x07] = 0b00000000 # PROTECT2
         self.i2c.registers[0x09] = 0b00000000 # OV_TRIP
         self.i2c.registers[0x0A] = 0b00000000 # UV_TRIP
         self.i2c.registers[0x50] = 0b00000000 # ADCGAIN1
@@ -129,3 +132,68 @@ class BQ76940Test(unittest.TestCase):
         self.bq.set_uv_trip(2.718)
         self.assertEqual(0b10111001, self.i2c.registers[0x0A])
         self.assertAlmostEqual(2.718, self.bq.get_uv_trip(), 1)
+
+    def test_PROTECT1_SCD_values(self):
+        self.prep_setup()
+        self.bq.setup()
+
+        protect1 = self.i2c.registers[0x06]
+        rsns = (protect1 & 0b10000000) >> 7
+        self.assertEqual(RSNS_BIT, rsns)
+
+        scd_delay = (protect1 & 0b00011000) >> 3
+        self.assertEqual(SCD_DELAY, scd_delay)
+
+        scd_thresh = protect1 & 0b00000111
+        self.assertEqual(SCD_THRESH, scd_thresh)
+
+    def test_PROTECT2_OCD_values(self):
+        self.prep_setup()
+        self.bq.setup()
+
+        protect2 = self.i2c.registers[0x07]
+        ocd_delay = (protect2 & 0b1110000) >> 4
+        self.assertEqual(OCD_DELAY, ocd_delay)
+
+        ocd_thresh = (protect2 & 0b1111)
+        self.assertEqual(OCD_THRESH, ocd_thresh)
+        
+    def test_sys_stat_no_faults(self):
+        self.i2c.registers[0x0] = 0b00000000
+        self.bq.check_sys_stat()
+        self.assertFalse(self.bq.cc_ready)
+        self.assertEqual([], self.bq.faults)
+
+        self.i2c.registers[0x0] = 0b10000000
+        self.bq.check_sys_stat()
+        self.assertTrue(self.bq.cc_ready)
+        self.assertEqual([], self.bq.faults)
+
+        self.i2c.registers[0x0] = 0b10111111
+        self.bq.check_sys_stat()
+        self.assertTrue(self.bq.cc_ready)
+        self.assertTrue(self.bq.faults)
+        self.assertEqual([OVRD_ALERT, UV, OV, SCD, OCD], self.bq.faults)
+
+    def test_clear_fault(self):
+        self.i2c.registers[0x0] = 0
+        self.bq.faults = [OVRD_ALERT, UV, OV, SCD, OCD]
+        self.bq.clear_fault(OV)
+        self.assertEqual(0b00100100, self.i2c.registers[0x0])
+        self.assertEqual([OVRD_ALERT, UV, SCD, OCD], self.bq.faults)
+
+        self.bq.clear_fault(OCD)
+        self.assertEqual(0b00100001, self.i2c.registers[0x0])
+        self.assertEqual([OVRD_ALERT, UV, SCD], self.bq.faults)
+
+        self.bq.clear_fault(OVRD_ALERT)
+        self.assertEqual(0b00110000, self.i2c.registers[0x0])
+        self.assertEqual([UV, SCD], self.bq.faults)
+
+        self.bq.clear_fault(UV)
+        self.assertEqual(0b00101000, self.i2c.registers[0x0])
+        self.assertEqual([SCD], self.bq.faults)
+
+        self.bq.clear_fault(SCD)
+        self.assertEqual(0b00100010, self.i2c.registers[0x0])
+        self.assertEqual([], self.bq.faults)

@@ -31,8 +31,8 @@ class MockBqI2C:
 
     def readfrom_into(self, address, buffer, **kwargs):
         assert address == 0x08
-        if not self.read_register:
-            raise IOError("Read register was not set: " + str(address))
+        if self.read_register is None:
+            raise IOError("Read register was not set")
         for i in range(len(buffer)):
             b = self.registers[self.read_register + i]
             buffer[i] = b

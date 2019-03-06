@@ -26,23 +26,23 @@ ADCGAIN1 = 0x50
 ADCOFFSET = 0x51
 ADCGAIN2 = 0x59
 
-# Combined register address and bit mask
+# Combined register address and bit mask, used in get|set_reg_bit
 # 16 bits used, left 8 -> register, right 8 -> bit mask
 #
 #    register   mask
 # 0b 00000000 00000000
 #
+CC_READY = (SYS_STAT << 8) | (1 << 7)
+DEVICE_XREADY = (SYS_STAT << 8) | (1 << 5)
+OVRD_ALERT = (SYS_STAT << 8) | (1 << 4)
+UV = (SYS_STAT << 8) | (1 << 3)
+OV = (SYS_STAT << 8) | (1 << 2)
+SCD = (SYS_STAT << 8) | (1 << 1)
+OCD = (SYS_STAT << 8) | (1 << 0)
 ADC_EN = (SYS_CTRL1 << 8) | (1 << 4)
 CC_EN = (SYS_CTRL2 << 8) | (1 << 6)
 
 # Masks
-CC_READY = 1 << 7
-DEVICE_XREADY = 1 << 5
-OVRD_ALERT = 1 << 4
-UV = 1 << 3
-OV = 1 << 2
-SCD = 1 << 1
-OCD = 1 << 0
 LOAD_PRESENT = 1 << 7
 TEMP_SEL = 1 << 3
 SHUT_A = 1 << 1
@@ -55,11 +55,20 @@ CHG_ON = 1 << 0
 # Config
 MAX_CELL_V = 4.2
 MIN_CELL_V = 2.5
+RSNS_BIT = 1
+SCD_DELAY = 0x1  # 100us
+SCD_THRESH = 0x2  # 89mV
+OCD_DELAY = 0x3  # 80ms
+OCD_THRESH = 0x8  # 61mV
 
 
 class BQ76940:
     def __init__(self, i2c):
         self.i2c = i2c
+        self.adc_gain = -1
+        self.adc_offset = -1
+        self.cc_ready = False
+        self.faults = []
 
     def __enter__(self):
         while not self.i2c.try_lock():
@@ -165,6 +174,40 @@ class BQ76940:
         adc = (uv_trip << 4) | 0b01000000000000
         return self.adc_to_v(adc)
 
+    def set_protect1(self, rsns, scd_delay, scd_thresh):
+        protect1 = (rsns & 0b1) << 7
+        protect1 |= (scd_delay & 0b11) << 3
+        protect1 |= scd_thresh & 0b111
+        self.write_register(PROTECT1, protect1)
+
+    def set_protect2(self, ocd_delay, ocd_thresh):
+        protect2 = (ocd_delay & 0b111) << 4
+        protect2 |= ocd_thresh & 0b1111
+        self.write_register(PROTECT2, protect2)
+
+    def check_sys_stat(self):
+        stat = self.read_register_single(SYS_STAT)
+        self.cc_ready = stat & (CC_READY & 0xFF)
+        if stat & (DEVICE_XREADY & 0xFF):
+            if stat & (OVRD_ALERT & 0xFF):
+                self.faults.append(OVRD_ALERT)
+            if stat & (UV & 0xFF):
+                self.faults.append(UV)
+            if stat & (OV & 0xFF):
+                self.faults.append(OV)
+            if stat & (SCD & 0xFF):
+                self.faults.append(SCD)
+            if stat & (OCD & 0xFF):
+                self.faults.append(OCD)
+        else:
+            assert stat & 0b00111111 == 0
+
+    def clear_fault(self, fault):
+        stat = (DEVICE_XREADY & 0xFF)
+        stat |= (fault & 0xFF)
+        self.write_register(SYS_STAT, stat)
+        self.faults.remove(fault)
+
     def setup(self):
         if I2C_ADDR not in self.i2c.scan():
             raise RuntimeError("BQ address not found in scan")
@@ -176,15 +219,24 @@ class BQ76940:
         self.adc_offset = self.read_adc_offset()
         self.set_ov_trip(MAX_CELL_V)
         self.set_uv_trip(MIN_CELL_V)
-        # TODO - write to PROTECT1
-        # TODO - write to PROTECT2
+        self.set_protect1(RSNS_BIT, SCD_DELAY, SCD_THRESH)
+        self.set_protect2(OCD_DELAY, OCD_THRESH)
 
         # TODO - verify ADC enabled
+        # TODO - verify CC enabled
+        print("ADC_EN: " + str(self.get_reg_bit(ADC_EN)))
+        print("CC_EN: " + str(self.get_reg_bit(CC_EN)))
         # TODO - verify UV trip
+        print("UV trip: " + str(self.get_uv_trip()))
         # TODO - verify OV trip
+        print("OV trip: " + str(self.get_ov_trip()))
         # TODO - verify RSNS
         # TODO - verify SCD_DELAY
         # TODO - verify SCD_THRESH
+        print("PROTECT1: " + str(self.read_register_single(PROTECT1)))
         # TODO - verify OCD_DELAY
         # TODO - verify OCD_THRESH
+        print("PROTECT2: " + str(self.read_register_single(PROTECT2)))
         # TODO - ensure DEVICE_XREADY
+        print("FAULTS: " + str(self.faults))
+        
