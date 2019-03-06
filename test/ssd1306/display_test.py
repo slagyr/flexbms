@@ -1,16 +1,17 @@
 import unittest
 from bms.ssd1306.display import Display
-from mock_i2c import MockI2C
+from test.ssd1306.mock_ssd1306_i2c import MockSSD1306I2C
 import bms.ssd1306.fonts as fonts
 
 
 class SSD1306Test(unittest.TestCase):
 
     def setUp(self):
-        self.i2c = MockI2C()
+        self.i2c = MockSSD1306I2C()
         self.screen = Display(self.i2c)
         self.commands = []
         self.datas = []
+        self.i2c.scan_result.append(0x3C)
 
     def test_creation(self):
         self.assertIsInstance(self.screen, Display)
@@ -22,6 +23,14 @@ class SSD1306Test(unittest.TestCase):
                 self.commands.append(write[1][1:])
             elif write[1][0] == 0x40:
                 self.datas.append(write[1][1:])
+
+    def test_setup_checks_for_address(self):
+        self.i2c.scan_result = [0x1, 0x2, 0x3]
+        try:
+            self.screen.setup()
+            self.fail("should complain about missing address")
+        except RuntimeError as ex:
+            self.assertEqual("SSD1306 address not found in scan", ex.args[0])
 
     def test_setup(self):
         self.screen.setup()

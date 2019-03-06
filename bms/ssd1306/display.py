@@ -30,6 +30,8 @@ class Display:
 
     def setup(self):
         with self as comm:
+            if SSD1306_ADDR not in self.i2c.scan():
+                raise RuntimeError("SSD1306 address not found in scan")
             comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xAE]))  # display off
             comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xA6]))  # normal display
             comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xD5]))  # set display clock divide ratio

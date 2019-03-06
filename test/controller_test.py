@@ -1,7 +1,5 @@
 import unittest
 from bms.controller import Controller
-from test.mock_i2c import MockI2C
-from bms.ssd1306.display import Display
 from test.mock_display import MockDisplay
 from bms.screens.home import HomeScreen
 from bms.screens.splash import SplashScreen

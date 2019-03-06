@@ -13,8 +13,9 @@ class Controller:
 
     def setup(self):
         self.display.setup()
-
         self.set_screen(self.splash_screen)
+        # load splash screen first.  Let use be entertained while we do work.
+        pass
 
     def set_screen(self, screen):
         self.screen = screen

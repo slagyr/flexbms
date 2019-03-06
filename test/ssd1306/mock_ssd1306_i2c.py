@@ -1,8 +1,9 @@
-class MockI2C:
+class MockSSD1306I2C:
     def __init__(self):
         self.locked = False
         self.lock_count = 0
         self.writes = []
+        self.scan_result = []
 
     def writeto(self, address, bytes, **kwargs):
         self.writes.append([address, bytes])
@@ -17,3 +18,6 @@ class MockI2C:
 
     def unlock(self):
         self.locked = False
+
+    def scan(self):
+        return self.scan_result
