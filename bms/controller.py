@@ -6,7 +6,10 @@ import time
 class Controller:
     def __init__(self):
         self.display = None
+        self.bq = None
+
         self.screen = None
+
         self.last_user_event_time = time.monotonic()
         self.splash_screen = SplashScreen(self)
         self.home_screen = HomeScreen(self)
@@ -15,7 +18,8 @@ class Controller:
         self.display.setup()
         self.set_screen(self.splash_screen)
         # load splash screen first.  Let use be entertained while we do work.
-        pass
+        self.bq.setup()
+
 
     def set_screen(self, screen):
         self.screen = screen

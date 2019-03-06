@@ -1,3 +1,5 @@
+from bms.bq76940 import crc8
+
 class MockBqI2C:
     def __init__(self):
         self.locked = False
@@ -33,7 +35,11 @@ class MockBqI2C:
         assert address == 0x08
         if self.read_register is None:
             raise IOError("Read register was not set")
-        for i in range(len(buffer)):
+        b = self.registers[self.read_register]
+        buffer[0] = b
+        buffer[1] = crc8(bytearray([17, b]))
+        for i in range(2, len(buffer)):
             b = self.registers[self.read_register + i]
-            buffer[i] = b
+            buffer[i * 2] = b
+            buffer[i * 2 + 1] = crc8(bytearray([b]))
         self.read_register = None

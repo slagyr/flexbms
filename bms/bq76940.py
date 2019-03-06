@@ -53,6 +53,7 @@ DSG_ON = 1 << 1
 CHG_ON = 1 << 0
 
 # Config
+CRC_ATTEMPTS = 5
 MAX_CELL_V = 4.2
 MIN_CELL_V = 2.5
 RSNS_BIT = 1
@@ -60,6 +61,22 @@ SCD_DELAY = 0x1  # 100us
 SCD_THRESH = 0x2  # 89mV
 OCD_DELAY = 0x3  # 80ms
 OCD_THRESH = 0x8  # 61mV
+
+
+def crc8(data):
+    crc = 0
+    for i in range(len(data)):
+        factor = 0x80
+        while factor != 0:
+            if crc & 0x80 != 0:
+                crc = (crc * 2) & 0xFF
+                crc ^= CRC_KEY
+            else:
+                crc = (crc * 2) & 0xFF
+            if data[i] & factor != 0:
+                crc ^= CRC_KEY
+            factor = int(factor / 2)
+    return crc
 
 
 class BQ76940:
@@ -86,30 +103,30 @@ class BQ76940:
         return buffer
 
     def read_register_single(self, reg):
-        buffer = self.read_register(reg, bytearray(1))
+        for attempt in range(CRC_ATTEMPTS):
+            buffer = self.read_register(reg, bytearray(2))
+            crc = crc8(bytearray([17, buffer[0]]))
+            if buffer[1] != crc:
+                print("CRC failed.  attempt: " + str(attempt + 1))
+                print("\texpected: " + str(crc) + " got: " + str(buffer[1]))
+                print("\tregister: " + hex(reg) + " data: " + str(list(buffer)))
+            else:
+                break
         return buffer[0]
 
     def read_register_double(self, reg):
-        buffer = self.read_register(reg, bytearray(2))
-        return (buffer[0] << 8) + buffer[1]
-
-    def crc8(self, data):
-        crc = 0
-        for i in range(len(data)):
-            factor = 0x80
-            while factor != 0:
-                if crc & 0x80 != 0:
-                    crc = (crc * 2) & 0xFF
-                    crc ^= CRC_KEY
-                else:
-                    crc = (crc * 2) & 0xFF
-                if data[i] & factor != 0:
-                    crc ^= CRC_KEY
-                factor = int(factor / 2)
-        return crc
+        for attempt in range(CRC_ATTEMPTS):
+            buffer = self.read_register(reg, bytearray(4))
+            crc1 = crc8(bytearray([17, buffer[0]]))
+            crc2 = crc8(bytearray([buffer[2]]))
+            if crc1 != buffer[1] or crc2 != buffer[3]:
+                print("CRC failed.  attempt: " + str(attempt + 1))
+                print("\texpected: " + str([crc1, crc2]) + " got: " + str([buffer[1], buffer[3]]))
+                print("\tregister: " + hex(reg) + " data: " + str(list(buffer)))
+        return (buffer[0] << 8) + buffer[2]
 
     def write_register(self, reg, byte):
-        crc = self.crc8(bytearray([16, reg, byte]))
+        crc = crc8(bytearray([16, reg, byte]))
         with self as i2c:
             i2c.writeto(I2C_ADDR, bytearray([reg, byte, crc]))
 
@@ -135,10 +152,14 @@ class BQ76940:
         gain1 = self.read_register_single(ADCGAIN1)
         gain2 = self.read_register_single(ADCGAIN2)
         gain_raw = (gain1 & 0b00001100) << 1 | (gain2 & 0b11100000) >> 5
+        print("gain1: " + str(gain1))
+        print("gain2: " + str(gain2))
+        print("gain_raw: " + str(gain_raw))
         return 365 + gain_raw
 
     def read_adc_offset(self):
         offset = self.read_register_single(ADCOFFSET)
+        print("offset: " + str(offset))
         if offset > 127:
             return -256 + offset
         else:
@@ -153,13 +174,17 @@ class BQ76940:
     def set_ov_trip(self, v):
         if v < 3.15 or v > 4.7:
             raise RuntimeError("OV TRIP voltage out of range: " + str(v))
+        print("v: " + str(v))
         adc = self.v_to_adc(v)
+        print("adc: " + str(adc))
         ov_trip = (adc >> 4) & 0xFF
+        print("ov_trip: " + str(ov_trip))
         self.write_register(OV_TRIP, ov_trip)
 
     def get_ov_trip(self):
         ov_trip = self.read_register_single(OV_TRIP)
         adc = (ov_trip << 4) | 0b10000000001000
+        print("adc: " + str(adc))
         return self.adc_to_v(adc)
 
     def set_uv_trip(self, v):
@@ -209,8 +234,9 @@ class BQ76940:
         self.faults.remove(fault)
 
     def setup(self):
-        if I2C_ADDR not in self.i2c.scan():
-            raise RuntimeError("BQ address not found in scan")
+        with self as i2c:
+            if I2C_ADDR not in i2c.scan():
+                raise RuntimeError("BQ address not found in scan")
 
         self.write_register(CC_CFG, 0x19)
         self.set_reg_bit(ADC_EN, True)
@@ -222,6 +248,8 @@ class BQ76940:
         self.set_protect1(RSNS_BIT, SCD_DELAY, SCD_THRESH)
         self.set_protect2(OCD_DELAY, OCD_THRESH)
 
+        print("GAIN: " + str(self.adc_gain))
+        print("OFFSET: " + str(self.adc_offset))
         # TODO - verify ADC enabled
         # TODO - verify CC enabled
         print("ADC_EN: " + str(self.get_reg_bit(ADC_EN)))
@@ -239,4 +267,4 @@ class BQ76940:
         print("PROTECT2: " + str(self.read_register_single(PROTECT2)))
         # TODO - ensure DEVICE_XREADY
         print("FAULTS: " + str(self.faults))
-        
+
