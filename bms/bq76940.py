@@ -12,7 +12,7 @@ PROTECT1 = 0x06
 PROTECT2 = 0x07
 PROTECT3 = 0x08
 OV_TRIP = 0x09
-U_TRIP = 0x0A
+UV_TRIP = 0x0A
 CC_CFG = 0x0B
 VC1_HI = 0x0C
 VC1_LO = 0x0D
@@ -51,6 +51,10 @@ DELAY_DIS = 1 << 7
 CC_ONESHOT = 1 << 5
 DSG_ON = 1 << 1
 CHG_ON = 1 << 0
+
+# Config
+MAX_CELL_V = 4.2
+MIN_CELL_V = 2.5
 
 
 class BQ76940:
@@ -131,6 +135,36 @@ class BQ76940:
         else:
             return offset
 
+    def adc_to_v(self, adc):
+        return (self.adc_gain / 1000 * adc + self.adc_offset) / 1000
+
+    def v_to_adc(self, v):
+        return int(1000 * (1000 * v - self.adc_offset) / self.adc_gain)
+
+    def set_ov_trip(self, v):
+        if v < 3.15 or v > 4.7:
+            raise RuntimeError("OV TRIP voltage out of range: " + str(v))
+        adc = self.v_to_adc(v)
+        ov_trip = (adc >> 4) & 0xFF
+        self.write_register(OV_TRIP, ov_trip)
+
+    def get_ov_trip(self):
+        ov_trip = self.read_register_single(OV_TRIP)
+        adc = (ov_trip << 4) | 0b10000000001000
+        return self.adc_to_v(adc)
+
+    def set_uv_trip(self, v):
+        if v < 1.58 or v > 3.1:
+            raise RuntimeError("UV TRIP voltage out of range: " + str(v))
+        adc = self.v_to_adc(v)
+        uv_trip = (adc >> 4) & 0xFF
+        self.write_register(UV_TRIP, uv_trip)
+
+    def get_uv_trip(self):
+        uv_trip = self.read_register_single(UV_TRIP)
+        adc = (uv_trip << 4) | 0b01000000000000
+        return self.adc_to_v(adc)
+
     def setup(self):
         if I2C_ADDR not in self.i2c.scan():
             raise RuntimeError("BQ address not found in scan")
@@ -140,8 +174,8 @@ class BQ76940:
         self.set_reg_bit(CC_EN, True)
         self.adc_gain = self.read_adc_gain()
         self.adc_offset = self.read_adc_offset()
-        # TODO - set UV trip
-        # TODO - set OV trip
+        self.set_ov_trip(MAX_CELL_V)
+        self.set_uv_trip(MIN_CELL_V)
         # TODO - write to PROTECT1
         # TODO - write to PROTECT2
 

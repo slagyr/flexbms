@@ -14,6 +14,8 @@ class BQ76940Test(unittest.TestCase):
         self.i2c.scan_result = [0x08] # BQ76940 I@C Address
         self.i2c.registers[0x04] = 0b00000000 # SYSCTRL1
         self.i2c.registers[0x05] = 0b00000000 # SYSCTRL2
+        self.i2c.registers[0x09] = 0b00000000 # OV_TRIP
+        self.i2c.registers[0x0A] = 0b00000000 # UV_TRIP
         self.i2c.registers[0x50] = 0b00000000 # ADCGAIN1
         self.i2c.registers[0x59] = 0b00000000 # ADCGAIN2
         self.i2c.registers[0x51] = 0b00101010 # ADCOFFSET (42)
@@ -97,3 +99,33 @@ class BQ76940Test(unittest.TestCase):
 
         self.i2c.registers[0x51] = 0b10000000 # ADCOFFSET
         self.assertEqual(-128, self.bq.read_adc_offset())
+
+    def test_adc_to_v(self):
+        self.bq.adc_gain = 380
+        self.bq.adc_offset = 30
+        self.assertAlmostEqual(2.365, self.bq.adc_to_v(6144), 3)
+        self.assertAlmostEqual(3.052, self.bq.adc_to_v(7952), 3)
+        
+    def test_OV_TRIP(self):
+        self.prep_setup()
+        self.bq.setup()
+        self.assertEqual(0b11000111, self.i2c.registers[0x09])
+        self.assertAlmostEqual(4.2, self.bq.get_ov_trip(), 1)
+
+        self.bq.adc_gain = 380
+        self.bq.adc_offset = 36
+        self.bq.set_ov_trip(3.456)
+        self.assertEqual(0b00110010, self.i2c.registers[0x09])
+        self.assertAlmostEqual(3.456, self.bq.get_ov_trip(), 1)
+
+    def test_UV_TRIP(self):
+        self.prep_setup()
+        self.bq.setup()
+        self.assertEqual(0b10100100, self.i2c.registers[0x0A])
+        self.assertAlmostEqual(2.5, self.bq.get_uv_trip(), 1)
+
+        self.bq.adc_gain = 380
+        self.bq.adc_offset = 36
+        self.bq.set_uv_trip(2.718)
+        self.assertEqual(0b10111001, self.i2c.registers[0x0A])
+        self.assertAlmostEqual(2.718, self.bq.get_uv_trip(), 1)
