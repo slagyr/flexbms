@@ -5,6 +5,7 @@ from bms.screens.splash import SplashScreen
 from test.mock_cells import MockCells
 from test.mock_bq import MockBQ
 from test.mock_display import MockDisplay
+from test.screens.mock_screen import MockScreen
 
 class ControllerTest(unittest.TestCase):
 
@@ -40,4 +41,19 @@ class ControllerTest(unittest.TestCase):
         # self.controller.display.print_buffer()
         self.assertIs(self.controller.home_screen, self.controller.screen)
         self.assertEqual(4, self.controller.last_user_event_time)
+
+    def test_screen_updated_on_tick(self):
+        screen = self.controller.screen = MockScreen()
+        self.controller.tick(0)
+        self.assertEqual(True, screen.was_updated)
+
+        screen.was_updated = False
+        self.controller.tick(1)
+        self.assertEqual(True, screen.was_updated)
+        
+    def test_updates_cells_on_tick(self):
+        self.assertFalse(self.cells.was_updated)
+        self.controller.tick(0)
+        self.assertTrue(self.cells.was_updated)
+
 

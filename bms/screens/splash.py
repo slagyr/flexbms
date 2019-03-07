@@ -10,3 +10,6 @@ class SplashScreen:
         byxels = bms.bin.load("splash")
         self.controller.display.draw_byxels(0, 0, 128, 8, byxels)
         self.controller.display.show()
+
+    def update(self):
+        pass

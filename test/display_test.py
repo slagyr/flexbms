@@ -1,6 +1,6 @@
 import unittest
 from bms.display import Display
-from mock_display_i2c import MockDisplayI2C
+from test.mock_display_i2c import MockDisplayI2C
 import bms.fonts as fonts
 
 

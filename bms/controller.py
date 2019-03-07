@@ -29,8 +29,11 @@ class Controller:
 
     def tick(self, secs):
 
+        self.cells.update_voltages()
         # print("secs: " + str(secs))
 
         if secs > self.last_user_event_time + self.screen.idle_timeout:
             self.set_screen(self.home_screen)
             self.last_user_event_time = secs
+
+        self.screen.update()

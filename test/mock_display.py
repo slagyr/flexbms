@@ -51,7 +51,7 @@ class MockDisplay(Mock):
     def clear(self):
         pass
 
-    def fill_rect(self):
+    def fill_rect(self, x, y, w, h):
         pass
 
     def invert(self):
@@ -64,4 +64,7 @@ class MockDisplay(Mock):
         pass
 
     def print_buffer(self):
+        pass
+
+    def erase(self):
         pass

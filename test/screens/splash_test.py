@@ -1,7 +1,7 @@
 import unittest
 import bms.bin
-from mock_controller import MockController
-from screens.splash import SplashScreen
+from test.mock_controller import MockController
+from bms.screens.splash import SplashScreen
 
 
 class SplashScreenTest(unittest.TestCase):

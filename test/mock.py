@@ -6,7 +6,6 @@ all_mocks = []
 @atexit.register
 def find_bad_mocks():
     bad = 0
-    print("len(all_mocks): " + str(len(all_mocks)))
     for mock in all_mocks:
         r = mock.are_you_a_good_little_mock()
         if not r:

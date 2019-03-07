@@ -155,6 +155,11 @@ class Display:
         for i in range(y, y + h):
             self.draw_hline(x, i, w)
 
+    def erase(self, x, y, w, h):
+        self.inverted = not self.inverted
+        self.fill_rect(x, y, w, h)
+        self.inverted = not self.inverted
+
     def print_buffer(self):
         for page in range(8):
             y = 128 * page

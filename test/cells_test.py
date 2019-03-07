@@ -36,15 +36,15 @@ class CellsTest(unittest.TestCase):
 
     def test_creation_11_cells(self):
         cells = self.createCellsAndTest(11)
-        self.assertEqual((1, 2, 3, 5, 6, 7, 8, 10, 12, 13, 15), cells.ids)
+        self.assertEqual((1, 2, 3, 5, 6, 7, 8, 10, 11, 12, 15), cells.ids)
 
     def test_creation_10_cells(self):
         cells = self.createCellsAndTest(10)
-        self.assertEqual((1, 2, 3, 5, 6, 8, 10, 12, 13, 15), cells.ids)
+        self.assertEqual((1, 2, 3, 5, 6, 7, 10, 11, 12, 15), cells.ids)
 
     def test_creation_9_cells(self):
         cells = self.createCellsAndTest(9)
-        self.assertEqual((1, 2, 5, 6, 8, 10, 12, 13, 15), cells.ids)
+        self.assertEqual((1, 2, 5, 6, 7, 10, 11, 12, 15), cells.ids)
 
     def test_read_voltages(self):
         self.bq.voltages = [1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5]
@@ -54,8 +54,25 @@ class CellsTest(unittest.TestCase):
         self.assertEqual(1.3, self.cells.voltages[2])
         self.assertEqual(1.5, self.cells.voltages[3])
         self.assertEqual(1.6, self.cells.voltages[4])
-        self.assertEqual(1.8, self.cells.voltages[5])
+        self.assertEqual(1.7, self.cells.voltages[5])
         self.assertEqual(2.0, self.cells.voltages[6])
-        self.assertEqual(2.2, self.cells.voltages[7])
-        self.assertEqual(2.3, self.cells.voltages[8])
+        self.assertEqual(2.1, self.cells.voltages[7])
+        self.assertEqual(2.2, self.cells.voltages[8])
         self.assertEqual(2.5, self.cells.voltages[9])
+
+    def test_state_of_charge(self):
+        self.cells.voltages[0] = 2.4
+        self.assertAlmostEqual(-0.06, self.cells.soc(0), 2)
+        self.cells.voltages[1] = 2.5
+        self.assertAlmostEqual(0.0, self.cells.soc(1), 2)
+        self.cells.voltages[2] = 2.6
+        self.assertAlmostEqual(0.06, self.cells.soc(2), 2)
+        self.cells.voltages[3] = 3.6
+        self.assertAlmostEqual(0.65, self.cells.soc(3), 2)
+        self.cells.voltages[4] = 4.1
+        self.assertAlmostEqual(0.94, self.cells.soc(4), 2)
+        self.cells.voltages[5] = 4.2
+        self.assertAlmostEqual(1.00, self.cells.soc(5), 2)
+        self.cells.voltages[6] = 4.3
+        self.assertAlmostEqual(1.06, self.cells.soc(6), 2)
+

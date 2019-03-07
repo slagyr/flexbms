@@ -5,6 +5,7 @@ class MockCells(Mock):
     def __init__(self):
         idol = Cells("bq", 9)
         self.was_setup = False
+        self.was_updated = False
         self.voltages = idol.voltages
         self.ids = idol.ids
         self.count = idol.count
@@ -15,4 +16,7 @@ class MockCells(Mock):
         self.was_setup = True
 
     def update_voltages(self):
-        pass
+        self.was_updated = True
+
+    def soc(self, i):
+        return 0.5 + i/100
