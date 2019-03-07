@@ -1,13 +1,13 @@
 import unittest
-from bms.ssd1306.display import Display
-from test.ssd1306.mock_ssd1306_i2c import MockSSD1306I2C
-import bms.ssd1306.fonts as fonts
+from bms.display import Display
+from mock_display_i2c import MockDisplayI2C
+import bms.fonts as fonts
 
 
 class SSD1306Test(unittest.TestCase):
 
     def setUp(self):
-        self.i2c = MockSSD1306I2C()
+        self.i2c = MockDisplayI2C()
         self.screen = Display(self.i2c)
         self.commands = []
         self.datas = []

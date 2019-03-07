@@ -1,4 +1,4 @@
-class MockSSD1306I2C:
+class MockDisplayI2C:
     def __init__(self):
         self.locked = False
         self.lock_count = 0

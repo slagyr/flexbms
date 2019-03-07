@@ -7,6 +7,7 @@ class Controller:
     def __init__(self):
         self.display = None
         self.bq = None
+        self.cells = None
 
         self.screen = None
 
@@ -19,6 +20,7 @@ class Controller:
         self.set_screen(self.splash_screen)
         # load splash screen first.  Let use be entertained while we do work.
         self.bq.setup()
+        self.cells.setup()
 
 
     def set_screen(self, screen):

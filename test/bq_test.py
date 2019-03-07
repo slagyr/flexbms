@@ -1,6 +1,6 @@
 import unittest
 
-from bms.bq76940 import *
+from bms.bq import *
 from test.mock_bq_i2c import MockBqI2C
 
 
@@ -8,7 +8,7 @@ class BQ76940Test(unittest.TestCase):
 
     def setUp(self):
         self.i2c = MockBqI2C()
-        self.bq = BQ76940(self.i2c)
+        self.bq = BQ(self.i2c)
 
     def prep_setup(self):
         self.i2c.scan_result = [0x08] # BQ76940 I@C Address
@@ -22,6 +22,11 @@ class BQ76940Test(unittest.TestCase):
         self.i2c.registers[0x50] = 0b00000000 # ADCGAIN1
         self.i2c.registers[0x59] = 0b00000000 # ADCGAIN2
         self.i2c.registers[0x51] = 0b00101010 # ADCOFFSET (42)
+        for i in range(15):
+            adc = 7282 + (274 * i)
+            reg = 0x0C + i * 2
+            self.i2c.registers[reg] = adc >> 8
+            self.i2c.registers[reg + 1] = adc & 0xFF
 
     def test_creation(self):
         self.assertEqual(self.i2c, self.bq.i2c)
@@ -46,19 +51,19 @@ class BQ76940Test(unittest.TestCase):
         self.assertEqual(0x19, self.i2c.registers[0x0B])
 
     def test_crc8(self):
-        self.assertEqual(122, self.bq.crc8(bytearray([16, 11, 25])))
-        self.assertEqual(5, self.bq.crc8(bytearray([16, 4, 255])))
-        self.assertEqual(16, self.bq.crc8(bytearray([16, 5, 255])))
-        self.assertEqual(66, self.bq.crc8(bytearray([16, 0, 32])))
-        self.assertEqual(127, self.bq.crc8(bytearray([16, 10, 170])))
-        self.assertEqual(243, self.bq.crc8(bytearray([16, 9, 151])))
-        self.assertEqual(234, self.bq.crc8(bytearray([16, 6, 10])))
-        self.assertEqual(97, self.bq.crc8(bytearray([16, 7, 56])))
-        self.assertEqual(67, self.bq.crc8(bytearray([16, 1, 254])))
-        self.assertEqual(74, self.bq.crc8(bytearray([16, 1, 253])))
-        self.assertEqual(88, self.bq.crc8(bytearray([16, 1, 251])))
-        self.assertEqual(124, self.bq.crc8(bytearray([16, 1, 247])))
-        self.assertEqual(52, self.bq.crc8(bytearray([16, 1, 239])))
+        self.assertEqual(122, crc8(bytearray([16, 11, 25])))
+        self.assertEqual(5, crc8(bytearray([16, 4, 255])))
+        self.assertEqual(16, crc8(bytearray([16, 5, 255])))
+        self.assertEqual(66, crc8(bytearray([16, 0, 32])))
+        self.assertEqual(127, crc8(bytearray([16, 10, 170])))
+        self.assertEqual(243, crc8(bytearray([16, 9, 151])))
+        self.assertEqual(234, crc8(bytearray([16, 6, 10])))
+        self.assertEqual(97, crc8(bytearray([16, 7, 56])))
+        self.assertEqual(67, crc8(bytearray([16, 1, 254])))
+        self.assertEqual(74, crc8(bytearray([16, 1, 253])))
+        self.assertEqual(88, crc8(bytearray([16, 1, 251])))
+        self.assertEqual(124, crc8(bytearray([16, 1, 247])))
+        self.assertEqual(52, crc8(bytearray([16, 1, 239])))
 
     def test_setup_enables_ADC(self):
         self.prep_setup()
@@ -139,13 +144,13 @@ class BQ76940Test(unittest.TestCase):
 
         protect1 = self.i2c.registers[0x06]
         rsns = (protect1 & 0b10000000) >> 7
-        self.assertEqual(RSNS_BIT, rsns)
+        self.assertEqual(BQ_RSNS, rsns)
 
         scd_delay = (protect1 & 0b00011000) >> 3
-        self.assertEqual(SCD_DELAY, scd_delay)
+        self.assertEqual(BQ_SCD_DELAY, scd_delay)
 
         scd_thresh = protect1 & 0b00000111
-        self.assertEqual(SCD_THRESH, scd_thresh)
+        self.assertEqual(BQ_SCD_THRESH, scd_thresh)
 
     def test_PROTECT2_OCD_values(self):
         self.prep_setup()
@@ -153,10 +158,10 @@ class BQ76940Test(unittest.TestCase):
 
         protect2 = self.i2c.registers[0x07]
         ocd_delay = (protect2 & 0b1110000) >> 4
-        self.assertEqual(OCD_DELAY, ocd_delay)
+        self.assertEqual(BQ_OCD_DELAY, ocd_delay)
 
         ocd_thresh = (protect2 & 0b1111)
-        self.assertEqual(OCD_THRESH, ocd_thresh)
+        self.assertEqual(BQ_OCD_THRESH, ocd_thresh)
         
     def test_sys_stat_no_faults(self):
         self.i2c.registers[0x0] = 0b00000000
@@ -197,3 +202,28 @@ class BQ76940Test(unittest.TestCase):
         self.bq.clear_fault(SCD)
         self.assertEqual(0b00100010, self.i2c.registers[0x0])
         self.assertEqual([], self.bq.faults)
+
+        self.bq.clear_fault(DEVICE_XREADY)
+        self.assertEqual(0b00100000, self.i2c.registers[0x0])
+        self.assertEqual([], self.bq.faults)
+        
+    def test_read_cell1_voltage(self):
+        self.prep_setup()
+        self.bq.setup()
+
+        self.assertAlmostEqual(2.7, self.bq.cell_voltage(1), 1)
+        self.assertAlmostEqual(2.8, self.bq.cell_voltage(2), 1)
+        self.assertAlmostEqual(2.9, self.bq.cell_voltage(3), 1)
+        self.assertAlmostEqual(3.0, self.bq.cell_voltage(4), 1)
+        self.assertAlmostEqual(3.1, self.bq.cell_voltage(5), 1)
+        self.assertAlmostEqual(3.2, self.bq.cell_voltage(6), 1)
+        self.assertAlmostEqual(3.3, self.bq.cell_voltage(7), 1)
+        self.assertAlmostEqual(3.4, self.bq.cell_voltage(8), 1)
+        self.assertAlmostEqual(3.5, self.bq.cell_voltage(9), 1)
+        self.assertAlmostEqual(3.6, self.bq.cell_voltage(10), 1)
+        self.assertAlmostEqual(3.7, self.bq.cell_voltage(11), 1)
+        self.assertAlmostEqual(3.8, self.bq.cell_voltage(12), 1)
+        self.assertAlmostEqual(3.9, self.bq.cell_voltage(13), 1)
+        self.assertAlmostEqual(4.0, self.bq.cell_voltage(14), 1)
+        self.assertAlmostEqual(4.1, self.bq.cell_voltage(15), 1)
+

@@ -1,4 +1,4 @@
-from bms.bq76940 import crc8
+from bms.bq import crc8
 
 class MockBqI2C:
     def __init__(self):
@@ -38,7 +38,7 @@ class MockBqI2C:
         b = self.registers[self.read_register]
         buffer[0] = b
         buffer[1] = crc8(bytearray([17, b]))
-        for i in range(2, len(buffer)):
+        for i in range(1, int(len(buffer) / 2)):
             b = self.registers[self.read_register + i]
             buffer[i * 2] = b
             buffer[i * 2 + 1] = crc8(bytearray([b]))

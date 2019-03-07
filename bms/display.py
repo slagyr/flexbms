@@ -1,4 +1,4 @@
-import bms.ssd1306.fonts as fonts
+import bms.fonts as fonts
 
 FONT_META_OFFSET = 2
 SSD1306_CMND = 0x00

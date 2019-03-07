@@ -1,12 +1,25 @@
 import bms.bin
+from bms.display import Display
+from test.mock import Mock
 
 
-class MockDisplay:
+class MockDisplay(Mock):
     def __init__(self):
         self.was_setup = False
         self.was_shown = False
         self.drawings = []
         self.font = bms.bin.load("font6x8")
+        self.i2c = "I2C"
+        self.inverted = False
+        self.buffer = []
+
+        self.assert_mock(Display("I2C"))
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
 
     def setup(self):
         self.was_setup = True
@@ -36,4 +49,19 @@ class MockDisplay:
         pass
 
     def clear(self):
+        pass
+
+    def fill_rect(self):
+        pass
+
+    def invert(self):
+        pass
+
+    def set_pixel(self):
+        pass
+
+    def font_width(self):
+        pass
+
+    def print_buffer(self):
         pass

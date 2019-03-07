@@ -1,5 +1,5 @@
 import unittest
-import bms.ssd1306.fonts as fonts
+import bms.fonts as fonts
 
 class FontsTest(unittest.TestCase):
 
