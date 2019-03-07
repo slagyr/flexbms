@@ -152,14 +152,10 @@ class BQ76940:
         gain1 = self.read_register_single(ADCGAIN1)
         gain2 = self.read_register_single(ADCGAIN2)
         gain_raw = (gain1 & 0b00001100) << 1 | (gain2 & 0b11100000) >> 5
-        print("gain1: " + str(gain1))
-        print("gain2: " + str(gain2))
-        print("gain_raw: " + str(gain_raw))
         return 365 + gain_raw
 
     def read_adc_offset(self):
         offset = self.read_register_single(ADCOFFSET)
-        print("offset: " + str(offset))
         if offset > 127:
             return -256 + offset
         else:
@@ -174,17 +170,13 @@ class BQ76940:
     def set_ov_trip(self, v):
         if v < 3.15 or v > 4.7:
             raise RuntimeError("OV TRIP voltage out of range: " + str(v))
-        print("v: " + str(v))
         adc = self.v_to_adc(v)
-        print("adc: " + str(adc))
         ov_trip = (adc >> 4) & 0xFF
-        print("ov_trip: " + str(ov_trip))
         self.write_register(OV_TRIP, ov_trip)
 
     def get_ov_trip(self):
         ov_trip = self.read_register_single(OV_TRIP)
         adc = (ov_trip << 4) | 0b10000000001000
-        print("adc: " + str(adc))
         return self.adc_to_v(adc)
 
     def set_uv_trip(self, v):
@@ -231,7 +223,8 @@ class BQ76940:
         stat = (DEVICE_XREADY & 0xFF)
         stat |= (fault & 0xFF)
         self.write_register(SYS_STAT, stat)
-        self.faults.remove(fault)
+        if fault != DEVICE_XREADY:
+            self.faults.remove(fault)
 
     def setup(self):
         with self as i2c:

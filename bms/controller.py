@@ -27,7 +27,7 @@ class Controller:
 
     def tick(self, secs):
 
-        print("secs: " + str(secs))
+        # print("secs: " + str(secs))
 
         if secs > self.last_user_event_time + self.screen.idle_timeout:
             self.set_screen(self.home_screen)
