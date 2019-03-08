@@ -36,6 +36,9 @@ class MockDisplay(Mock):
     def set_font(self, font):
         self.font = font
 
+    def font_width(self):
+        return 7
+
     def draw_hline(self, x, y, l):
         pass
 
@@ -60,11 +63,8 @@ class MockDisplay(Mock):
     def set_pixel(self):
         pass
 
-    def font_width(self):
-        pass
-
     def print_buffer(self):
         pass
 
-    def erase(self):
+    def erase(self, x, y, w, h):
         pass

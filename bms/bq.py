@@ -18,7 +18,6 @@ UV_TRIP = 0x0A
 CC_CFG = 0x0B
 VC1_HI = 0x0C
 BAT_HI = 0x2A
-BAT_LO = 0x2B
 TS1_HI = 0x2C
 TS1_LO = 0x2D
 CC_HI = 0x32
@@ -193,6 +192,11 @@ class BQ:
         protect2 |= ocd_thresh & 0b1111
         self.write_register(PROTECT2, protect2)
 
+    def set_protect3(self, uv_delay, ov_delay):
+        protect3 = (uv_delay & 0b11) << 6
+        protect3 |= (ov_delay & 0b11) << 4
+        self.write_register(PROTECT3, protect3)
+
     def check_sys_stat(self):
         stat = self.read_register_single(SYS_STAT)
         self.cc_ready = stat & (CC_READY & 0xFF)
@@ -231,6 +235,7 @@ class BQ:
         self.set_uv_trip(CELL_MIN_V)
         self.set_protect1(BQ_RSNS, BQ_SCD_DELAY, BQ_SCD_THRESH)
         self.set_protect2(BQ_OCD_DELAY, BQ_OCD_THRESH)
+        self.set_protect3(BQ_UV_DELAY, BQ_OV_DELAY)
 
         # TODO - verify ADC enabled
         # TODO - verify CC enabled
@@ -256,4 +261,36 @@ class BQ:
         reg = VC1_HI + 2 * (cell_id - 1)
         adc = self.read_register_double(reg) & 0b0011111111111111
         return self.adc_to_v(adc)
+
+    def batt_voltage(self):
+        adc = self.read_register_double(BAT_HI)
+        return ((adc * 4 * self.adc_gain / 1000) + (self.adc_offset * CELL_COUNT)) / 1000
+
+    def set_balance_cell(self, id, on):
+        if id < 1 or id > 15:
+            raise RuntimeError("Invalid cell id: " + str(id))
+        reg = CELLBAL1 + int((id-1) / 5)
+        mask = 1 << ((id-1) % 5)
+        cellbal = self.read_register_single(reg)
+        if bool(cellbal & mask) != bool(on):
+            if on:
+                cellbal |= mask
+            else:
+                cellbal ^= mask
+            self.write_register(reg, cellbal)
+
+    def is_cell_balancing(self, id):
+        if id < 1 or id > 15:
+            raise RuntimeError("Invalid cell id: " + str(id))
+        reg = CELLBAL1 + int((id-1) / 5)
+        mask = 1 << ((id-1) % 5)
+        cellbal = self.read_register_single(reg)
+        return bool(cellbal & mask)
+
+    def set_balance_cells(self, cell_ids):
+        for id in range(1, 16):
+            if id in cell_ids:
+                self.set_balance_cell(id, True)
+            else:
+                self.set_balance_cell(id, False)
 

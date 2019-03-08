@@ -12,7 +12,7 @@ class ControllerTest(unittest.TestCase):
     def setUp(self):
         self.display = MockDisplay()
         self.bq = MockBQ()
-        self.cells = MockCells()
+        self.cells = MockCells(self.bq, 9)
 
         self.controller = Controller()
         self.controller.display = self.display
