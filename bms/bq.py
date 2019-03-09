@@ -239,6 +239,7 @@ class BQ:
         self.set_protect1(BQ_RSNS, BQ_SCD_DELAY, BQ_SCD_THRESH)
         self.set_protect2(BQ_OCD_DELAY, BQ_OCD_THRESH)
         self.set_protect3(BQ_UV_DELAY, BQ_OV_DELAY)
+        self.reset_balancing()
 
         # TODO - verify ADC enabled
         # TODO - verify CC enabled
@@ -265,6 +266,24 @@ class BQ:
         adc = self.read_register_double(reg) & 0b0011111111111111
         return self.adc_to_v(adc)
 
+    def load_cell_voltages(self, cells):
+        buf = self.read_register(VC1_HI, bytearray(60))
+        crc = crc8(bytearray([17, buf[0]]))
+        if crc != buf[1]:
+            print("CRC failed on cell_voltages byte 0")
+        for i in range(1, 30):
+            i2 = i * 2
+            crc = crc8(buf[i2:i2 + 1])
+            if crc != buf[i2 + 1]:
+                print("CRC failed on cell_voltages byte " + str(i) + ". got: " + str(buf[i + 1]) + " expected: " + str(crc))
+
+        adc_to_v = self.adc_to_v
+        for cell in cells:
+            i = (cell.id - 1) * 4
+            reg_val = (buf[i] << 8) + buf[i + 2]
+            adc = reg_val & 0b0011111111111111
+            cell.voltage = adc_to_v(adc)
+
     def batt_voltage(self):
         adc = self.read_register_double(BAT_HI)
         return ((adc * 4 * self.adc_gain / 1000) + (self.adc_offset * CELL_COUNT)) / 1000
@@ -290,9 +309,7 @@ class BQ:
         cellbal = self.read_register_single(reg)
         return bool(cellbal & mask)
 
-    def set_balance_cells(self, cell_ids):
-        for id in range(1, 16):
-            if id in cell_ids:
-                self.set_balance_cell(id, True)
-            else:
-                self.set_balance_cell(id, False)
+    def reset_balancing(self):
+        self.write_register(CELLBAL1, 0)
+        self.write_register(CELLBAL2, 0)
+        self.write_register(CELLBAL3, 0)

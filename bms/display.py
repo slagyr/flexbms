@@ -84,7 +84,6 @@ class Display:
         for i in range(8):
             buffer[(i * 128):(i * 128 + 128)] = fill
 
-    @clocked_fn
     def show(self):
         with self as comm:
             comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x21, 0, X_MAX]))
@@ -195,7 +194,6 @@ class Display:
             for i in range((y + h - post), y + h):
                 hline(x, i, w)
 
-    @clocked_fn
     def erase(self, x, y, w, h):
         self.inverted = not self.inverted
         self.fill_rect(x, y, w, h)

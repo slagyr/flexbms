@@ -29,9 +29,7 @@ class HomeScreen:
             x = i * self.col_width + self.col_text_offset
             display.draw_text(x, 7, str((i + 1) % 10))
 
-    @clocked_fn
     def draw_cell_levels(self, display):
-        # display.erase(0, 8, 105, 48)
         bq = self.controller.bq
         cells = self.controller.cells
         col_width = self.col_width
@@ -40,7 +38,6 @@ class HomeScreen:
         for cell in cells:
             self.draw_graph_bar(bar_width, bq, cell, col_width, display, x_offset)
 
-    @clocked_fn
     def draw_graph_bar(self, bar_width, bq, cell, col_width, display, x_offset):
         soc = cell.soc()
         bar_heigth = max(1, min(int(40 * soc), 39))
@@ -70,20 +67,15 @@ class HomeScreen:
         display = self.controller.display
         display.clear()
         display.draw_text(0, 0, "FlexBMS v1.0")
-        display.draw_text(0 + 105 - 1, 0, "BatV")
-        display.draw_text(0 + 105 - 1, 2, "SerV")
+        display.draw_text(0 + 104, 0, "BatV")
+        display.draw_text(0 + 104, 2, "SerV")
         self.draw_graph_labels(display)
 
         display.show()
 
-    @clocked_fn
     def update(self):
         display = self.controller.display
         self.draw_cell_levels(display)
-        self.draw_info(display, 104)
+        display.draw_text(104, 1, "{:.1f}".format(self.controller.bq.batt_voltage()))
+        display.draw_text(104, 3, "{:.1f}".format(self.controller.cells.serial_voltage()))
         display.show()
-
-    # @clocked_fn
-    def draw_info(self, display, x):
-        display.draw_text(x, 1, "{:.1f}".format(self.controller.bq.batt_voltage()))
-        display.draw_text(x, 3, "{:.1f}".format(self.controller.cells.serial_voltage()))

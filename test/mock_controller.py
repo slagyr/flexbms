@@ -14,6 +14,6 @@ class MockController(Controller):
         super().__init__()
         self.display = MockDisplay()
         self.bq = MockBQ()
-        self.cells = MockCells(self.bq, 9)
+        self.cells = MockCells(9)
 
 

@@ -1,4 +1,5 @@
 import unittest
+import bms.conf as conf
 from bms.controller import Controller
 from bms.screens.home import HomeScreen
 from bms.screens.splash import SplashScreen
@@ -12,7 +13,7 @@ class ControllerTest(unittest.TestCase):
     def setUp(self):
         self.display = MockDisplay()
         self.bq = MockBQ()
-        self.cells = MockCells(self.bq, 9)
+        self.cells = MockCells(9)
 
         self.controller = Controller()
         self.controller.display = self.display
@@ -52,8 +53,19 @@ class ControllerTest(unittest.TestCase):
         self.assertEqual(True, screen.was_updated)
         
     def test_updates_cells_on_tick(self):
-        self.assertFalse(self.cells.was_updated)
+        self.assertFalse(self.bq.voltages_loaded)
         self.controller.tick(0)
-        self.assertTrue(self.cells.was_updated)
+        self.assertTrue(self.bq.voltages_loaded)
+
+    def test_updates_balancing(self):
+        self.assertFalse(self.cells.balancing_updated)
+        self.controller.tick(0)
+        self.assertTrue(self.cells.balancing_updated)
+
+    def test_updates_balancing_when_disabled(self):
+        conf.CELL_BALANCE_ENABLED = False
+        self.assertFalse(self.cells.balancing_updated)
+        self.controller.tick(0)
+        self.assertFalse(self.cells.balancing_updated)
 
 

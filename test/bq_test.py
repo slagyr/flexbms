@@ -1,6 +1,7 @@
 import unittest
 
 from bms.bq import *
+from bms.cells import Cells
 from test.mock_bq_i2c import MockBqI2C
 
 
@@ -9,28 +10,6 @@ class BQ76940Test(unittest.TestCase):
     def setUp(self):
         self.i2c = MockBqI2C()
         self.bq = BQ(self.i2c)
-
-    def prep_setup(self):
-        self.i2c.scan_result = [0x08] # BQ76940 I@C Address
-        self.i2c.registers[0x00] = 0b00000000 # SYS_STAT
-        self.i2c.registers[0x01] = 0b00000000 # CELLBAL1
-        self.i2c.registers[0x02] = 0b00000000 # CELLBAL2
-        self.i2c.registers[0x03] = 0b00000000 # CELLBAL2
-        self.i2c.registers[0x04] = 0b00000000 # SYSCTRL1
-        self.i2c.registers[0x05] = 0b00000000 # SYSCTRL2
-        self.i2c.registers[0x06] = 0b00000000 # PROTECT1
-        self.i2c.registers[0x07] = 0b00000000 # PROTECT2
-        self.i2c.registers[0x08] = 0b00000000 # PROTECT3
-        self.i2c.registers[0x09] = 0b00000000 # OV_TRIP
-        self.i2c.registers[0x0A] = 0b00000000 # UV_TRIP
-        self.i2c.registers[0x50] = 0b00000000 # ADCGAIN1
-        self.i2c.registers[0x59] = 0b00000000 # ADCGAIN2
-        self.i2c.registers[0x51] = 0b00101010 # ADCOFFSET (42)
-        for i in range(15):
-            adc = 7282 + (274 * i)
-            reg = 0x0C + i * 2
-            self.i2c.registers[reg] = adc >> 8          #VCx_HI
-            self.i2c.registers[reg + 1] = adc & 0xFF    #VCx_LO
 
     def test_creation(self):
         self.assertEqual(self.i2c, self.bq.i2c)
@@ -50,7 +29,6 @@ class BQ76940Test(unittest.TestCase):
             self.assertEqual("BQ address not found in scan", ex.args[0])
 
     def test_setup_write_magic_0x19_to_CC_CFG(self):
-        self.prep_setup()
         self.bq.setup()
         self.assertEqual(0x19, self.i2c.registers[0x0B])
 
@@ -70,7 +48,6 @@ class BQ76940Test(unittest.TestCase):
         self.assertEqual(52, crc8(bytearray([16, 1, 239])))
 
     def test_setup_enables_ADC(self):
-        self.prep_setup()
         self.assertEqual(False, self.bq.get_reg_bit(ADC_EN))
 
         self.bq.setup()
@@ -78,7 +55,6 @@ class BQ76940Test(unittest.TestCase):
         self.assertEqual(True, self.bq.get_reg_bit(ADC_EN))
 
     def test_setup_enables_CC_continuous(self):
-        self.prep_setup()
         self.assertEqual(False, self.bq.get_reg_bit(CC_EN))
 
         self.bq.setup()
@@ -86,7 +62,6 @@ class BQ76940Test(unittest.TestCase):
         self.assertEqual(True, self.bq.get_reg_bit(CC_EN))
 
     def test_ADCGAIN(self):
-        self.prep_setup()
         self.bq.setup()
         self.assertEqual(365, self.bq.adc_gain)
 
@@ -99,7 +74,6 @@ class BQ76940Test(unittest.TestCase):
         self.assertEqual(380, self.bq.read_adc_gain())
 
     def test_ADCOFFSET(self):
-        self.prep_setup()
         self.bq.setup()
         self.assertEqual(42, self.bq.adc_offset)
 
@@ -119,7 +93,6 @@ class BQ76940Test(unittest.TestCase):
         self.assertAlmostEqual(3.052, self.bq.adc_to_v(7952), 3)
         
     def test_OV_TRIP(self):
-        self.prep_setup()
         self.bq.setup()
         self.assertEqual(0b11000111, self.i2c.registers[0x09])
         self.assertAlmostEqual(4.2, self.bq.get_ov_trip(), 1)
@@ -131,7 +104,6 @@ class BQ76940Test(unittest.TestCase):
         self.assertAlmostEqual(3.456, self.bq.get_ov_trip(), 1)
 
     def test_UV_TRIP(self):
-        self.prep_setup()
         self.bq.setup()
         self.assertEqual(0b10100100, self.i2c.registers[0x0A])
         self.assertAlmostEqual(2.5, self.bq.get_uv_trip(), 1)
@@ -143,7 +115,6 @@ class BQ76940Test(unittest.TestCase):
         self.assertAlmostEqual(2.718, self.bq.get_uv_trip(), 1)
 
     def test_PROTECT1_SCD_values(self):
-        self.prep_setup()
         self.bq.setup()
 
         protect1 = self.i2c.registers[0x06]
@@ -157,7 +128,6 @@ class BQ76940Test(unittest.TestCase):
         self.assertEqual(BQ_SCD_THRESH, scd_thresh)
 
     def test_PROTECT2_OCD_values(self):
-        self.prep_setup()
         self.bq.setup()
 
         protect2 = self.i2c.registers[0x07]
@@ -168,7 +138,6 @@ class BQ76940Test(unittest.TestCase):
         self.assertEqual(BQ_OCD_THRESH, ocd_thresh)
 
     def test_PROTECT3_UV_OV_delays(self):
-        self.prep_setup()
         self.bq.setup()
 
         protect3 = self.i2c.registers[0x08]
@@ -221,25 +190,42 @@ class BQ76940Test(unittest.TestCase):
         self.assertEqual(0b00100000, self.i2c.registers[0x0])
         self.assertEqual([], self.bq.faults)
         
-    def test_read_cell1_voltage(self):
-        self.prep_setup()
+    def test_load_cell_voltages_15(self):
         self.bq.setup()
 
-        self.assertAlmostEqual(2.7, self.bq.cell_voltage(1), 1)
-        self.assertAlmostEqual(2.8, self.bq.cell_voltage(2), 1)
-        self.assertAlmostEqual(2.9, self.bq.cell_voltage(3), 1)
-        self.assertAlmostEqual(3.0, self.bq.cell_voltage(4), 1)
-        self.assertAlmostEqual(3.1, self.bq.cell_voltage(5), 1)
-        self.assertAlmostEqual(3.2, self.bq.cell_voltage(6), 1)
-        self.assertAlmostEqual(3.3, self.bq.cell_voltage(7), 1)
-        self.assertAlmostEqual(3.4, self.bq.cell_voltage(8), 1)
-        self.assertAlmostEqual(3.5, self.bq.cell_voltage(9), 1)
-        self.assertAlmostEqual(3.6, self.bq.cell_voltage(10), 1)
-        self.assertAlmostEqual(3.7, self.bq.cell_voltage(11), 1)
-        self.assertAlmostEqual(3.8, self.bq.cell_voltage(12), 1)
-        self.assertAlmostEqual(3.9, self.bq.cell_voltage(13), 1)
-        self.assertAlmostEqual(4.0, self.bq.cell_voltage(14), 1)
-        self.assertAlmostEqual(4.1, self.bq.cell_voltage(15), 1)
+        cells = Cells(15)
+        self.bq.load_cell_voltages(cells)
+
+        self.assertAlmostEqual(2.7, cells[0].voltage, 1)
+        self.assertAlmostEqual(2.8, cells[1].voltage, 1)
+        self.assertAlmostEqual(2.9, cells[2].voltage, 1)
+        self.assertAlmostEqual(3.0, cells[3].voltage, 1)
+        self.assertAlmostEqual(3.1, cells[4].voltage, 1)
+        self.assertAlmostEqual(3.2, cells[5].voltage, 1)
+        self.assertAlmostEqual(3.3, cells[6].voltage, 1)
+        self.assertAlmostEqual(3.4, cells[7].voltage, 1)
+        self.assertAlmostEqual(3.5, cells[8].voltage, 1)
+        self.assertAlmostEqual(3.6, cells[9].voltage, 1)
+        self.assertAlmostEqual(3.7, cells[10].voltage, 1)
+        self.assertAlmostEqual(3.8, cells[11].voltage, 1)
+        self.assertAlmostEqual(3.9, cells[12].voltage, 1)
+        self.assertAlmostEqual(4.0, cells[13].voltage, 1)
+        self.assertAlmostEqual(4.1, cells[14].voltage, 1)
+
+    def test_load_cell_voltages_9(self):
+        self.bq.setup()
+        cells = Cells(9)
+        self.bq.load_cell_voltages(cells)
+
+        self.assertAlmostEqual(2.7, cells[0].voltage, 1)
+        self.assertAlmostEqual(2.8, cells[1].voltage, 1)
+        self.assertAlmostEqual(3.1, cells[2].voltage, 1)
+        self.assertAlmostEqual(3.2, cells[3].voltage, 1)
+        self.assertAlmostEqual(3.3, cells[4].voltage, 1)
+        self.assertAlmostEqual(3.6, cells[5].voltage, 1)
+        self.assertAlmostEqual(3.7, cells[6].voltage, 1)
+        self.assertAlmostEqual(3.8, cells[7].voltage, 1)
+        self.assertAlmostEqual(4.1, cells[8].voltage, 1)
 
     def test_batt_voltage(self):
         self.bq.adc_gain = 377
@@ -251,20 +237,25 @@ class BQ76940Test(unittest.TestCase):
         self.assertAlmostEqual(38.227, self.bq.batt_voltage(), 1)
         
     def test_setting_cells_to_balance(self):
-        self.prep_setup()
-        self.bq.set_balance_cells([1, 3, 5, 6, 8, 10, 11, 13, 15])
+        for id in [1, 3, 5, 6, 8, 10, 11, 13, 15]:
+            self.bq.set_balance_cell(id, True)
         self.assertEqual(0b00010101, self.i2c.registers[0x01])
         self.assertEqual(0b00010101, self.i2c.registers[0x02])
         self.assertEqual(0b00010101, self.i2c.registers[0x03])
 
-        self.bq.set_balance_cells([2, 4, 7, 9, 12, 14])
+        for id in [2, 4, 7, 9, 12, 14]:
+            self.bq.set_balance_cell(id, True)
+        self.assertEqual(0b00011111, self.i2c.registers[0x01])
+        self.assertEqual(0b00011111, self.i2c.registers[0x02])
+        self.assertEqual(0b00011111, self.i2c.registers[0x03])
+
+        for id in [1, 3, 5, 6, 8, 10, 11, 13, 15]:
+            self.bq.set_balance_cell(id, False)
         self.assertEqual(0b00001010, self.i2c.registers[0x01])
         self.assertEqual(0b00001010, self.i2c.registers[0x02])
         self.assertEqual(0b00001010, self.i2c.registers[0x03])
 
     def test_is_cell_balancing(self):
-        self.prep_setup()
-
         self.assertEqual(False, self.bq.is_cell_balancing(1))
         self.assertEqual(False, self.bq.is_cell_balancing(2))
         self.assertEqual(False, self.bq.is_cell_balancing(3))
@@ -275,4 +266,27 @@ class BQ76940Test(unittest.TestCase):
         self.assertEqual(True, self.bq.is_cell_balancing(1))
         self.assertEqual(False, self.bq.is_cell_balancing(2))
         self.assertEqual(True, self.bq.is_cell_balancing(3))
+        
+    def test_turn_off_balancing(self):
+        for id in [1, 3, 5, 6, 8, 10, 11, 13, 15]:
+            self.bq.set_balance_cell(id, True)
+
+        self.bq.reset_balancing()
+
+        self.assertEqual(0b00000000, self.i2c.registers[0x01])
+        self.assertEqual(0b00000000, self.i2c.registers[0x02])
+        self.assertEqual(0b00000000, self.i2c.registers[0x03])
+
+    def test_setup_resets_balancing(self):
+        self.bq.set_balance_cell(1, True)
+        self.bq.set_balance_cell(6, True)
+        self.bq.set_balance_cell(11, True)
+
+        self.bq.setup()
+
+        self.assertEqual(0b00000000, self.i2c.registers[0x01])
+        self.assertEqual(0b00000000, self.i2c.registers[0x02])
+        self.assertEqual(0b00000000, self.i2c.registers[0x03])
+
+
 

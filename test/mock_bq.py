@@ -1,85 +1,17 @@
 from bms.bq import BQ
-from test.mock import Mock
+from test.mock_bq_i2c import MockBqI2C
 
 
-class MockBQ(Mock):
+class MockBQ(BQ):
     def __init__(self):
+        super().__init__(MockBqI2C())
+        self.voltages_loaded = False
         self.was_setup = False
         self.balancing_cells = []
         self.voltages = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5]
 
-        self.adc_gain = None
-        self.adc_offset = None
-        self.i2c = None
-        self.faults = None
-        self.cc_ready = None
-        self.assert_mock(BQ("I2C"))
-
     def setup(self):
         self.was_setup = True
-
-    def read_register(self):
-        pass
-
-    def read_register_single(self):
-        pass
-
-    def read_register_double(self):
-        pass
-
-    def write_register(self):
-        pass
-
-    def set_reg_bit(self):
-        pass
-
-    def get_reg_bit(self):
-        pass
-
-    def clear_fault(self):
-        pass
-
-    def __enter__(self):
-        pass
-
-    def __exit__(self):
-        pass
-
-    def check_sys_stat(self):
-        pass
-
-    def read_adc_gain(self):
-        pass
-
-    def v_to_adc(self):
-        pass
-
-    def read_adc_offset(self):
-        pass
-
-    def adc_to_v(self):
-        pass
-
-    def set_uv_trip(self):
-        pass
-
-    def get_uv_trip(self):
-        pass
-
-    def set_ov_trip(self):
-        pass
-
-    def get_ov_trip(self):
-        pass
-
-    def set_protect1(self):
-        pass
-
-    def set_protect2(self):
-        pass
-
-    def set_protect3(self):
-        pass
 
     def cell_voltage(self, id):
         return self.voltages[id - 1]
@@ -90,8 +22,17 @@ class MockBQ(Mock):
     def set_balance_cells(self, cell_ids):
         self.balancing_cells = cell_ids
 
-    def set_balance_cell(self, id, on):
-        pass
-
     def is_cell_balancing(self, id):
         return False
+
+    def set_balance_cell(self, id, on):
+        if on and id not in self.balancing_cells:
+            self.balancing_cells.append(id)
+        if not on and id in self.balancing_cells:
+            self.balancing_cells.remove(id)
+
+
+    def load_cell_voltages(self, cells):
+        self.voltages_loaded = True
+
+

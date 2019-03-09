@@ -8,10 +8,10 @@ class CellsTest(unittest.TestCase):
 
     def setUp(self):
         self.bq = MockBQ()
-        self.cells = Cells(self.bq, 10)
+        self.cells = Cells(10)
 
     def createCellsAndTest(self, count, ids):
-        cells = Cells(self.bq, count)
+        cells = Cells(count)
         self.assertEqual(count, cells.count)
 
         self.assertEqual(cells.count, len(ids))
@@ -43,6 +43,37 @@ class CellsTest(unittest.TestCase):
     def test_creation_9_cells(self):
         self.createCellsAndTest(9, (1, 2, 5, 6, 7, 10, 11, 12, 15))
 
+    def test_connections(self):
+        self.assertEqual(None, self.cells[0].left)
+        self.assertEqual(self.cells[1], self.cells[0].right)
+
+        self.assertEqual(self.cells[0], self.cells[1].left)
+        self.assertEqual(self.cells[2], self.cells[1].right)
+
+        self.assertEqual(self.cells[1], self.cells[2].left)
+        self.assertEqual(self.cells[3], self.cells[2].right)
+
+        self.assertEqual(self.cells[2], self.cells[3].left)
+        self.assertEqual(None, self.cells[3].right)
+
+        self.assertEqual(None, self.cells[4].left)
+        self.assertEqual(self.cells[5], self.cells[4].right)
+
+        self.assertEqual(self.cells[4], self.cells[5].left)
+        self.assertEqual(self.cells[6], self.cells[5].right)
+
+        self.assertEqual(self.cells[5], self.cells[6].left)
+        self.assertEqual(None, self.cells[6].right)
+
+        self.assertEqual(None, self.cells[7].left)
+        self.assertEqual(self.cells[8], self.cells[7].right)
+
+        self.assertEqual(self.cells[7], self.cells[8].left)
+        self.assertEqual(self.cells[9], self.cells[8].right)
+
+        self.assertEqual(self.cells[8], self.cells[9].left)
+        self.assertEqual(None, self.cells[9].right)
+
     def test_by_id(self):
         self.assertEqual(0, self.cells.by_id(1).index)
         self.assertEqual(1, self.cells.by_id(2).index)
@@ -59,20 +90,6 @@ class CellsTest(unittest.TestCase):
         self.assertEqual(None, self.cells.by_id(13))
         self.assertEqual(None, self.cells.by_id(14))
         self.assertEqual(9, self.cells.by_id(15).index)
-
-    def test_read_voltages(self):
-        self.bq.voltages = [1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5]
-        self.cells.update_voltages()
-        self.assertEqual(1.1, self.cells[0].voltage)
-        self.assertEqual(1.2, self.cells[1].voltage)
-        self.assertEqual(1.3, self.cells[2].voltage)
-        self.assertEqual(1.5, self.cells[3].voltage)
-        self.assertEqual(1.6, self.cells[4].voltage)
-        self.assertEqual(1.7, self.cells[5].voltage)
-        self.assertEqual(2.0, self.cells[6].voltage)
-        self.assertEqual(2.1, self.cells[7].voltage)
-        self.assertEqual(2.2, self.cells[8].voltage)
-        self.assertEqual(2.5, self.cells[9].voltage)
 
     def test_cell_state_of_charge(self):
         self.cells[0].voltage = 2.4
@@ -102,35 +119,35 @@ class CellsTest(unittest.TestCase):
         self.assertAlmostEqual(36.0, self.cells.serial_voltage(), 2)
 
     def test_balancing_with_all_cells_within_threshold(self):
-        cells = Cells(self.bq, 15)
+        cells = Cells(15)
         for i in range(15):
             cells[i].voltage = 3.654
-        cells.update_balancing()
+        cells.update_balancing(self.bq)
         self.assertEqual([], self.bq.balancing_cells)
 
         cells[0].voltage = 3.655
         cells[2].voltage = 3.653
-        cells.update_balancing()
+        cells.update_balancing(self.bq)
         for cell in cells:
             self.assertFalse(cell.balancing)
         self.assertEqual([], self.bq.balancing_cells)
 
     def test_balancing_with_non_adjacent_cells(self):
-        cells = Cells(self.bq, 15)
+        cells = Cells(15)
         for i in range(15):
             cells[i].voltage = 3.654
 
         cells[0].voltage = 3.8
         cells[2].voltage = 3.9
         cells[10].voltage = 4.0
-        cells.update_balancing()
+        cells.update_balancing(self.bq)
         self.assertTrue(cells[0].balancing)
         self.assertTrue(cells[2].balancing)
         self.assertTrue(cells[10].balancing)
         self.assertEqual([11, 3, 1], self.bq.balancing_cells)
 
     def test_wont_balance_adjacent_cells(self):
-        cells = Cells(self.bq, 15)
+        cells = Cells(15)
         for i in range(15):
             cells[i].voltage = 3.654
 
@@ -142,11 +159,11 @@ class CellsTest(unittest.TestCase):
         cells[9].voltage = 4.0
         cells[8].voltage = 4.0
 
-        cells.update_balancing()
+        cells.update_balancing(self.bq)
         self.assertEqual([15, 13, 11, 10], self.bq.balancing_cells)
 
     def test_wont_balance_adjacent_cells_9(self):
-        cells = Cells(self.bq, 9)
+        cells = Cells(9)
         for i in range(9):
             cells[i].voltage = 3.654
 
@@ -158,5 +175,5 @@ class CellsTest(unittest.TestCase):
         cells[3].voltage = 4.0
         cells[2].voltage = 4.0
 
-        cells.update_balancing()
+        cells.update_balancing(self.bq)
         self.assertEqual([15, 11, 10, 6, 5], self.bq.balancing_cells)

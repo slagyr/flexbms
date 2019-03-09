@@ -21,7 +21,7 @@ class HomeTest(unittest.TestCase):
         home.enter()
         home.update()
 
-        self.display.print_buffer()
+        # self.display.print_buffer()
 
 
 

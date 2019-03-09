@@ -7,6 +7,8 @@ class Cell:
         self.id = id
         self.voltage = 0
         self.balancing = False
+        self.left = None
+        self.right = None
 
     def soc(self):
         return (self.voltage - CELL_MIN_V) / (CELL_MAX_V - CELL_MIN_V)
@@ -21,6 +23,16 @@ class Cell:
         else:
             return True
 
+    def should_balance(self, min_v):
+        my = self
+        if (my.voltage - min_v) < CELL_BALANCE_THRESH:
+            return False
+        if my.left and my.left.balancing and my.left.voltage >= my.voltage:
+            return False
+        if my.right and my.right.balancing and my.right.voltage >= my.voltage:
+            return False
+        return True
+
 
 
 def ids_to_cells(ids):
@@ -31,8 +43,7 @@ def ids_to_cells(ids):
 
 
 class Cells:
-    def __init__(self, bq, count):
-        self.bq = bq
+    def __init__(self, count):
         self.count = count
         if count == 15:
             self._cells = ids_to_cells((1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15))
@@ -49,6 +60,9 @@ class Cells:
         elif count == 9:
             self._cells = ids_to_cells((1, 2, 5, 6, 7, 10, 11, 12, 15))
 
+        for cell in self:
+            self.connect_adjacent_cells(cell)
+
     def __getitem__(self, i):
         return self._cells[i]
 
@@ -59,13 +73,6 @@ class Cells:
 
     def setup(self):
         pass
-
-    # TODO - takes about 0.25 secs
-    # possible optimization: one I2C message to read all the cell voltages, then process
-    def update_voltages(self):
-        for cell in self:
-            v = self.bq.cell_voltage(cell.id)
-            cell.voltage = v
 
     def serial_voltage(self):
         sum = 0.0
@@ -81,37 +88,18 @@ class Cells:
                 result = soc
         return result
 
-    def update_balancing(self):
-        to_balance = self.cells_to_balance()
-        last = None
-        non_adjacent = []
-        for cell in to_balance:
-            if not last or not cell.adjacent_to(last):
-                last = cell
-                non_adjacent.append(cell)
+    def connect_adjacent_cells(self, cell):
+        i = cell.index
+        id = cell.id
+        cell.left = self[i - 1] if id != 1 and id != 6 and id != 11 else None
+        cell.right = self[i + 1] if id != 5 and id != 10 and id != 15 else None
 
-        ids = []
-        for cell in non_adjacent:
-            cell.balancing = True
-            ids.append(cell.id)
-        self.bq.set_balance_cells(ids)
-
-    def cells_to_balance(self):
+    def update_balancing(self, bq):
         cells = sorted(self._cells, key=lambda c: c.voltage)
         min_v = cells[0].voltage
         cells.reverse()
-        to_balance = []
         for cell in cells:
-            cell.balancing = False
-            if cell.voltage - min_v > CELL_BALANCE_THRESH:
-                to_balance.append(cell)
-            else:
-                break
-        return to_balance
-
-
-
-
-
-
-
+            should_balance = cell.should_balance(min_v)
+            if should_balance != cell.balancing:
+                bq.set_balance_cell(cell.id, should_balance)
+            cell.balancing = should_balance

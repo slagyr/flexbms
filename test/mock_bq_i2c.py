@@ -7,6 +7,26 @@ class MockBqI2C:
         self.registers = {}
         self.read_register = None
         self.scan_result = []
+        self.scan_result = [0x08] # BQ76940 I@C Address
+        self.registers[0x00] = 0b00000000 # SYS_STAT
+        self.registers[0x01] = 0b00000000 # CELLBAL1
+        self.registers[0x02] = 0b00000000 # CELLBAL2
+        self.registers[0x03] = 0b00000000 # CELLBAL2
+        self.registers[0x04] = 0b00000000 # SYSCTRL1
+        self.registers[0x05] = 0b00000000 # SYSCTRL2
+        self.registers[0x06] = 0b00000000 # PROTECT1
+        self.registers[0x07] = 0b00000000 # PROTECT2
+        self.registers[0x08] = 0b00000000 # PROTECT3
+        self.registers[0x09] = 0b00000000 # OV_TRIP
+        self.registers[0x0A] = 0b00000000 # UV_TRIP
+        self.registers[0x50] = 0b00000000 # ADCGAIN1
+        self.registers[0x59] = 0b00000000 # ADCGAIN2
+        self.registers[0x51] = 0b00101010 # ADCOFFSET (42)
+        for i in range(15):
+            adc = 7282 + (274 * i)
+            reg = 0x0C + i * 2
+            self.registers[reg] = adc >> 8          #VCx_HI
+            self.registers[reg + 1] = adc & 0xFF    #VCx_LO
 
     def try_lock(self):
         if self.locked:

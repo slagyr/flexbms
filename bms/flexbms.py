@@ -19,7 +19,7 @@ def init():
     i2c = busio.I2C(board.SCL, board.SDA, frequency=100000)
     bq = BQ(i2c)
     display = Display(i2c)
-    cells = Cells(bq, CELL_COUNT)
+    cells = Cells(CELL_COUNT)
 
     controller.display = display
     controller.bq = bq
