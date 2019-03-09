@@ -26,6 +26,7 @@ def init():
     controller.cells = cells
     return controller
 
+TICK_INTERVAL = 0.5
 
 def main():
     controller = init()
@@ -33,7 +34,10 @@ def main():
     controller.setup()
 
     while True:
+        before = time.monotonic()
         controller.tick(time.monotonic())
-        time.sleep(0.25)
+        tick_duration = time.monotonic() - before
+        if tick_duration < TICK_INTERVAL:
+            time.sleep(TICK_INTERVAL - tick_duration)
 
 

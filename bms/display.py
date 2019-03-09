@@ -1,12 +1,15 @@
 import bms.fonts as fonts
+from bms.util import clocked_fn, ON_BOARD
+if not ON_BOARD:
+    from bms.util import const
 
-FONT_META_OFFSET = 2
-SSD1306_CMND = 0x00
-SSD1306_DATA = 0x40
-SSD1306_ADDR = 0x3C
+FONT_META_OFFSET = const(2)
+SSD1306_CMND = const(0x00)
+SSD1306_DATA = const(0x40)
+SSD1306_ADDR = const(0x3C)
 
-X_MAX = 127
-Y_MAX = 63
+X_MAX = const(127)
+Y_MAX = const(63)
 
 
 class Display:
@@ -14,9 +17,16 @@ class Display:
     def __init__(self, i2c):
         self.i2c = i2c
         self.font = fonts.font6x8()
-        self.buffer = bytearray(1025)
-        self.buffer[0] = SSD1306_DATA
+        self._buffer = bytearray(1025)
+        self._buffer[0] = SSD1306_DATA
+        self.buffer = memoryview(self._buffer)[1:]
         self.inverted = False
+        self.solid_row = bytearray(128)
+        self.blank_row = bytearray(128)
+        for i in range(128):
+            self.solid_row[i] = 0xFF
+            self.blank_row[i] = 0x0
+
 
     def __enter__(self):
         while not self.i2c.try_lock():
@@ -68,27 +78,31 @@ class Display:
         return self.font[0]
 
     def clear(self):
-        b = 0
-        if self.inverted:
-            b = 0xFF
-        for i in range(1024):
-            self.buffer[i + 1] = b
+        fill = self.solid_row if self.inverted else self.blank_row
 
+        buffer = self.buffer # optimization
+        for i in range(8):
+            buffer[(i * 128):(i * 128 + 128)] = fill
+
+    @clocked_fn
     def show(self):
         with self as comm:
             comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x21, 0, X_MAX]))
             comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x22, 0, 7]))
-            comm.writeto(SSD1306_ADDR, self.buffer)
+            comm.writeto(SSD1306_ADDR, self._buffer)
 
     def draw_byxels(self, x, r, width, rows, byxels):
         if len(byxels) != width * rows:
             raise IndexError("byxel count doesn't match width and rows")
         byxel_i = 0
+        inverted = self.inverted # optimization
+        invert = self.invert # optimization
+        buffer = self.buffer # optimization
         for row in range(r, r + rows):
             i = 128 * row + x
             for col in range(width):
                 b = byxels[byxel_i]
-                self.buffer[i + 1] = self.invert(b) if self.inverted else b
+                buffer[i] = invert(b) if inverted else b
                 i += 1
                 byxel_i += 1
 
@@ -96,12 +110,17 @@ class Display:
         l = len(msg)
         font_w = self.font_width()
         buff_i = 128 * r + x
+        font = self.font  # optimization
+        buffer = self.buffer  # optimization
+        invert = self.invert # optimization
+        inverted = self.inverted # optimization
+        font_offset = FONT_META_OFFSET #optimization
         for i in range(0, l):
             c = ord(msg[i])
-            start = (c - 32) * font_w + FONT_META_OFFSET
+            start = (c - 32) * font_w + font_offset
             for j in range(0, font_w):
-                b = self.font[start + j]
-                self.buffer[buff_i + 1] = self.invert(b) if self.inverted else b
+                b = font[start + j]
+                buffer[buff_i] = invert(b) if inverted else b
                 buff_i += 1
 
     def set_pixel(self, x, y, on):
@@ -110,9 +129,9 @@ class Display:
         mask = 1 << (y % 8)
         i = int(y / 8) * 128 + x
         if on != self.inverted:
-            self.buffer[i + 1] |= mask
+            self.buffer[i] |= mask
         else:
-            self.buffer[i + 1] &= (mask ^ 0xFF)
+            self.buffer[i] &= (mask ^ 0xFF)
 
     def invert(self, byxel):
         return byxel ^ 0xFF
@@ -122,24 +141,28 @@ class Display:
             return
         mask = 1 << (y % 8)
         start_i = int(y / 8) * 128 + x
+        inverted = self.inverted # optimization
+        buffer = self.buffer # optimization
         for di in range(min(128 - x, length)):
-            if self.inverted:
-                self.buffer[start_i + di + 1] &= (mask ^ 0xFF)
+            if inverted:
+                buffer[start_i + di] &= (mask ^ 0xFF)
             else:
-                self.buffer[start_i + di + 1] |= mask
+                buffer[start_i + di] |= mask
 
     def draw_dashed_hline(self, x, y, length, on, off):
         x1 = x
+        hline = self.draw_hline # optimization
         while x1 < x + length:
-            l = min(128 - x, on)
-            self.draw_hline(x1, y, l)
+            l = min(128 - x1, on)
+            hline(x1, y, l)
             x1 = x1 + on + off
 
     def draw_vline(self, x, y, length):
         if y < -length or y > Y_MAX or x < 0 or x > X_MAX:
             return
+        set_pix = self.set_pixel # optimization
         for dy in range(min(64 - y, length)):
-            self.set_pixel(x, y + dy, True)
+            set_pix(x, y + dy, True)
 
     def draw_rect(self, x, y, w, h):
         if y < -h or y > Y_MAX or x < -w or x > X_MAX:
@@ -152,9 +175,27 @@ class Display:
     def fill_rect(self, x, y, w, h):
         if y < -h or y > Y_MAX or x < -w or x > X_MAX:
             return
-        for i in range(y, y + h):
-            self.draw_hline(x, i, w)
 
+        r = int((y+7) / 8)
+        pre = min(h, (r * 8) - y)
+        rows = int((h - pre) / 8)
+        post = max(0, (y + h) - ((r + rows) * 8))
+        fill = self.blank_row if self.inverted else self.solid_row
+        buffer = self.buffer
+        for row in range(r, r + rows):
+            start_x = ((128 * row) + x)
+            buffer[start_x:start_x + w] = fill[:w]
+
+        hline = self.draw_hline # optimization
+        if pre != 0:
+            for i in range(y, y + pre):
+                hline(x, i, w)
+
+        if post != 0:
+            for i in range((y + h - post), y + h):
+                hline(x, i, w)
+
+    @clocked_fn
     def erase(self, x, y, w, h):
         self.inverted = not self.inverted
         self.fill_rect(x, y, w, h)

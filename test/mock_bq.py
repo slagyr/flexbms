@@ -94,4 +94,4 @@ class MockBQ(Mock):
         pass
 
     def is_cell_balancing(self, id):
-        pass
+        return False

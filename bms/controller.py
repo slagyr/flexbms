@@ -1,6 +1,7 @@
+import time
 from bms.screens.home import HomeScreen
 from bms.screens.splash import SplashScreen
-import time
+from bms.util import clocked_fn
 
 
 class Controller:
@@ -21,12 +22,14 @@ class Controller:
         # load splash screen first.  Let use be entertained while we do work.
         self.bq.setup()
         self.cells.setup()
+        self.bq.set_balance_cells([])
 
 
     def set_screen(self, screen):
         self.screen = screen
         self.screen.enter()
 
+    @clocked_fn
     def tick(self, secs):
 
         self.cells.update_voltages()

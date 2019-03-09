@@ -94,7 +94,7 @@ class SSD1306Test(unittest.TestCase):
         bmp = self.create_bmp(1024)
         self.screen.draw_byxels(0, 0, 128, 8, bmp)
 
-        self.assertEqual(bmp, self.screen.buffer[1:])
+        self.assertEqual(bmp, self.screen.buffer)
 
     def test_draw_full_screen_inverted(self):
         bmp = self.create_bmp(1024)
@@ -102,14 +102,14 @@ class SSD1306Test(unittest.TestCase):
         self.screen.draw_byxels(0, 0, 128, 8, bmp)
 
         for i in range(1024):
-            self.assertEqual(0x42 ^ 0xFF, self.screen.buffer[i + 1])
+            self.assertEqual(0x42 ^ 0xFF, self.screen.buffer[i])
 
     def test_clear(self):
         bmp = self.create_bmp(1024)
         self.screen.draw_byxels(0, 0, 128, 8, bmp)
         self.screen.clear()
 
-        self.assertEqual(bytearray(1024), self.screen.buffer[1:])
+        self.assertEqual(bytearray(1024), self.screen.buffer)
 
     def test_clear_inverted(self):
         bmp = self.create_bmp(1024)
@@ -118,7 +118,7 @@ class SSD1306Test(unittest.TestCase):
         self.screen.clear()
 
         for i in range(1024):
-            self.assertEqual(255, self.screen.buffer[i + 1])
+            self.assertEqual(255, self.screen.buffer[i])
 
     def test_draw_and_show_full_screen(self):
         bmp = self.create_bmp(1024)
@@ -136,7 +136,7 @@ class SSD1306Test(unittest.TestCase):
         byxels = self.create_bmp(256)
         self.screen.draw_byxels(32, 2, 64, 4, byxels)
 
-        buffer = self.screen.buffer[1:]
+        buffer = self.screen.buffer
 
         self.assertEqual(bytearray(128), buffer[0:128])
         self.assertEqual(bytearray(128), buffer[128:256])
@@ -172,19 +172,19 @@ class SSD1306Test(unittest.TestCase):
         buffer = self.screen.buffer[1:]
 
         # H
-        self.assertEqual(0, buffer[426])
-        self.assertEqual(0x7F, buffer[427])
+        self.assertEqual(0, buffer[425])
+        self.assertEqual(0x7F, buffer[426])
+        self.assertEqual(0x08, buffer[427])
         self.assertEqual(0x08, buffer[428])
         self.assertEqual(0x08, buffer[429])
-        self.assertEqual(0x08, buffer[430])
-        self.assertEqual(0x7F, buffer[431])
+        self.assertEqual(0x7F, buffer[430])
         # e
-        self.assertEqual(0, buffer[432])
-        self.assertEqual(0x38, buffer[433])
+        self.assertEqual(0, buffer[431])
+        self.assertEqual(0x38, buffer[432])
+        self.assertEqual(0x54, buffer[433])
         self.assertEqual(0x54, buffer[434])
         self.assertEqual(0x54, buffer[435])
-        self.assertEqual(0x54, buffer[436])
-        self.assertEqual(0x18, buffer[437])
+        self.assertEqual(0x18, buffer[436])
 
     def test_inverted_text(self):
         self.assertEqual(False, self.screen.inverted)
@@ -195,19 +195,19 @@ class SSD1306Test(unittest.TestCase):
 
         buffer = self.screen.buffer[1:]
         # H
-        self.assertEqual(0xFF, buffer[426])
-        self.assertEqual(0x80, buffer[427])
+        self.assertEqual(0xFF, buffer[425])
+        self.assertEqual(0x80, buffer[426])
+        self.assertEqual(0xF7, buffer[427])
         self.assertEqual(0xF7, buffer[428])
         self.assertEqual(0xF7, buffer[429])
-        self.assertEqual(0xF7, buffer[430])
-        self.assertEqual(0x80, buffer[431])
+        self.assertEqual(0x80, buffer[430])
         # e
-        self.assertEqual(0xFF, buffer[432])
-        self.assertEqual(0xC7, buffer[433])
+        self.assertEqual(0xFF, buffer[431])
+        self.assertEqual(0xC7, buffer[432])
+        self.assertEqual(0xAB, buffer[433])
         self.assertEqual(0xAB, buffer[434])
         self.assertEqual(0xAB, buffer[435])
-        self.assertEqual(0xAB, buffer[436])
-        self.assertEqual(0xE7, buffer[437])
+        self.assertEqual(0xE7, buffer[436])
 
     # def test_splash(self):
     #     splash = bin.load("splash")
@@ -218,73 +218,73 @@ class SSD1306Test(unittest.TestCase):
 
     def test_set_pixel_first_row(self):
         self.screen.set_pixel(0, 0, True)
-        self.assertEqual(1, self.screen.buffer[1])
+        self.assertEqual(1, self.screen.buffer[0])
         self.screen.set_pixel(0, 0, False)
-        self.assertEqual(0, self.screen.buffer[1])
+        self.assertEqual(0, self.screen.buffer[0])
 
         self.screen.set_pixel(1, 0, True)
-        self.assertEqual(1, self.screen.buffer[2])
+        self.assertEqual(1, self.screen.buffer[1])
         self.screen.set_pixel(1, 0, False)
-        self.assertEqual(0, self.screen.buffer[2])
-
-        self.screen.set_pixel(0, 1, True)
-        self.assertEqual(2, self.screen.buffer[1])
-        self.screen.set_pixel(0, 1, False)
         self.assertEqual(0, self.screen.buffer[1])
 
-        self.screen.buffer[1] = 0xFF
+        self.screen.set_pixel(0, 1, True)
+        self.assertEqual(2, self.screen.buffer[0])
+        self.screen.set_pixel(0, 1, False)
+        self.assertEqual(0, self.screen.buffer[0])
+
+        self.screen.buffer[0] = 0xFF
         self.screen.set_pixel(0, 0, False)
-        self.assertEqual(254, self.screen.buffer[1])
+        self.assertEqual(254, self.screen.buffer[0])
 
     def test_set_pixel_last_row(self):
         self.screen.set_pixel(0, 63, True)
-        self.assertEqual(128, self.screen.buffer[897])
+        self.assertEqual(128, self.screen.buffer[896])
         self.screen.set_pixel(0, 63, False)
-        self.assertEqual(0, self.screen.buffer[897])
+        self.assertEqual(0, self.screen.buffer[896])
 
         self.screen.set_pixel(1, 63, True)
-        self.assertEqual(128, self.screen.buffer[898])
+        self.assertEqual(128, self.screen.buffer[897])
         self.screen.set_pixel(1, 63, False)
-        self.assertEqual(0, self.screen.buffer[898])
-
-        self.screen.set_pixel(0, 62, True)
-        self.assertEqual(64, self.screen.buffer[897])
-        self.screen.set_pixel(0, 62, False)
         self.assertEqual(0, self.screen.buffer[897])
 
-        self.screen.buffer[897] = 0xFF
+        self.screen.set_pixel(0, 62, True)
+        self.assertEqual(64, self.screen.buffer[896])
+        self.screen.set_pixel(0, 62, False)
+        self.assertEqual(0, self.screen.buffer[896])
+
+        self.screen.buffer[896] = 0xFF
         self.screen.set_pixel(0, 63, False)
-        self.assertEqual(127, self.screen.buffer[897])
+        self.assertEqual(127, self.screen.buffer[896])
 
     def test_set_pixel_when_inverted(self):
         self.screen.inverted = True
         self.screen.set_pixel(0, 0, True)
-        self.assertEqual(0, self.screen.buffer[1])
+        self.assertEqual(0, self.screen.buffer[0])
         self.screen.set_pixel(0, 0, False)
-        self.assertEqual(1, self.screen.buffer[1])
+        self.assertEqual(1, self.screen.buffer[0])
 
     def test_draw_horizontal_line(self):
         self.screen.draw_hline(0, 0, 3)
-        self.assertEqual(bytearray([1, 1, 1, 0]), self.screen.buffer[1:5])
+        self.assertEqual(bytearray([1, 1, 1, 0]), self.screen.buffer[0:4])
 
         self.screen.draw_hline(124, 63, 3)
-        self.assertEqual(bytearray([0, 128, 128, 128]), self.screen.buffer[1020:1024])
+        self.assertEqual(bytearray([0, 128, 128, 128]), self.screen.buffer[1019:1023])
 
         self.screen.inverted = True
         self.screen.draw_hline(0, 0, 3)
-        self.assertEqual(bytearray([0, 0, 0]), self.screen.buffer[1:4])
+        self.assertEqual(bytearray([0, 0, 0]), self.screen.buffer[0:3])
 
     def test_draw_vertical_line(self):
         self.screen.draw_vline(0, 0, 10)
-        self.assertEqual(255, self.screen.buffer[1])
-        self.assertEqual(3, self.screen.buffer[129])
+        self.assertEqual(255, self.screen.buffer[0])
+        self.assertEqual(3, self.screen.buffer[128])
 
         self.screen.draw_vline(127, 54, 10)
-        self.assertEqual(192, self.screen.buffer[896])
-        self.assertEqual(255, self.screen.buffer[1024])
+        self.assertEqual(192, self.screen.buffer[895])
+        self.assertEqual(255, self.screen.buffer[1023])
 
         self.screen.inverted = True
         self.screen.draw_vline(0, 0, 10)
-        self.assertEqual(0, self.screen.buffer[1])
-        self.assertEqual(0, self.screen.buffer[129])
+        self.assertEqual(0, self.screen.buffer[0])
+        self.assertEqual(0, self.screen.buffer[128])
 

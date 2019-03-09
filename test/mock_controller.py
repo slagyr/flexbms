@@ -1,27 +1,19 @@
 from bms.controller import Controller
-from test.mock import Mock
+from test.mock_bq import MockBQ
+from test.mock_cells import MockCells
 from test.mock_display import MockDisplay
 
 
-class MockController(Mock):
+class MockController(Controller):
 
     last_user_event_time = 0
     splash_screen = "splash"
     home_screen = "home"
 
     def __init__(self):
+        super().__init__()
         self.display = MockDisplay()
-        self.screen = None
-        self.cells = "cells"
-        self.bq = "bq"
-        self.assert_mock(Controller())
+        self.bq = MockBQ()
+        self.cells = MockCells(self.bq, 9)
 
-    def setup(self):
-        pass
-
-    def tick(self):
-        pass
-
-    def set_screen(self):
-        pass
 

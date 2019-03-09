@@ -1,30 +1,34 @@
 from bms.conf import *
+from bms.util import clocked_fn, ON_BOARD
 
-I2C_ADDR = 0x08
+if not ON_BOARD:
+    from bms.util import const
+
+I2C_ADDR = const(0x08)
 CRC_KEY = 7
 
 # Registers
-SYS_STAT = 0x00
-CELLBAL1 = 0x01
-CELLBAL2 = 0x02
-CELLBAL3 = 0x03
-SYS_CTRL1 = 0x04
-SYS_CTRL2 = 0x05
-PROTECT1 = 0x06
-PROTECT2 = 0x07
-PROTECT3 = 0x08
-OV_TRIP = 0x09
-UV_TRIP = 0x0A
-CC_CFG = 0x0B
-VC1_HI = 0x0C
-BAT_HI = 0x2A
-TS1_HI = 0x2C
-TS1_LO = 0x2D
-CC_HI = 0x32
-CC_LO = 0x33
-ADCGAIN1 = 0x50
-ADCOFFSET = 0x51
-ADCGAIN2 = 0x59
+SYS_STAT = const(0x00)
+CELLBAL1 = const(0x01)
+CELLBAL2 = const(0x02)
+CELLBAL3 = const(0x03)
+SYS_CTRL1 = const(0x04)
+SYS_CTRL2 = const(0x05)
+PROTECT1 = const(0x06)
+PROTECT2 = const(0x07)
+PROTECT3 = const(0x08)
+OV_TRIP = const(0x09)
+UV_TRIP = const(0x0A)
+CC_CFG = const(0x0B)
+VC1_HI = const(0x0C)
+BAT_HI = const(0x2A)
+TS1_HI = const(0x2C)
+TS1_LO = const(0x2D)
+CC_HI = const(0x32)
+CC_LO = const(0x33)
+ADCGAIN1 = const(0x50)
+ADCOFFSET = const(0x51)
+ADCGAIN2 = const(0x59)
 
 # Combined register address and bit mask, used in get|set_reg_bit
 # 16 bits used, left 8 -> register, right 8 -> bit mask
@@ -32,26 +36,25 @@ ADCGAIN2 = 0x59
 #    register   mask
 # 0b 00000000 00000000
 #
-CC_READY = (SYS_STAT << 8) | (1 << 7)
-DEVICE_XREADY = (SYS_STAT << 8) | (1 << 5)
-OVRD_ALERT = (SYS_STAT << 8) | (1 << 4)
-UV = (SYS_STAT << 8) | (1 << 3)
-OV = (SYS_STAT << 8) | (1 << 2)
-SCD = (SYS_STAT << 8) | (1 << 1)
-OCD = (SYS_STAT << 8) | (1 << 0)
-ADC_EN = (SYS_CTRL1 << 8) | (1 << 4)
-CC_EN = (SYS_CTRL2 << 8) | (1 << 6)
+CC_READY = const((SYS_STAT << 8) | (1 << 7))
+DEVICE_XREADY = const((SYS_STAT << 8) | (1 << 5))
+OVRD_ALERT = const((SYS_STAT << 8) | (1 << 4))
+UV = const((SYS_STAT << 8) | (1 << 3))
+OV = const((SYS_STAT << 8) | (1 << 2))
+SCD = const((SYS_STAT << 8) | (1 << 1))
+OCD = const((SYS_STAT << 8) | (1 << 0))
+ADC_EN = const((SYS_CTRL1 << 8) | (1 << 4))
+CC_EN = const((SYS_CTRL2 << 8) | (1 << 6))
 
 # Masks
-LOAD_PRESENT = 1 << 7
-TEMP_SEL = 1 << 3
-SHUT_A = 1 << 1
-SHUT_B = 1 << 0
-DELAY_DIS = 1 << 7
-CC_ONESHOT = 1 << 5
-DSG_ON = 1 << 1
-CHG_ON = 1 << 0
-
+LOAD_PRESENT = const(1 << 7)
+TEMP_SEL = const(1 << 3)
+SHUT_A = const(1 << 1)
+SHUT_B = const(1 << 0)
+DELAY_DIS = const(1 << 7)
+CC_ONESHOT = const(1 << 5)
+DSG_ON = const(1 << 1)
+CHG_ON = const(1 << 0)
 
 def crc8(data):
     crc = 0
@@ -94,7 +97,7 @@ class BQ:
 
     def read_register_single(self, reg):
         for attempt in range(BQ_CRC_ATTEMPTS):
-            buffer = self.read_register(reg, bytearray(2))
+            buffer = self.read_register(reg, bytearray([0, 0]))
             crc = crc8(bytearray([17, buffer[0]]))
             if buffer[1] != crc:
                 print("CRC failed.  attempt: " + str(attempt + 1))
@@ -269,8 +272,8 @@ class BQ:
     def set_balance_cell(self, id, on):
         if id < 1 or id > 15:
             raise RuntimeError("Invalid cell id: " + str(id))
-        reg = CELLBAL1 + int((id-1) / 5)
-        mask = 1 << ((id-1) % 5)
+        reg = CELLBAL1 + int((id - 1) / 5)
+        mask = 1 << ((id - 1) % 5)
         cellbal = self.read_register_single(reg)
         if bool(cellbal & mask) != bool(on):
             if on:
@@ -282,8 +285,8 @@ class BQ:
     def is_cell_balancing(self, id):
         if id < 1 or id > 15:
             raise RuntimeError("Invalid cell id: " + str(id))
-        reg = CELLBAL1 + int((id-1) / 5)
-        mask = 1 << ((id-1) % 5)
+        reg = CELLBAL1 + int((id - 1) / 5)
+        mask = 1 << ((id - 1) % 5)
         cellbal = self.read_register_single(reg)
         return bool(cellbal & mask)
 
@@ -293,4 +296,3 @@ class BQ:
                 self.set_balance_cell(id, True)
             else:
                 self.set_balance_cell(id, False)
-

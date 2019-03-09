@@ -6,6 +6,7 @@ class Cell:
         self.index = index
         self.id = id
         self.voltage = 0
+        self.balancing = False
 
     def soc(self):
         return (self.voltage - CELL_MIN_V) / (CELL_MAX_V - CELL_MIN_V)
@@ -59,6 +60,8 @@ class Cells:
     def setup(self):
         pass
 
+    # TODO - takes about 0.25 secs
+    # possible optimization: one I2C message to read all the cell voltages, then process
     def update_voltages(self):
         for cell in self:
             v = self.bq.cell_voltage(cell.id)
@@ -89,6 +92,7 @@ class Cells:
 
         ids = []
         for cell in non_adjacent:
+            cell.balancing = True
             ids.append(cell.id)
         self.bq.set_balance_cells(ids)
 
@@ -98,6 +102,7 @@ class Cells:
         cells.reverse()
         to_balance = []
         for cell in cells:
+            cell.balancing = False
             if cell.voltage - min_v > CELL_BALANCE_THRESH:
                 to_balance.append(cell)
             else:
