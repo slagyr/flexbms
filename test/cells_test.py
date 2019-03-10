@@ -177,3 +177,14 @@ class CellsTest(unittest.TestCase):
 
         cells.update_balancing(self.bq)
         self.assertEqual([15, 11, 10, 6, 5], self.bq.balancing_cells)
+
+    def test_reset_balancing(self):
+        self.cells[1].set_balance(self.bq, True)
+        self.cells[3].set_balance(self.bq, True)
+        self.cells[5].set_balance(self.bq, True)
+
+        self.cells.reset_balancing(self.bq)
+
+        for cell in self.cells:
+            self.assertEqual(False, cell.balancing)
+        self.assertEqual([], self.bq.balancing_cells)

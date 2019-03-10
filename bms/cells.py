@@ -33,6 +33,10 @@ class Cell:
             return False
         return True
 
+    def set_balance(self, bq, on):
+        bq.set_balance_cell(self.id, on)
+        self.balancing = on
+
 
 
 def ids_to_cells(ids):
@@ -101,5 +105,8 @@ class Cells:
         for cell in cells:
             should_balance = cell.should_balance(min_v)
             if should_balance != cell.balancing:
-                bq.set_balance_cell(cell.id, should_balance)
-            cell.balancing = should_balance
+                cell.set_balance(bq, should_balance)
+
+    def reset_balancing(self, bq):
+        for cell in self:
+            cell.set_balance(bq, False)

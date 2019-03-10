@@ -3,6 +3,7 @@ import bms.conf as conf
 from bms.screens.home import HomeScreen
 from bms.screens.menu import Menu
 from bms.screens.splash import SplashScreen
+from bms.screens.voltages import VoltagesScreen
 
 from bms.util import clocked_fn
 
@@ -19,13 +20,16 @@ class Controller:
         self.last_user_event_time = time.monotonic()
         self.splash_screen = SplashScreen(self)
         self.home_screen = HomeScreen(self)
+        self.voltages_screen = VoltagesScreen(self)
         self.main_menu = Menu(self, "MAIN")
 
         self.next_balance_time = -1
+        self.in_balance_rest = True
 
     def wire_menus(self):
         main = self.main_menu
         main.add(self.home_screen)
+        main.add(self.voltages_screen)
         main.add(self.splash_screen)
 
     def setup(self):
@@ -51,9 +55,7 @@ class Controller:
         # for cell in self.cells:
         #     print("cell " + str(cell.index) + ": " + str(cell.voltage))
 
-        if conf.BALANCE_ENABLED and secs > self.next_balance_time:
-            self.cells.update_balancing(self.bq)
-            self.next_balance_time = secs + conf.BALANCE_INTERVAL
+        self.balance(secs)
 
         if self.rotary.has_update():
             self.last_user_event_time = secs
@@ -63,3 +65,14 @@ class Controller:
 
         self.screen.update()
         self.rotary.rest()
+
+    def balance(self, secs):
+        if conf.BALANCE_ENABLED and secs > self.next_balance_time:
+            if self.in_balance_rest:
+                self.in_balance_rest = False
+                self.cells.update_balancing(self.bq)
+                self.next_balance_time = secs + 10
+            else:
+                self.in_balance_rest = True
+                self.cells.reset_balancing(self.bq)
+                self.next_balance_time = secs + 3

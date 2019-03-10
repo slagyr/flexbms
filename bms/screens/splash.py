@@ -1,3 +1,5 @@
+from bms import fonts
+
 from bms.util import load_binary_into
 
 
@@ -7,11 +9,11 @@ class SplashScreen:
         self.idle_timeout = 3
 
     def enter(self):
-        # byxels = bms.bin.load("splash")
-        # self.controller.display.draw_byxels(0, 0, 128, 8, byxels)
         display = self.controller.display
+        display.font = fonts.font6x8()
+        display.inverted = False
         load_binary_into("splash", display.buffer)
-        display.draw_text(44, 7, "FlexBMS v1.0")
+        display.draw_text(56, 7, "FlexBMS v1.0")
         display.show()
 
     def update(self):

@@ -76,20 +76,20 @@ class ControllerTest(unittest.TestCase):
         self.controller.tick(0)
         self.assertFalse(self.cells.balancing_updated)
         
-    def test_balancing_only_updates_by_interval(self):
-        conf.BALANCE_ENABLED = True
-        conf.BALANCE_INTERVAL = 60
-        self.controller.tick(0)
-        self.assertEqual(True, self.cells.balancing_updated)
-
-        self.cells.balancing_updated = False
-        self.controller.tick(1)
-        self.assertEqual(False, self.cells.balancing_updated)
-        self.controller.tick(2)
-        self.assertEqual(False, self.cells.balancing_updated)
-
-        self.controller.tick(61)
-        self.assertEqual(True, self.cells.balancing_updated)
+    # def test_balancing_only_updates_by_interval(self):
+    #     conf.BALANCE_ENABLED = True
+    #     conf.BALANCE_INTERVAL = 60
+    #     self.controller.tick(0)
+    #     self.assertEqual(True, self.cells.balancing_updated)
+    #
+    #     self.cells.balancing_updated = False
+    #     self.controller.tick(1)
+    #     self.assertEqual(False, self.cells.balancing_updated)
+    #     self.controller.tick(2)
+    #     self.assertEqual(False, self.cells.balancing_updated)
+    #
+    #     self.controller.tick(61)
+    #     self.assertEqual(True, self.cells.balancing_updated)
 
     def test_events_are_dispatched(self):
         self.assertEqual(False, self.events.dispatched)

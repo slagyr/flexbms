@@ -1,15 +1,14 @@
 from bms import fonts
-from bms.util import clocked_fn
 
-class HomeCell:
+class DisplayCell:
     def __init__(self):
-        self.h = 0
+        self.v = 0
         self.bal = False
         self.changed = False
 
-    def update(self, h, bal):
-        self.changed = (h != self.h) or (bal != self.bal)
-        self.h = h
+    def update(self, v, bal):
+        self.changed = (v != self.v) or (bal != self.bal)
+        self.v = v
         self.bal = bal
 
 
@@ -28,15 +27,19 @@ class HomeScreen:
         self.controller.set_screen(self)
 
     def enter(self):
+        self.reset_display_cells()
+        self.draw_full()
+
+    # borrows by VoltagesScreen
+    def reset_display_cells(self):
         if self.display_cells is None:
             self.display_cells = []
             for _ in self.controller.cells:
-                self.display_cells.append(HomeCell())
+                self.display_cells.append(DisplayCell())
         else:
             for cell in self.display_cells:
-                cell.h = 0
-
-        self.draw_full()
+                cell.v = 0
+        return self.display_cells
 
     def update(self):
         if self.controller.rotary.clicked:
