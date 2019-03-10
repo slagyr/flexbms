@@ -2,6 +2,7 @@ from bms.controller import Controller
 from test.mock_bq import MockBQ
 from test.mock_cells import MockCells
 from test.mock_display import MockDisplay
+from test.mock_rotary import MockRotary
 
 
 class MockController(Controller):
@@ -15,5 +16,6 @@ class MockController(Controller):
         self.display = MockDisplay()
         self.bq = MockBQ()
         self.cells = MockCells(9)
+        self.rotary = MockRotary()
 
 

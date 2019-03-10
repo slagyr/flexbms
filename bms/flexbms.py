@@ -5,6 +5,7 @@ import time
 import rotaryio
 import gamepad
 import digitalio
+import gc
 
 from bms.bq import *
 from bms.controller import Controller
@@ -40,19 +41,15 @@ TICK_INTERVAL = 0.5
 
 def main():
     controller = init()
-
     controller.setup()
 
-    encoder = rotaryio.IncrementalEncoder(board.D6, board.D5)
-    pad = gamepad.GamePad(digitalio.DigitalInOut(board.D9))
+    print("gc.mem_alloc(): " + str(gc.mem_alloc()))
+    print("gc.mem_free():  " + str(gc.mem_free()))
 
     while True:
         before = time.monotonic()
         controller.tick(time.monotonic())
         tick_duration = time.monotonic() - before
         if tick_duration < TICK_INTERVAL:
-            time.sleep(TICK_INTERVAL - tick_duration)
-
-        print("encoder.position: " + str(encoder.position))
-        print("pad.get_pressed(): " + str(pad.get_pressed()))
+            time.sleep(TICK_INTERVAL - tick_duration)\
 

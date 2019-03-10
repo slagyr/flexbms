@@ -1,7 +1,9 @@
 import time
 import bms.conf as conf
 from bms.screens.home import HomeScreen
+from bms.screens.menu import Menu
 from bms.screens.splash import SplashScreen
+
 from bms.util import clocked_fn
 
 
@@ -17,8 +19,14 @@ class Controller:
         self.last_user_event_time = time.monotonic()
         self.splash_screen = SplashScreen(self)
         self.home_screen = HomeScreen(self)
+        self.main_menu = Menu(self, "MAIN")
 
         self.next_balance_time = -1
+
+    def wire_menus(self):
+        main = self.main_menu
+        main.add(self.home_screen)
+        main.add(self.splash_screen)
 
     def setup(self):
         self.display.setup()
@@ -26,6 +34,10 @@ class Controller:
 
         self.bq.setup()
         self.cells.setup()
+        self.events.setup()
+        self.rotary.setup()
+
+        self.wire_menus()
 
     def set_screen(self, screen):
         self.screen = screen
@@ -43,8 +55,11 @@ class Controller:
             self.cells.update_balancing(self.bq)
             self.next_balance_time = secs + conf.BALANCE_INTERVAL
 
-        if secs > self.last_user_event_time + self.screen.idle_timeout:
+        if self.rotary.has_update():
+            self.last_user_event_time = secs
+        elif secs > self.last_user_event_time + self.screen.idle_timeout:
             self.set_screen(self.home_screen)
             self.last_user_event_time = secs
 
         self.screen.update()
+        self.rotary.rest()

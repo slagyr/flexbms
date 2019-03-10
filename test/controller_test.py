@@ -36,6 +36,8 @@ class ControllerTest(unittest.TestCase):
         self.assertEqual(True, self.display.was_setup)
         self.assertEqual(True, self.bq.was_setup)
         self.assertEqual(True, self.cells.was_setup)
+        self.assertEqual(True, self.events.was_setup)
+        self.assertEqual(True, self.rotary.was_setup)
 
     def test_splash_is_initial_screen(self):
         self.assertIsInstance(self.controller.screen, SplashScreen)
@@ -93,6 +95,17 @@ class ControllerTest(unittest.TestCase):
         self.assertEqual(False, self.events.dispatched)
         self.controller.tick(0)
         self.assertEqual(True, self.events.dispatched)
+        
+    def test_rotary_gets_rested(self):
+        self.controller.tick(0)
+        self.assertEqual(True, self.rotary.was_rested)
+        
+    def test_rotary_updates_reset_last_user_event(self):
+        self.rotary.clicked = True
+        self.controller.tick(100)
+        self.assertEqual(100, self.controller.last_user_event_time)
+        self.assertEqual(self.controller.splash_screen, self.controller.screen)
+
 
 
 

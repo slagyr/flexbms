@@ -10,3 +10,6 @@ class Events:
                 dispatcher = self.dispatchers[i]
                 dispatcher()
 
+    def setup(self):
+        pass
+

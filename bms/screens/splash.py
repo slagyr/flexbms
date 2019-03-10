@@ -16,3 +16,9 @@ class SplashScreen:
 
     def update(self):
         pass
+
+    def menu_name(self):
+        return "Splash"
+
+    def menu_sel(self):
+        self.controller.set_screen(self)

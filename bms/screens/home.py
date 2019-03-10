@@ -1,3 +1,4 @@
+from bms import fonts
 from bms.util import clocked_fn
 
 class HomeCell:
@@ -18,10 +19,52 @@ class HomeScreen:
         self.idle_timeout = 6000
         self.col_width = 7
         self.col_text_offset = 0
-        self.display_cells = []
+        self.display_cells = None
+
+    def menu_name(self):
+        return "Home"
+
+    def menu_sel(self):
+        self.controller.set_screen(self)
+
+    def enter(self):
+        if self.display_cells is None:
+            self.display_cells = []
+            for _ in self.controller.cells:
+                self.display_cells.append(HomeCell())
+        else:
+            for cell in self.display_cells:
+                cell.h = 0
+
+        self.draw_full()
+
+    def update(self):
+        if self.controller.rotary.clicked:
+            self.controller.set_screen(self.controller.main_menu)
+        else:
+            self.draw_update()
+
+    def draw_full(self):
+        display = self.controller.display
+        display.inverted = False
+        display.font = fonts.font6x8()
+        display.clear()
+        display.draw_text(0, 0, "Flex BMS v1.0")
+        display.draw_text(0 + 104, 0, "BatV")
+        display.draw_text(0 + 104, 2, "SerV")
+        display.draw_text(0 + 104, 4, "PakV")
+        self.draw_graph_labels(display)
+        self.draw_update()
+
+    def draw_update(self):
+        display = self.controller.display
+        self.draw_cell_levels(display)
+        display.draw_text(104, 1, "{:.1f}".format(self.controller.bq.batt_voltage()))
+        display.draw_text(104, 3, "{:.1f}".format(self.controller.cells.serial_voltage()))
+        display.show()
 
     def draw_graph_labels(self, display):
-        cell_count = self.controller.cells.count
+        cell_count = len(self.display_cells)
         self.col_width = int(105 / cell_count)
         self.col_text_offset = int((self.col_width - display.font_width()) / 2)
         self.draw_graph_guidelines(display)
@@ -47,7 +90,7 @@ class HomeScreen:
             x = 0 + (col_width * cell.index) + x_offset
             y = 14 + 40 - bar_height
             display.erase(x, 14, bar_width, 40)
-            if bq.is_cell_balancing(cell.id):
+            if display_cell.bal:
                 display.draw_rect(x, y, bar_width, bar_height)
             else:
                 display.fill_rect(x, y, bar_width, bar_height)
@@ -59,24 +102,3 @@ class HomeScreen:
         display.draw_dashed_hline(0, 44, 105, 1, spacing)
         display.draw_hline(0, 14 - 1, 105)
         display.draw_hline(0, 14 + 40, 105)
-
-    def enter(self):
-        for _ in self.controller.cells:
-            self.display_cells.append(HomeCell())
-
-        display = self.controller.display
-        display.clear()
-        display.draw_text(0, 0, "Flex BMS v1.0")
-        display.draw_text(0 + 104, 0, "BatV")
-        display.draw_text(0 + 104, 2, "SerV")
-        display.draw_text(0 + 104, 4, "PakV")
-        self.draw_graph_labels(display)
-
-        display.show()
-
-    def update(self):
-        display = self.controller.display
-        self.draw_cell_levels(display)
-        display.draw_text(104, 1, "{:.1f}".format(self.controller.bq.batt_voltage()))
-        display.draw_text(104, 3, "{:.1f}".format(self.controller.cells.serial_voltage()))
-        display.show()
