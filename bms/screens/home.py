@@ -40,17 +40,17 @@ class HomeScreen:
 
     def draw_graph_bar(self, bar_width, bq, cell, col_width, display, x_offset):
         soc = cell.soc()
-        bar_heigth = max(1, min(int(40 * soc), 39))
+        bar_height = max(1, min(int(40 * soc), 39))
         display_cell = self.display_cells[cell.index]
-        display_cell.update(bar_heigth, cell.balancing)
+        display_cell.update(bar_height, cell.balancing)
         if display_cell.changed:
             x = 0 + (col_width * cell.index) + x_offset
-            y = 14 + 40 - bar_heigth
+            y = 14 + 40 - bar_height
             display.erase(x, 14, bar_width, 40)
-            display.fill_rect(x, y, bar_width, bar_heigth)
             if bq.is_cell_balancing(cell.id):
-                x = cell.index * self.col_width + self.col_text_offset
-                display.draw_text(x, 5, "B")
+                display.draw_rect(x, y, bar_width, bar_height)
+            else:
+                display.fill_rect(x, y, bar_width, bar_height)
 
     def draw_graph_guidelines(self, display):
         spacing = self.col_width - 1
@@ -66,9 +66,10 @@ class HomeScreen:
 
         display = self.controller.display
         display.clear()
-        display.draw_text(0, 0, "FlexBMS v1.0")
+        display.draw_text(0, 0, "Flex BMS v1.0")
         display.draw_text(0 + 104, 0, "BatV")
         display.draw_text(0 + 104, 2, "SerV")
+        display.draw_text(0 + 104, 4, "PakV")
         self.draw_graph_labels(display)
 
         display.show()

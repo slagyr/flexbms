@@ -1,10 +1,14 @@
-
+# TODO - Load from a config file
+# TODO - Make it saveable to config file
+# TODO - Store in an instance object so tests dont interfere
 
 CELL_COUNT = 10
 CELL_MAX_V = 4.2
 CELL_MIN_V = 2.5
-CELL_BALANCE_THRESH = 0.01
-CELL_BALANCE_ENABLED = True
+
+BALANCE_THRESH = 0.01
+BALANCE_ENABLED = True
+BALANCE_INTERVAL = 60 # 1 min
 
 BQ_CRC_ATTEMPTS = 5
 BQ_RSNS = 1

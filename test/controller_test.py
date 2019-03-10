@@ -6,6 +6,8 @@ from bms.screens.splash import SplashScreen
 from test.mock_cells import MockCells
 from test.mock_bq import MockBQ
 from test.mock_display import MockDisplay
+from test.mock_events import MockEvents
+from test.mock_rotary import MockRotary
 from test.screens.mock_screen import MockScreen
 
 class ControllerTest(unittest.TestCase):
@@ -14,12 +16,16 @@ class ControllerTest(unittest.TestCase):
         self.display = MockDisplay()
         self.bq = MockBQ()
         self.cells = MockCells(9)
+        self.rotary = MockRotary()
+        self.events = MockEvents()
 
         self.controller = Controller()
         self.controller.display = self.display
         # self.controller.display = Display(MockI2C())
         self.controller.bq = self.bq
         self.controller.cells = self.cells
+        self.controller.rotary = self.rotary
+        self.controller.events = self.events
 
         self.controller.setup()
 
@@ -63,9 +69,30 @@ class ControllerTest(unittest.TestCase):
         self.assertTrue(self.cells.balancing_updated)
 
     def test_updates_balancing_when_disabled(self):
-        conf.CELL_BALANCE_ENABLED = False
+        conf.BALANCE_ENABLED = False
         self.assertFalse(self.cells.balancing_updated)
         self.controller.tick(0)
         self.assertFalse(self.cells.balancing_updated)
+        
+    def test_balancing_only_updates_by_interval(self):
+        conf.BALANCE_ENABLED = True
+        conf.BALANCE_INTERVAL = 60
+        self.controller.tick(0)
+        self.assertEqual(True, self.cells.balancing_updated)
+
+        self.cells.balancing_updated = False
+        self.controller.tick(1)
+        self.assertEqual(False, self.cells.balancing_updated)
+        self.controller.tick(2)
+        self.assertEqual(False, self.cells.balancing_updated)
+
+        self.controller.tick(61)
+        self.assertEqual(True, self.cells.balancing_updated)
+
+    def test_events_are_dispatched(self):
+        self.assertEqual(False, self.events.dispatched)
+        self.controller.tick(0)
+        self.assertEqual(True, self.events.dispatched)
+
 
 

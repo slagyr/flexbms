@@ -2,29 +2,39 @@ import board
 import busio
 import neopixel
 import time
+import rotaryio
+import gamepad
+import digitalio
 
 from bms.bq import *
 from bms.controller import Controller
 from bms.cells import Cells
 from bms.display import Display
+from bms.events import Events
+from bms.rotary import Rotary
 
 
 def init():
     neopix = neopixel.NeoPixel(board.NEOPIXEL, 1)
     neopix[0] = (0, 0, 0)
 
-    # TODO - setup interrupts (ALERT, and buttons)
-
-    controller = Controller()
     i2c = busio.I2C(board.SCL, board.SDA, frequency=100000)
     bq = BQ(i2c)
     display = Display(i2c)
     cells = Cells(CELL_COUNT)
+    rotary = Rotary(rotaryio.IncrementalEncoder(board.D6, board.D5))
+    events = Events(gamepad.GamePad(digitalio.DigitalInOut(board.D9)))
+    events.dispatchers.append(rotary.click)
 
+    controller = Controller()
     controller.display = display
     controller.bq = bq
     controller.cells = cells
+    controller.rotary = rotary
+    controller.events = events
+
     return controller
+
 
 TICK_INTERVAL = 0.5
 
@@ -33,6 +43,9 @@ def main():
 
     controller.setup()
 
+    encoder = rotaryio.IncrementalEncoder(board.D6, board.D5)
+    pad = gamepad.GamePad(digitalio.DigitalInOut(board.D9))
+
     while True:
         before = time.monotonic()
         controller.tick(time.monotonic())
@@ -40,4 +53,6 @@ def main():
         if tick_duration < TICK_INTERVAL:
             time.sleep(TICK_INTERVAL - tick_duration)
 
+        print("encoder.position: " + str(encoder.position))
+        print("pad.get_pressed(): " + str(pad.get_pressed()))
 
