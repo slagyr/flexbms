@@ -25,7 +25,7 @@ def init():
     cells = Cells(CELL_COUNT)
     rotary = Rotary(rotaryio.IncrementalEncoder(board.D6, board.D5))
     events = Events(gamepad.GamePad(digitalio.DigitalInOut(board.D9)))
-    events.dispatchers.append(rotary.click)
+    events.listeners.append(rotary)
 
     controller = Controller()
     controller.display = display

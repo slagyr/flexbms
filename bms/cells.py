@@ -25,7 +25,7 @@ class Cell:
 
     def should_balance(self, min_v):
         my = self
-        if (my.voltage - min_v) < BALANCE_THRESH:
+        if (my.voltage - min_v) <= BALANCE_THRESH:
             return False
         if my.left and my.left.balancing and my.left.voltage >= my.voltage:
             return False

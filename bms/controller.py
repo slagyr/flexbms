@@ -71,7 +71,7 @@ class Controller:
             if self.in_balance_rest:
                 self.in_balance_rest = False
                 self.cells.update_balancing(self.bq)
-                self.next_balance_time = secs + 10
+                self.next_balance_time = secs + 60
             else:
                 self.in_balance_rest = True
                 self.cells.reset_balancing(self.bq)

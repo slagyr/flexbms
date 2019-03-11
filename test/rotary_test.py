@@ -24,11 +24,11 @@ class RotaryTest(unittest.TestCase):
 
     def test_had_update_when_clicked(self):
         self.assertEqual(False, self.rotary.has_update())
-        self.rotary.click()
+        self.rotary.released()
         self.assertEqual(True, self.rotary.has_update())
 
     def test_doesnt_have_update_when_rested(self):
-        self.rotary.click()
+        self.rotary.released()
         self.assertEqual(True, self.rotary.has_update())
         self.rotary.rest()
         self.assertEqual(False, self.rotary.has_update())

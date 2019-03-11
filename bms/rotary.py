@@ -7,7 +7,10 @@ class Rotary:
     def setup(self):
         pass
 
-    def click(self):
+    def pressed(self):
+        pass
+
+    def released(self):
         self.clicked = True
 
     def has_update(self):
