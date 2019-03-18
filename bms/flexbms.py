@@ -6,6 +6,7 @@ import rotaryio
 import gamepad
 import digitalio
 import gc
+import sys
 
 from bms.bq import *
 from bms.controller import Controller
@@ -38,18 +39,43 @@ def init():
 
 
 TICK_INTERVAL = 0.5
+OK = True
 
-def main():
-    controller = init()
-    controller.setup()
-
-    print("gc.mem_alloc(): " + str(gc.mem_alloc()))
-    print("gc.mem_free():  " + str(gc.mem_free()))
-
-    while True:
+def loop(controller):
+    global OK
+    while OK:
         before = time.monotonic()
         controller.tick(time.monotonic())
         tick_duration = time.monotonic() - before
         if tick_duration < TICK_INTERVAL:
-            time.sleep(TICK_INTERVAL - tick_duration)\
+            time.sleep(TICK_INTERVAL - tick_duration)
+
+
+def log_error(e):
+    with open("/error.txt", "a") as f:
+            sys.print_exception(e, f)
+            f.flush()
+    sys.print_exception(e)
+
+
+def main():
+    global OK
+    controller = None
+    try:
+        controller = init()
+        controller.setup()
+    except Exception as e:
+        OK = False
+        log_error(e)
+        if controller:
+            controller.set_screen(controller.error_screen)
+
+    print("gc.mem_alloc(): " + str(gc.mem_alloc()))
+    print("gc.mem_free():  " + str(gc.mem_free()))
+
+    try:
+        loop(controller)
+    except Exception as e:
+        log_error(e)
+        controller.set_screen(controller.error_screen)
 

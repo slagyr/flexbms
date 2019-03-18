@@ -1,5 +1,6 @@
 import time
 import bms.conf as conf
+from bms.screens.error import ErrorScreen
 from bms.screens.home import HomeScreen
 from bms.screens.menu import Menu
 from bms.screens.splash import SplashScreen
@@ -22,6 +23,7 @@ class Controller:
         self.home_screen = HomeScreen(self)
         self.voltages_screen = VoltagesScreen(self)
         self.main_menu = Menu(self, "MAIN")
+        self.error_screen = ErrorScreen(self)
 
         self.next_balance_time = -1
         self.in_balance_rest = True
