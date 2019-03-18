@@ -6,6 +6,7 @@ from bms.screens.splash import SplashScreen
 from test.mock_cells import MockCells
 from test.mock_bq import MockBQ
 from test.mock_display import MockDisplay
+from test.mock_driver import MockDriver
 from test.mock_events import MockEvents
 from test.mock_rotary import MockRotary
 from test.screens.mock_screen import MockScreen
@@ -18,19 +19,27 @@ class ControllerTest(unittest.TestCase):
         self.cells = MockCells(9)
         self.rotary = MockRotary()
         self.events = MockEvents()
+        self.driver = MockDriver()
 
         self.controller = Controller()
         self.controller.display = self.display
-        # self.controller.display = Display(MockI2C())
         self.controller.bq = self.bq
         self.controller.cells = self.cells
         self.controller.rotary = self.rotary
         self.controller.events = self.events
+        self.controller.driver = self.driver
 
         self.controller.setup()
 
     def test_properties(self):
         self.assertIsNotNone(self.controller.display)
+
+    def test_screens(self):
+        self.assertIsNotNone(self.controller.home_screen)
+        self.assertIsNotNone(self.controller.main_menu)
+        self.assertIsNotNone(self.controller.splash_screen)
+        self.assertIsNotNone(self.controller.error_screen)
+        self.assertIsNotNone(self.controller.voltages_screen)
 
     def test_setup(self):
         self.assertEqual(True, self.display.was_setup)
@@ -38,6 +47,7 @@ class ControllerTest(unittest.TestCase):
         self.assertEqual(True, self.cells.was_setup)
         self.assertEqual(True, self.events.was_setup)
         self.assertEqual(True, self.rotary.was_setup)
+        self.assertEqual(True, self.driver.was_setup)
 
     def test_splash_is_initial_screen(self):
         self.assertIsInstance(self.controller.screen, SplashScreen)

@@ -9,10 +9,7 @@ if not ON_BOARD:
     # const() is micropython compiler feature that inlines values and avoids global lookups
 
 BIN_ROOT = "bms/bin/"
-BYTEARRAY1 = bytearray(1)
-BYTEARRAY2 = bytearray(2)
-BYTEARRAY3 = bytearray(3)
-BYTEARRAY4 = bytearray(4)
+
 
 
 def file_readinto(f, buffer):
@@ -39,6 +36,9 @@ def load_binary_into(name, buffer):
     finally:
         f.close()
 
+log = print
+if not ON_BOARD:
+    def log(*args, **kwargs): pass
 
 def clocked_fn(f, *args, **kwargs):
     myname = str(f).split(' ')[1]
@@ -47,10 +47,15 @@ def clocked_fn(f, *args, **kwargs):
         start = time.monotonic()
         result = f(*args, **kwargs)
         delta = time.monotonic() - start
-        print('clocked_fn {} : {:6.3f} s'.format(myname, delta))
+        log('clocked_fn {} : {:6.3f} s'.format(myname, delta))
         return result
 
     return new_func
+
+BYTEARRAY1 = bytearray(1)
+BYTEARRAY2 = bytearray(2)
+BYTEARRAY3 = bytearray(3)
+BYTEARRAY4 = bytearray(4)
 
 def bytearray1(a):
     BYTEARRAY1[0] = a

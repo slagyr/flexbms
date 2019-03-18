@@ -288,5 +288,17 @@ class BQ76940Test(unittest.TestCase):
         self.assertEqual(0b00000000, self.i2c.registers[0x02])
         self.assertEqual(0b00000000, self.i2c.registers[0x03])
 
+    def test_discharge_setting(self):
+        self.assertEqual(0x05, DSG_ON >> 8)
+        self.assertEqual(1 << 1, DSG_ON & 255)
 
+    def test_charge_setting(self):
+        self.assertEqual(0x05, CHG_ON >> 8)
+        self.assertEqual(1, CHG_ON & 255)
+        
+    def test_setup_disables_CHG_and_DSG(self):
+        self.i2c.registers[0x05] = 255
+        self.bq.setup()
+        self.assertEqual(False, self.bq.get_reg_bit(DSG_ON))
+        self.assertEqual(False, self.bq.get_reg_bit(CHG_ON))
 

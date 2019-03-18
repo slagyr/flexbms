@@ -43,18 +43,17 @@ UV = const((SYS_STAT << 8) | (1 << 3))
 OV = const((SYS_STAT << 8) | (1 << 2))
 SCD = const((SYS_STAT << 8) | (1 << 1))
 OCD = const((SYS_STAT << 8) | (1 << 0))
+#LOAD_PRESENT = const((SYS_CTRL1 << 8) | (1 << 7))
 ADC_EN = const((SYS_CTRL1 << 8) | (1 << 4))
+#TEMP_SEL = const((SYS_CTRL1 << 8) | (1 << 3))
+#SHUT_A = const((SYS_CTRL1 << 8) | (1 << 1))
+#SHUT_B = const((SYS_CTRL1 << 8) | (1 << 0))
+#DELAY_DIS = const((SYS_CTRL2 << 8) | (1 << 7))
 CC_EN = const((SYS_CTRL2 << 8) | (1 << 6))
+#CC_ONESHOT = const((SYS_CTRL2 << 8) | (1 << 5))
+DSG_ON = const((SYS_CTRL2 << 8) | (1 << 1))
+CHG_ON = const((SYS_CTRL2 << 8) | (1 << 0))
 
-# Masks
-LOAD_PRESENT = const(1 << 7)
-TEMP_SEL = const(1 << 3)
-SHUT_A = const(1 << 1)
-SHUT_B = const(1 << 0)
-DELAY_DIS = const(1 << 7)
-CC_ONESHOT = const(1 << 5)
-DSG_ON = const(1 << 1)
-CHG_ON = const(1 << 0)
 
 def crc8(data):
     crc = 0
@@ -141,6 +140,51 @@ class BQ:
         reg_val = self.read_register_single(reg)
         return bool(reg_val & mask)
 
+    def adc_to_v(self, adc):
+        return (self.adc_gain / 1000 * adc + self.adc_offset) / 1000
+
+    def v_to_adc(self, v):
+        return int(1000 * (1000 * v - self.adc_offset) / self.adc_gain)
+
+    def setup(self):
+        with self as i2c:
+            if I2C_ADDR not in i2c.scan():
+                raise RuntimeError("BQ address not found in scan")
+
+        self.write_register(CC_CFG, 0x19)
+        self.adc_gain = self.read_adc_gain()
+        self.adc_offset = self.read_adc_offset()
+        self.set_ov_trip(CELL_MAX_V)
+        self.set_uv_trip(CELL_MIN_V)
+        self.set_protect1(BQ_RSNS, BQ_SCD_DELAY, BQ_SCD_THRESH)
+        self.set_protect2(BQ_OCD_DELAY, BQ_OCD_THRESH)
+        self.set_protect3(BQ_UV_DELAY, BQ_OV_DELAY)
+        self.reset_balancing()
+        self.set_reg_bit(DSG_ON, False)
+        self.set_reg_bit(CHG_ON, False)
+        self.set_reg_bit(ADC_EN, True)
+        self.set_reg_bit(CC_EN, True)
+
+        # TODO - verify ADC enabled
+        # TODO - verify CC enabled
+        # TODO - verify UV trip
+        # TODO - verify OV trip
+        # TODO - verify RSNS
+        # TODO - verify SCD_DELAY
+        # TODO - verify SCD_THRESH
+        # TODO - verify OCD_DELAY
+        # TODO - verify OCD_THRESH
+        # TODO - ensure DEVICE_XREADY
+        # print("GAIN: " + str(self.adc_gain))
+        # print("OFFSET: " + str(self.adc_offset))
+        # print("ADC_EN: " + str(self.get_reg_bit(ADC_EN)))
+        # print("CC_EN: " + str(self.get_reg_bit(CC_EN)))
+        # print("UV trip: " + str(self.get_uv_trip()))
+        # print("OV trip: " + str(self.get_ov_trip()))
+        # print("PROTECT1: " + str(self.read_register_single(PROTECT1)))
+        # print("PROTECT2: " + str(self.read_register_single(PROTECT2)))
+        # print("FAULTS: " + str(self.faults))
+
     def read_adc_gain(self):
         gain1 = self.read_register_single(ADCGAIN1)
         gain2 = self.read_register_single(ADCGAIN2)
@@ -153,12 +197,6 @@ class BQ:
             return -256 + offset
         else:
             return offset
-
-    def adc_to_v(self, adc):
-        return (self.adc_gain / 1000 * adc + self.adc_offset) / 1000
-
-    def v_to_adc(self, v):
-        return int(1000 * (1000 * v - self.adc_offset) / self.adc_gain)
 
     def set_ov_trip(self, v):
         if v < 3.15 or v > 4.7:
@@ -223,43 +261,6 @@ class BQ:
         self.write_register(SYS_STAT, stat)
         if fault != DEVICE_XREADY:
             self.faults.remove(fault)
-
-    def setup(self):
-        with self as i2c:
-            if I2C_ADDR not in i2c.scan():
-                raise RuntimeError("BQ address not found in scan")
-
-        self.write_register(CC_CFG, 0x19)
-        self.set_reg_bit(ADC_EN, True)
-        self.set_reg_bit(CC_EN, True)
-        self.adc_gain = self.read_adc_gain()
-        self.adc_offset = self.read_adc_offset()
-        self.set_ov_trip(CELL_MAX_V)
-        self.set_uv_trip(CELL_MIN_V)
-        self.set_protect1(BQ_RSNS, BQ_SCD_DELAY, BQ_SCD_THRESH)
-        self.set_protect2(BQ_OCD_DELAY, BQ_OCD_THRESH)
-        self.set_protect3(BQ_UV_DELAY, BQ_OV_DELAY)
-        self.reset_balancing()
-
-        # TODO - verify ADC enabled
-        # TODO - verify CC enabled
-        # TODO - verify UV trip
-        # TODO - verify OV trip
-        # TODO - verify RSNS
-        # TODO - verify SCD_DELAY
-        # TODO - verify SCD_THRESH
-        # TODO - verify OCD_DELAY
-        # TODO - verify OCD_THRESH
-        # TODO - ensure DEVICE_XREADY
-        # print("GAIN: " + str(self.adc_gain))
-        # print("OFFSET: " + str(self.adc_offset))
-        # print("ADC_EN: " + str(self.get_reg_bit(ADC_EN)))
-        # print("CC_EN: " + str(self.get_reg_bit(CC_EN)))
-        # print("UV trip: " + str(self.get_uv_trip()))
-        # print("OV trip: " + str(self.get_ov_trip()))
-        # print("PROTECT1: " + str(self.read_register_single(PROTECT1)))
-        # print("PROTECT2: " + str(self.read_register_single(PROTECT2)))
-        # print("FAULTS: " + str(self.faults))
 
     def cell_voltage(self, cell_id):
         reg = VC1_HI + 2 * (cell_id - 1)

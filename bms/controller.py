@@ -13,6 +13,7 @@ class Controller:
     def __init__(self):
         self.display = None
         self.bq = None
+        self.driver = None
         self.cells = None
         self.screen = None
         self.rotary = None
@@ -39,6 +40,7 @@ class Controller:
         self.set_screen(self.splash_screen)
 
         self.bq.setup()
+        self.driver.setup()
         self.cells.setup()
         self.events.setup()
         self.rotary.setup()

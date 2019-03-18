@@ -5,6 +5,7 @@ import time
 import rotaryio
 import gamepad
 import digitalio
+import analogio
 import gc
 import sys
 
@@ -12,6 +13,7 @@ from bms.bq import *
 from bms.controller import Controller
 from bms.cells import Cells
 from bms.display import Display
+from bms.driver import Driver
 from bms.events import Events
 from bms.rotary import Rotary
 
@@ -22,6 +24,10 @@ def init():
 
     i2c = busio.I2C(board.SCL, board.SDA, frequency=100000)
     bq = BQ(i2c)
+    driver = Driver(digitalio.DigitalInOut(board.D10),
+                    digitalio.DigitalInOut(board.D11),
+                    digitalio.DigitalInOut(board.D12),
+                    analogio.AnalogIn(board.A0))
     display = Display(i2c)
     cells = Cells(CELL_COUNT)
     rotary = Rotary(rotaryio.IncrementalEncoder(board.D6, board.D5))
@@ -31,6 +37,7 @@ def init():
     controller = Controller()
     controller.display = display
     controller.bq = bq
+    controller.driver = driver
     controller.cells = cells
     controller.rotary = rotary
     controller.events = events
@@ -40,6 +47,7 @@ def init():
 
 TICK_INTERVAL = 0.5
 OK = True
+
 
 def loop(controller):
     global OK
@@ -53,8 +61,8 @@ def loop(controller):
 
 def log_error(e):
     with open("/error.txt", "a") as f:
-            sys.print_exception(e, f)
-            f.flush()
+        sys.print_exception(e, f)
+        f.flush()
     sys.print_exception(e)
 
 
@@ -78,4 +86,3 @@ def main():
     except Exception as e:
         log_error(e)
         controller.set_screen(controller.error_screen)
-
