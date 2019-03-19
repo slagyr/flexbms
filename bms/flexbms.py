@@ -53,7 +53,7 @@ def loop(controller):
     global OK
     while OK:
         before = time.monotonic()
-        controller.tick(time.monotonic())
+        controller.tick(before)
         tick_duration = time.monotonic() - before
         if tick_duration < TICK_INTERVAL:
             time.sleep(TICK_INTERVAL - tick_duration)

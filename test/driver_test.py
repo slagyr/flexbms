@@ -43,13 +43,22 @@ class DriverTest(unittest.TestCase):
         self.assertEqual(False, self.driver.get_pmon_en())
         self.driver.set_pmon_en(True)
         self.assertEqual(True, self.driver.get_pmon_en())
-
-    def test_read_voltage(self):
-        self.packdiv.value = 65535
-        self.assertAlmostEqual(3.3, self.driver.read_voltage(), 1)
-
-        self.packdiv.value = 0
-        self.assertAlmostEqual(0, self.driver.read_voltage(), 1)
-
-        self.packdiv.value = 32768
-        self.assertAlmostEqual(1.65, self.driver.read_voltage(), 1)
+        
+    def test_pack_voltage(self):
+        cases = [(934, 0.0),
+                 (10088, 10.0),
+                 (19290, 20.0),
+                 (28560, 30.0),
+                 (32167, 34.0),
+                 (36793, 39.0),
+                 (37731, 40.0),
+                 (38684, 41.0),
+                 (39568, 42.0),
+                 (46888, 50.0),
+                 (47869, 51.0)]
+        for case in cases:
+            adc = case[0]
+            self.packdiv.value = adc
+            calculated = self.driver.pack_voltage()
+            measured = case[1]
+            self.assertEqual(round(measured * 10), round(calculated * 10))
