@@ -4,7 +4,7 @@ from bms import fonts
 class VoltagesScreen:
     def __init__(self, controller):
         self.controller = controller
-        self.idle_timeout = 6000
+        self.idle_timeout = 6000000
         self.display_cells = None
 
     def menu_name(self):

@@ -28,21 +28,21 @@ class MockBqI2C:
             self.registers[reg] = adc >> 8          #VCx_HI
             self.registers[reg + 1] = adc & 0xFF    #VCx_LO
 
-    def try_lock(self):
-        if self.locked:
-            return False
-        else:
-            self.locked = True
-            self.lock_count += 1
-            return True
-
-    def unlock(self):
-        self.locked = False
+    # def try_lock(self):
+    #     if self.locked:
+    #         return False
+    #     else:
+    #         self.locked = True
+    #         self.lock_count += 1
+    #         return True
+    #
+    # def unlock(self):
+    #     self.locked = False
 
     def scan(self):
         return self.scan_result
 
-    def writeto(self, address, bytes, **kwargs):
+    def send(self, bytes, address, **kwargs):
         assert address == 0x08
         if len(bytes) == 1:
             self.read_register = bytes[0]
@@ -51,7 +51,7 @@ class MockBqI2C:
         else:
             raise RuntimeError("Unhandled I2C write")
 
-    def readfrom_into(self, address, buffer, **kwargs):
+    def recv(self, buffer, address, **kwargs):
         assert address == 0x08
         if self.read_register is None:
             raise IOError("Read register was not set")

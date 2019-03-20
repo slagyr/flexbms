@@ -1,5 +1,5 @@
 # Help file for running circuit python repl in on controller
 
-import bms.flexbms
+import flexbms_cpy
 
-c = bms.flexbms.init()
+c = flexbms_cpy.init()

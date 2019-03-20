@@ -14,7 +14,7 @@ class ErrorScreenTest(unittest.TestCase):
 
     def test_with_trace(self):
         trace = ["Traceback (most recent call last):",
-                 "  File \"bms/flexbms.py\", line 65, in main",
+                 "  File \"bms/flexbms_cpy.py\", line 65, in main",
                  "  File \"bms/controller.py\", line 39, in setup",
                  "  File \"bms/bq.py\", line 230, in setup",
                  "  File \"bms/bq.py\", line 230, in setup",
@@ -37,4 +37,4 @@ class ErrorScreenTest(unittest.TestCase):
         # self.display.print_buffer()
         self.assertEqual("ERROR", self.display.drawn_text[0][0])
         self.assertEqual("Could not read", self.display.drawn_text[1][0])
-        self.assertEqual("/error.txt", self.display.drawn_text[2][0])
+        self.assertEqual("error.txt", self.display.drawn_text[2][0])

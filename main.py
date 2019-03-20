@@ -1,5 +1,10 @@
-import bms.flexbms as flexbms
+# MicroPython
+from flexbms_mpy import FlexBMS
 
-flexbms.main()
+#CircuitPython
+# import flexbms_cpy as flexbms
+
+bms = FlexBMS()
+bms.main()
 
 

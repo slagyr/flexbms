@@ -6,7 +6,7 @@ from bms.util import load_binary_into
 class SplashScreen:
     def __init__(self, controller):
         self.controller = controller
-        self.idle_timeout = 3
+        self.idle_timeout = 3000
 
     def enter(self):
         display = self.controller.display

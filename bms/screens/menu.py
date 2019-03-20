@@ -7,7 +7,7 @@ class Menu:
         self.title = title
         self.items = []
         self.highlighted = 0
-        self.idle_timeout = 5
+        self.idle_timeout = 5000
 
     def enter(self):
         self.highlighted = 0

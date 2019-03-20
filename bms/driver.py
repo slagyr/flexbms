@@ -21,27 +21,28 @@ class Driver:
         self._packdiv = packdiv
 
     def setup(self):
-        self._cp_en.switch_to_output()
-        self._pmon_en.switch_to_output()
-        self._pchg_en.switch_to_output()
+        # self._cp_en.switch_to_output()
+        # self._pmon_en.switch_to_output()
+        # self._pchg_en.switch_to_output()
+        pass
 
     def get_cp_en(self):
-        return self._cp_en.value
+        return self._cp_en.value()
 
     def set_cp_en(self, on):
-        self._cp_en.value = on
+        self._cp_en.value(on)
 
     def get_pchg_en(self):
-        return self._pchg_en.value
+        return self._pchg_en.value()
 
     def set_pchg_en(self, on):
-        self._pchg_en.value = on
+        self._pchg_en.value(on)
 
     def get_pmon_en(self):
-        return self._pmon_en.value
+        return self._pmon_en.value()
 
     def set_pmon_en(self, on):
-        self._pmon_en.value = on
+        self._pmon_en.value(on)
 
     def pack_voltage(self):
         sum = 0

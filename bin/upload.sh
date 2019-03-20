@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
-cp -rX lib /Volumes/CIRCUITPY/
-cp -rX bms /Volumes/CIRCUITPY/
-cp -X *.py /Volumes/CIRCUITPY/
+DRIVE=$(cat bin/drive)
+
+cp -rX lib ${DRIVE}/
+cp -rX bms ${DRIVE}/
+cp -X *.py ${DRIVE}/

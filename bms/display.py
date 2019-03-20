@@ -1,5 +1,6 @@
 import bms.fonts as fonts
 from bms.util import clocked_fn, ON_BOARD
+
 if not ON_BOARD:
     from bms.util import const
 
@@ -27,47 +28,46 @@ class Display:
             self.solid_row[i] = 0xFF
             self.blank_row[i] = 0x0
 
-
-    def __enter__(self):
-        while not self.i2c.try_lock():
-            pass
-        return self.i2c
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.i2c.unlock()
-        return False
-
+    # def __enter__(self):
+    #     while not self.i2c.try_lock():
+    #         pass
+    #     return self.i2c
+    #
+    # def __exit__(self, exc_type, exc_val, exc_tb):
+    #     self.i2c.unlock()
+    #     return False
 
     def setup(self):
-        with self as comm:
-            if SSD1306_ADDR not in self.i2c.scan():
-                raise RuntimeError("SSD1306 address not found in scan")
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xAE]))  # display off
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xA6]))  # normal display
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xD5]))  # set display clock divide ratio
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x80]))  # -> suggested= ratio 0x80
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xA8]))  # set multiplex ratio
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, Y_MAX]))    # -> height of display
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xD3]))  # set display offset
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x0 ]))   # -> none
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x40]))  # set start line -> 0
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x8D]))  # set charge pump enabled
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x14]))  # -> 0x14 enable, 0x10 disable
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x20]))  # set memory addressing mode
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x00]))  # -> 0x00 horizontal, 0x10 page, 0x01 vertical
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xA1]))  # set segment remap(0xA0, 0xA1)
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xC8]))  # set COM output direction(0xC0 inc, 0xC8 dec)
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xDA]))  # set COM pins conf
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x12]))  # -> got me!?!?!
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x81]))  # set contrast
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xCF]))  # -> quite high
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xd9]))  # set pre - charge period( in DCLK units)
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xF1]))  # -> 0xF1 high power, 0x22 battery power
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xDB]))  # set Vcommh deselect level(regulator output)
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x40]))  # -> (0x40 : 0.89 x Vcc, 0x00: 0.65 x Vcc)
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xA4]))  # display on(0xA4 from RAM, 0xA force ON)
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x2E]))  # deactivate scroll
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0xAF]))  # display on
+        # with self as i2c:
+        if SSD1306_ADDR not in self.i2c.scan():
+            raise RuntimeError("SSD1306 address not found in scan")
+        i2c = self.i2c
+        i2c.send(bytearray([SSD1306_CMND, 0xAE]), SSD1306_ADDR)  # display off
+        i2c.send(bytearray([SSD1306_CMND, 0xA6]), SSD1306_ADDR)  # normal display
+        i2c.send(bytearray([SSD1306_CMND, 0xD5]), SSD1306_ADDR)  # set display clock divide ratio
+        i2c.send(bytearray([SSD1306_CMND, 0x80]), SSD1306_ADDR)  # -> suggested= ratio 0x80
+        i2c.send(bytearray([SSD1306_CMND, 0xA8]), SSD1306_ADDR)  # set multiplex ratio
+        i2c.send(bytearray([SSD1306_CMND, Y_MAX]), SSD1306_ADDR)  # -> height of display
+        i2c.send(bytearray([SSD1306_CMND, 0xD3]), SSD1306_ADDR)  # set display offset
+        i2c.send(bytearray([SSD1306_CMND, 0x0]), SSD1306_ADDR)  # -> none
+        i2c.send(bytearray([SSD1306_CMND, 0x40]), SSD1306_ADDR)  # set start line -> 0
+        i2c.send(bytearray([SSD1306_CMND, 0x8D]), SSD1306_ADDR)  # set charge pump enabled
+        i2c.send(bytearray([SSD1306_CMND, 0x14]), SSD1306_ADDR)  # -> 0x14 enable, 0x10 disable
+        i2c.send(bytearray([SSD1306_CMND, 0x20]), SSD1306_ADDR)  # set memory addressing mode
+        i2c.send(bytearray([SSD1306_CMND, 0x00]), SSD1306_ADDR)  # -> 0x00 horizontal, 0x10 page, 0x01 vertical
+        i2c.send(bytearray([SSD1306_CMND, 0xA1]), SSD1306_ADDR)  # set segment remap(0xA0, 0xA1)
+        i2c.send(bytearray([SSD1306_CMND, 0xC8]), SSD1306_ADDR)  # set COM output direction(0xC0 inc, 0xC8 dec)
+        i2c.send(bytearray([SSD1306_CMND, 0xDA]), SSD1306_ADDR)  # set COM pins conf
+        i2c.send(bytearray([SSD1306_CMND, 0x12]), SSD1306_ADDR)  # -> got me!?!?!
+        i2c.send(bytearray([SSD1306_CMND, 0x81]), SSD1306_ADDR)  # set contrast
+        i2c.send(bytearray([SSD1306_CMND, 0xCF]), SSD1306_ADDR)  # -> quite high
+        i2c.send(bytearray([SSD1306_CMND, 0xd9]), SSD1306_ADDR)  # set pre - charge period( in DCLK units)
+        i2c.send(bytearray([SSD1306_CMND, 0xF1]), SSD1306_ADDR)  # -> 0xF1 high power, 0x22 battery power
+        i2c.send(bytearray([SSD1306_CMND, 0xDB]), SSD1306_ADDR)  # set Vcommh deselect level(regulator output)
+        i2c.send(bytearray([SSD1306_CMND, 0x40]), SSD1306_ADDR)  # -> (0x40 : 0.89 x Vcc, 0x00: 0.65 x Vcc)
+        i2c.send(bytearray([SSD1306_CMND, 0xA4]), SSD1306_ADDR)  # display on(0xA4 from RAM, 0xA force ON)
+        i2c.send(bytearray([SSD1306_CMND, 0x2E]), SSD1306_ADDR)  # deactivate scroll
+        i2c.send(bytearray([SSD1306_CMND, 0xAF]), SSD1306_ADDR)  # display on
         self.clear()
         self.show()
 
@@ -80,23 +80,24 @@ class Display:
     def clear(self):
         fill = self.solid_row if self.inverted else self.blank_row
 
-        buffer = self.buffer # optimization
+        buffer = self.buffer  # optimization
         for i in range(8):
             buffer[(i * 128):(i * 128 + 128)] = fill
 
     def show(self):
-        with self as comm:
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x21, 0, X_MAX]))
-            comm.writeto(SSD1306_ADDR, bytearray([SSD1306_CMND, 0x22, 0, 7]))
-            comm.writeto(SSD1306_ADDR, self._buffer)
+        # with self as i2c:
+        i2c = self.i2c
+        i2c.send(bytearray([SSD1306_CMND, 0x21, 0, X_MAX]), SSD1306_ADDR)
+        i2c.send(bytearray([SSD1306_CMND, 0x22, 0, 7]), SSD1306_ADDR)
+        i2c.send(self._buffer, SSD1306_ADDR)
 
     def draw_byxels(self, x, r, width, rows, byxels):
         if len(byxels) != width * rows:
             raise IndexError("byxel count doesn't match width and rows")
         byxel_i = 0
-        inverted = self.inverted # optimization
-        invert = self.invert # optimization
-        buffer = self.buffer # optimization
+        inverted = self.inverted  # optimization
+        invert = self.invert  # optimization
+        buffer = self.buffer  # optimization
         for row in range(r, r + rows):
             i = 128 * row + x
             for col in range(width):
@@ -111,9 +112,9 @@ class Display:
         buff_i = 128 * r + x
         font = self.font  # optimization
         buffer = self.buffer  # optimization
-        invert = self.invert # optimization
-        inverted = self.inverted # optimization
-        font_offset = FONT_META_OFFSET #optimization
+        invert = self.invert  # optimization
+        inverted = self.inverted  # optimization
+        font_offset = FONT_META_OFFSET  # optimization
         for i in range(0, l):
             c = ord(msg[i])
             start = (c - 32) * font_w + font_offset
@@ -140,8 +141,8 @@ class Display:
             return
         mask = 1 << (y % 8)
         start_i = int(y / 8) * 128 + x
-        inverted = self.inverted # optimization
-        buffer = self.buffer # optimization
+        inverted = self.inverted  # optimization
+        buffer = self.buffer  # optimization
         for di in range(min(128 - x, length)):
             if inverted:
                 buffer[start_i + di] &= (mask ^ 0xFF)
@@ -150,7 +151,7 @@ class Display:
 
     def draw_dashed_hline(self, x, y, length, on, off):
         x1 = x
-        hline = self.draw_hline # optimization
+        hline = self.draw_hline  # optimization
         while x1 < x + length:
             l = min(128 - x1, on)
             hline(x1, y, l)
@@ -159,7 +160,7 @@ class Display:
     def draw_vline(self, x, y, length):
         if y < -length or y > Y_MAX or x < 0 or x > X_MAX:
             return
-        set_pix = self.set_pixel # optimization
+        set_pix = self.set_pixel  # optimization
         for dy in range(min(64 - y, length)):
             set_pix(x, y + dy, True)
 
@@ -175,7 +176,7 @@ class Display:
         if y < -h or y > Y_MAX or x < -w or x > X_MAX:
             return
 
-        r = int((y+7) / 8)
+        r = int((y + 7) / 8)
         pre = min(h, (r * 8) - y)
         rows = int((h - pre) / 8)
         post = max(0, (y + h) - ((r + rows) * 8))
@@ -185,7 +186,7 @@ class Display:
             start_x = ((128 * row) + x)
             buffer[start_x:start_x + w] = fill[:w]
 
-        hline = self.draw_hline # optimization
+        hline = self.draw_hline  # optimization
         if pre != 0:
             for i in range(y, y + pre):
                 hline(x, i, w)
@@ -214,7 +215,3 @@ class Display:
                     else:
                         txt += " "
                 print(txt)
-
-
-
-

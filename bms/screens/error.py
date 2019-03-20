@@ -4,7 +4,7 @@ from bms import fonts
 class ErrorScreen:
     def __init__(self, controller):
         self.controller = controller
-        self.idle_timeout = 999999
+        self.idle_timeout = 999999999
         self.trace_lines = None
 
     def enter(self):
@@ -20,7 +20,7 @@ class ErrorScreen:
 
     def read_error(self):
         try:
-            with open("/error.txt", "r") as f:
+            with open("error.txt", "r") as f:
                 lines = f.readlines()[-5:]
                 lines.reverse()
                 self.trace_lines = lines
@@ -31,7 +31,7 @@ class ErrorScreen:
         display.draw_text(8 * 6, 0, "ERROR")
         if not self.trace_lines:
             display.draw_text(0, 3, "Could not read")
-            display.draw_text(0, 4, "/error.txt")
+            display.draw_text(0, 4, "error.txt")
         else:
             r = 1
             line = None

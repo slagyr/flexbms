@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
+DRIVE=$(cat bin/drive)
 
-rm -r /Volumes/CIRCUITPY/lib
-rm -r /Volumes/CIRCUITPY/bms
-rm /Volumes/CIRCUITPY/*.py
+rm -r ${DRIVE}/lib
+rm -r ${DRIVE}/bms
+rm ${DRIVE}/*.py

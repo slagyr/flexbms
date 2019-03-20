@@ -1,4 +1,3 @@
-import time
 import bms.conf as conf
 from bms.screens.error import ErrorScreen
 from bms.screens.home import HomeScreen
@@ -19,7 +18,7 @@ class Controller:
         self.rotary = None
         self.events = None
 
-        self.last_user_event_time = time.monotonic()
+        self.last_user_event_time = 0
         self.splash_screen = SplashScreen(self)
         self.home_screen = HomeScreen(self)
         self.voltages_screen = VoltagesScreen(self)
@@ -52,20 +51,20 @@ class Controller:
         self.screen.enter()
 
     @clocked_fn
-    def tick(self, secs):
-        self.events.dispatch()
+    def tick(self, millis):
+        # self.events.dispatch()
         self.bq.load_cell_voltages(self.cells)
 
         # for cell in self.cells:
         #     print("cell " + str(cell.index) + ": " + str(cell.voltage))
 
-        self.balance(secs)
+        self.balance(millis)
 
         if self.rotary.has_update():
-            self.last_user_event_time = secs
-        elif secs > self.last_user_event_time + self.screen.idle_timeout:
+            self.last_user_event_time = millis
+        elif millis > self.last_user_event_time + self.screen.idle_timeout:
             self.set_screen(self.home_screen)
-            self.last_user_event_time = secs
+            self.last_user_event_time = millis
 
         self.screen.update()
         self.rotary.rest()

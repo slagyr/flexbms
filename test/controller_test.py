@@ -101,10 +101,10 @@ class ControllerTest(unittest.TestCase):
     #     self.controller.tick(61)
     #     self.assertEqual(True, self.cells.balancing_updated)
 
-    def test_events_are_dispatched(self):
-        self.assertEqual(False, self.events.dispatched)
-        self.controller.tick(0)
-        self.assertEqual(True, self.events.dispatched)
+    # def test_events_are_dispatched(self):
+    #     self.assertEqual(False, self.events.dispatched)
+    #     self.controller.tick(0)
+    #     self.assertEqual(True, self.events.dispatched)
         
     def test_rotary_gets_rested(self):
         self.controller.tick(0)

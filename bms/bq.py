@@ -79,19 +79,20 @@ class BQ:
         self.cc_ready = False
         self.faults = []
 
-    def __enter__(self):
-        while not self.i2c.try_lock():
-            pass
-        return self.i2c
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.i2c.unlock()
-        return False
+    # def __enter__(self):
+    #     while not self.i2c.try_lock():
+    #         pass
+    #     return self.i2c
+    #
+    # def __exit__(self, exc_type, exc_val, exc_tb):
+    #     self.i2c.unlock()
+    #     return False
 
     def read_register(self, reg, buffer):
-        with self as i2c:
-            i2c.writeto(I2C_ADDR, bytearray([reg]))
-            i2c.readfrom_into(I2C_ADDR, buffer)
+        # with self as i2c:
+        i2c = self.i2c
+        i2c.send(bytearray([reg]), I2C_ADDR)
+        i2c.recv(buffer, I2C_ADDR)
         return buffer
 
     def read_register_single(self, reg):
@@ -119,8 +120,8 @@ class BQ:
 
     def write_register(self, reg, byte):
         crc = crc8(bytearray([16, reg, byte]))
-        with self as i2c:
-            i2c.writeto(I2C_ADDR, bytearray([reg, byte, crc]))
+        # with self as i2c:
+        self.i2c.send(bytearray([reg, byte, crc]), I2C_ADDR)
 
     def set_reg_bit(self, reg_n_mask, enable):
         reg = reg_n_mask >> 8
@@ -147,9 +148,9 @@ class BQ:
         return int(1000 * (1000 * v - self.adc_offset) / self.adc_gain)
 
     def setup(self):
-        with self as i2c:
-            if I2C_ADDR not in i2c.scan():
-                raise RuntimeError("BQ address not found in scan")
+        # with self as i2c:
+        if I2C_ADDR not in self.i2c.scan():
+            raise RuntimeError("BQ address not found in scan")
 
         self.write_register(CC_CFG, 0x19)
         self.adc_gain = self.read_adc_gain()

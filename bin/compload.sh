@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
+DRIVE=$(cat bin/drive)
+
 bin/compile.sh
 
-cp -rX lib /Volumes/CIRCUITPY/
-cp -rX .build/bms /Volumes/CIRCUITPY/
-cp -X *.py /Volumes/CIRCUITPY/
+cp -rX lib ${DRIVE}/
+cp -rX .build/bms ${DRIVE}/
+cp -X *.py ${DRIVE}/

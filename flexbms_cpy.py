@@ -1,3 +1,4 @@
+# CircuitPython compatible implementation of FlexBMS
 import board
 import busio
 import neopixel
