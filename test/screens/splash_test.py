@@ -21,5 +21,5 @@ class SplashScreenTest(unittest.TestCase):
         self.assertEqual(True, self.controller.display.was_shown)
 
     def test_timeout(self):
-        self.assertEqual(3, self.screen.idle_timeout)
+        self.assertEqual(3000, self.screen.idle_timeout)
 

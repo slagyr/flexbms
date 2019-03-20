@@ -4,9 +4,9 @@ from bms.util import ON_BOARD
 if not ON_BOARD:
     from bms.util import const
 
-# Thes values were painstakingly calculated and tweak using empirical data.  Need a better way.
-GAIN = 0.001087
-OFFSET = 930
+# These values need to be calculated with soldered board
+GAIN = 0.01701
+OFFSET = 250
 # To measure:
 #   Turn off BQ CHG_ON and DSH_ON
 #   Connected known voltage to Pack+ and -
@@ -48,7 +48,17 @@ class Driver:
         sum = 0
         self.set_pmon_en(True)
         for i in range(10):
-            sum += self._packdiv.value
+            sum += self._packdiv.read()
         self.set_pmon_en(False)
         avg = sum / 10
         return (avg - OFFSET) * GAIN
+
+
+# def avg():
+# sum = 0
+# for i in range(10):
+# r = d._packdiv.read()
+# # print("r: " + str(r))
+# sum += r
+# pyb.delay(10)
+# return int(sum / 10)

@@ -28,5 +28,4 @@ class Rotary:
     def handle_rotate(self):
         clk = self.clk.value()
         dt = self.dt.value()
-        print("clk, dt ", clk, ", ", dt)
         self.pos += 1 if clk == dt else -1

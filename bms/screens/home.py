@@ -64,6 +64,7 @@ class HomeScreen:
         self.draw_cell_levels(display)
         display.draw_text(104, 1, "{:.1f}".format(self.controller.bq.batt_voltage()))
         display.draw_text(104, 3, "{:.1f}".format(self.controller.cells.serial_voltage()))
+        display.draw_text(104, 5, "{:.1f}".format(self.controller.driver.pack_voltage()))
         display.show()
 
     def draw_graph_labels(self, display):

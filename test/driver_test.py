@@ -1,16 +1,16 @@
 import unittest
 
 from bms.driver import Driver
-from test.mock_pins import MockDPin, MockAPin
+from test.mock_pins import MockPin, MockADC
 
 
 class DriverTest(unittest.TestCase):
 
     def setUp(self):
-        self.cp_en = MockDPin()
-        self.pmon_en = MockDPin()
-        self.pchg_en = MockDPin()
-        self.packdiv = MockAPin()
+        self.cp_en = MockPin()
+        self.pmon_en = MockPin()
+        self.pchg_en = MockPin()
+        self.packdiv = MockADC()
         self.driver = Driver(self.cp_en, self.pmon_en, self.pchg_en, self.packdiv)
 
     def test_creation(self):
@@ -43,19 +43,14 @@ class DriverTest(unittest.TestCase):
         self.assertEqual(False, self.driver.get_pmon_en())
         self.driver.set_pmon_en(True)
         self.assertEqual(True, self.driver.get_pmon_en())
-        
+
     def test_pack_voltage(self):
-        cases = [(934, 0.0),
-                 (10088, 10.0),
-                 (19290, 20.0),
-                 (28560, 30.0),
-                 (32167, 34.0),
-                 (36793, 39.0),
-                 (37731, 40.0),
-                 (38684, 41.0),
-                 (39568, 42.0),
-                 (46888, 50.0),
-                 (47869, 51.0)]
+        cases = [(250, 0.0),
+                 (840, 10.0),
+                 (1425, 20.0),
+                 (2015, 30.0),
+                 (2600, 40.0),
+                 (3190, 50.0)]
         for case in cases:
             adc = case[0]
             self.packdiv.value = adc

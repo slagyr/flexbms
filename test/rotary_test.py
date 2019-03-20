@@ -1,7 +1,7 @@
 import unittest
 
 from bms.rotary import Rotary
-from test.mock_pins import MockDPin
+from test.mock_pins import MockPin
 
 
 class MockEncoder:
@@ -13,8 +13,8 @@ class RotaryTest(unittest.TestCase):
 
     def setUp(self):
         # self.encoder = MockEncoder()
-        self.dt = MockDPin()
-        self.clk = MockDPin()
+        self.dt = MockPin()
+        self.clk = MockPin()
         self.rotary = Rotary(self.dt, self.clk)
 
     def test_creation(self):

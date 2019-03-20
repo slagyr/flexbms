@@ -55,11 +55,11 @@ class ControllerTest(unittest.TestCase):
 
     def test_screen_timeout(self):
         self.controller.tick(0)
-        self.controller.tick(4)
+        self.controller.tick(4000)
         self.assertIsInstance(self.controller.screen, HomeScreen)
         # self.controller.display.print_buffer()
         self.assertIs(self.controller.home_screen, self.controller.screen)
-        self.assertEqual(4, self.controller.last_user_event_time)
+        self.assertEqual(4000, self.controller.last_user_event_time)
 
     def test_screen_updated_on_tick(self):
         screen = self.controller.screen = MockScreen()

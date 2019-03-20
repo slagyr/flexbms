@@ -1,10 +1,10 @@
 from bms.rotary import Rotary
-from test.mock_pins import MockDPin
+from test.mock_pins import MockPin
 
 
 class MockRotary(Rotary):
     def __init__(self):
-        super().__init__(MockDPin(), MockDPin())
+        super().__init__(MockPin(), MockPin())
         self.was_setup = False
         self.was_rested = False
         self.rel_pos = 0
