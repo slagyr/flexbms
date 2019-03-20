@@ -28,17 +28,6 @@ class MockBqI2C:
             self.registers[reg] = adc >> 8          #VCx_HI
             self.registers[reg + 1] = adc & 0xFF    #VCx_LO
 
-    # def try_lock(self):
-    #     if self.locked:
-    #         return False
-    #     else:
-    #         self.locked = True
-    #         self.lock_count += 1
-    #         return True
-    #
-    # def unlock(self):
-    #     self.locked = False
-
     def scan(self):
         return self.scan_result
 

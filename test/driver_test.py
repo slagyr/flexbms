@@ -19,13 +19,6 @@ class DriverTest(unittest.TestCase):
         self.assertEqual(self.pchg_en, self.driver._pchg_en)
         self.assertEqual(self.packdiv, self.driver._packdiv)
 
-    # def test_setup(self):
-    #     self.driver.setup()
-    #
-    #     self.assertEqual("output", self.driver._cp_en.direction)
-    #     self.assertEqual("output", self.driver._pchg_en.direction)
-    #     self.assertEqual("output", self.driver._pmon_en.direction)
-
     def test_charge_pump(self):
         self.driver.setup()
         self.assertEqual(False, self.driver.get_cp_en())

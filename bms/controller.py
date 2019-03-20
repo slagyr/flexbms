@@ -16,7 +16,6 @@ class Controller:
         self.cells = None
         self.screen = None
         self.rotary = None
-        self.events = None
 
         self.last_user_event_time = 0
         self.splash_screen = SplashScreen(self)
@@ -41,7 +40,6 @@ class Controller:
         self.bq.setup()
         self.driver.setup()
         self.cells.setup()
-        self.events.setup()
         self.rotary.setup()
 
         self.wire_menus()
@@ -52,7 +50,6 @@ class Controller:
 
     @clocked_fn
     def tick(self, millis):
-        # self.events.dispatch()
         self.bq.load_cell_voltages(self.cells)
 
         # for cell in self.cells:

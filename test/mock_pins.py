@@ -1,7 +1,6 @@
 class MockPin:
     def __init__(self):
         self.val = False
-        # self.direction = "unset"
 
     def value(self, v=None):
         if v:
@@ -9,16 +8,9 @@ class MockPin:
         else:
             return self.val
 
-    # def switch_to_output(self):
-    #     self.direction = "output"
-    #
-    # def switch_to_input(self):
-    #     self.direction = "input"
-
 class MockADC:
     def __init__(self):
         self.value = 0
-        self.reference_voltage = 3.3
 
     def read(self):
         return self.value

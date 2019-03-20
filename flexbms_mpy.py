@@ -1,6 +1,5 @@
 # MicroPython compatible implementation of FlexBMS
 
-import pyb
 from pyb import I2C
 from pyb import Pin
 from pyb import ADC
@@ -16,7 +15,6 @@ from bms.controller import Controller
 from bms.cells import Cells
 from bms.display import Display
 from bms.driver import Driver
-from bms.events import Events
 from bms.rotary import Rotary
 
 TICK_INTERVAL = 500

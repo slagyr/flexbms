@@ -21,9 +21,6 @@ class Driver:
         self._packdiv = packdiv
 
     def setup(self):
-        # self._cp_en.switch_to_output()
-        # self._pmon_en.switch_to_output()
-        # self._pchg_en.switch_to_output()
         pass
 
     def get_cp_en(self):

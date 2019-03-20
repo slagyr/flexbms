@@ -28,17 +28,7 @@ class Display:
             self.solid_row[i] = 0xFF
             self.blank_row[i] = 0x0
 
-    # def __enter__(self):
-    #     while not self.i2c.try_lock():
-    #         pass
-    #     return self.i2c
-    #
-    # def __exit__(self, exc_type, exc_val, exc_tb):
-    #     self.i2c.unlock()
-    #     return False
-
     def setup(self):
-        # with self as i2c:
         if SSD1306_ADDR not in self.i2c.scan():
             raise RuntimeError("SSD1306 address not found in scan")
         i2c = self.i2c
@@ -85,7 +75,6 @@ class Display:
             buffer[(i * 128):(i * 128 + 128)] = fill
 
     def show(self):
-        # with self as i2c:
         i2c = self.i2c
         i2c.send(bytearray([SSD1306_CMND, 0x21, 0, X_MAX]), SSD1306_ADDR)
         i2c.send(bytearray([SSD1306_CMND, 0x22, 0, 7]), SSD1306_ADDR)

@@ -15,7 +15,6 @@ from bms.controller import Controller
 from bms.cells import Cells
 from bms.display import Display
 from bms.driver import Driver
-from bms.events import Events
 from bms.rotary import Rotary
 
 
@@ -32,7 +31,7 @@ def init():
     display = Display(i2c)
     cells = Cells(CELL_COUNT)
     rotary = Rotary(rotaryio.IncrementalEncoder(board.D6, board.D5))
-    events = Events(gamepad.GamePad(digitalio.DigitalInOut(board.D9)))
+    # events = Events(gamepad.GamePad(digitalio.DigitalInOut(board.D9)))
     events.listeners.append(rotary)
 
     controller = Controller()
@@ -41,7 +40,7 @@ def init():
     controller.driver = driver
     controller.cells = cells
     controller.rotary = rotary
-    controller.events = events
+    # controller.events = events
 
     return controller
 

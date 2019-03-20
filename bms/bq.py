@@ -79,17 +79,7 @@ class BQ:
         self.cc_ready = False
         self.faults = []
 
-    # def __enter__(self):
-    #     while not self.i2c.try_lock():
-    #         pass
-    #     return self.i2c
-    #
-    # def __exit__(self, exc_type, exc_val, exc_tb):
-    #     self.i2c.unlock()
-    #     return False
-
     def read_register(self, reg, buffer):
-        # with self as i2c:
         i2c = self.i2c
         i2c.send(bytearray([reg]), I2C_ADDR)
         i2c.recv(buffer, I2C_ADDR)
@@ -120,7 +110,6 @@ class BQ:
 
     def write_register(self, reg, byte):
         crc = crc8(bytearray([16, reg, byte]))
-        # with self as i2c:
         self.i2c.send(bytearray([reg, byte, crc]), I2C_ADDR)
 
     def set_reg_bit(self, reg_n_mask, enable):

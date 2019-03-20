@@ -7,7 +7,6 @@ from test.mock_cells import MockCells
 from test.mock_bq import MockBQ
 from test.mock_display import MockDisplay
 from test.mock_driver import MockDriver
-from test.mock_events import MockEvents
 from test.mock_rotary import MockRotary
 from test.screens.mock_screen import MockScreen
 
@@ -18,7 +17,6 @@ class ControllerTest(unittest.TestCase):
         self.bq = MockBQ()
         self.cells = MockCells(9)
         self.rotary = MockRotary()
-        self.events = MockEvents()
         self.driver = MockDriver()
 
         self.controller = Controller()
@@ -26,7 +24,6 @@ class ControllerTest(unittest.TestCase):
         self.controller.bq = self.bq
         self.controller.cells = self.cells
         self.controller.rotary = self.rotary
-        self.controller.events = self.events
         self.controller.driver = self.driver
 
         self.controller.setup()
@@ -45,7 +42,6 @@ class ControllerTest(unittest.TestCase):
         self.assertEqual(True, self.display.was_setup)
         self.assertEqual(True, self.bq.was_setup)
         self.assertEqual(True, self.cells.was_setup)
-        self.assertEqual(True, self.events.was_setup)
         self.assertEqual(True, self.rotary.was_setup)
         self.assertEqual(True, self.driver.was_setup)
 
@@ -100,11 +96,6 @@ class ControllerTest(unittest.TestCase):
     #
     #     self.controller.tick(61)
     #     self.assertEqual(True, self.cells.balancing_updated)
-
-    # def test_events_are_dispatched(self):
-    #     self.assertEqual(False, self.events.dispatched)
-    #     self.controller.tick(0)
-    #     self.assertEqual(True, self.events.dispatched)
         
     def test_rotary_gets_rested(self):
         self.controller.tick(0)
