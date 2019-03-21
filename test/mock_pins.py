@@ -3,10 +3,10 @@ class MockPin:
         self.val = False
 
     def value(self, v=None):
-        if v:
-            self.val = v
-        else:
+        if v is None:
             return self.val
+        else:
+            self.val = v
 
 class MockADC:
     def __init__(self):

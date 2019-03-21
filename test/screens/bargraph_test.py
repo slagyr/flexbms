@@ -1,6 +1,6 @@
 import unittest
 
-from bms.screens.home import HomeScreen
+from bms.screens.bargraph import BargraphScreen
 from test.mock_controller import MockController
 
 
@@ -11,7 +11,7 @@ class HomeTest(unittest.TestCase):
         self.display = self.controller.display
         self.bq = self.controller.bq
         self.cells = self.controller.cells
-        self.home = HomeScreen(self.controller)
+        self.home = BargraphScreen(self.controller)
 
 
     def test_enter_and_update(self):

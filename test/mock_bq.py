@@ -31,8 +31,5 @@ class MockBQ(BQ):
         if not on and id in self.balancing_cells:
             self.balancing_cells.remove(id)
 
-
     def load_cell_voltages(self, cells):
         self.voltages_loaded = True
-
-

@@ -1,29 +1,33 @@
 import bms.conf as conf
 from bms.screens.error import ErrorScreen
-from bms.screens.home import HomeScreen
+from bms.screens.bargraph import BargraphScreen
 from bms.screens.menu import Menu
 from bms.screens.splash import SplashScreen
 from bms.screens.voltages import VoltagesScreen
+from bms.states.machine import Statemachine
 
 from bms.util import clocked_fn
 
 
 class Controller:
-    def __init__(self):
+    def __init__(self, clock):
+        self.clock = clock
         self.display = None
         self.bq = None
         self.driver = None
         self.cells = None
         self.screen = None
         self.rotary = None
-        self.statemachine = None
 
         self.last_user_event_time = 0
         self.splash_screen = SplashScreen(self)
-        self.home_screen = HomeScreen(self)
+        self.bargraph_screen = BargraphScreen(self)
         self.voltages_screen = VoltagesScreen(self)
         self.main_menu = Menu(self, "MAIN")
         self.error_screen = ErrorScreen(self)
+        self.home_screen = self.bargraph_screen
+
+        self.sm = Statemachine(self)
 
         self.next_balance_time = -1
         self.in_balance_rest = True
@@ -38,45 +42,49 @@ class Controller:
         self.display.setup()
         self.set_screen(self.splash_screen)
 
+        self.sm.setup()
         self.bq.setup()
         self.driver.setup()
         self.cells.setup()
         self.rotary.setup()
-
         self.wire_menus()
 
-        # TODO - Delete Me
-        self.bq.dsg(True)
+    def set_home_screen(self, screen):
+        at_home = self.home_screen == self.screen
+        self.home_screen = screen
+        if at_home:
+            self.set_screen(screen)
 
     def set_screen(self, screen):
         self.screen = screen
         self.screen.enter()
 
     @clocked_fn
-    def tick(self, millis):
-        self.bq.load_cell_voltages(self.cells)
+    def tick(self):
+        my = self
 
-        # for cell in self.cells:
-        #     print("cell " + str(cell.index) + ": " + str(cell.voltage))
+        my.sm.tick()
+        my.bq.load_cell_voltages(my.cells)
+        my.balance()
 
-        self.balance(millis)
+        millis = my.clock.millis()
+        if my.rotary.has_update():
+            my.last_user_event_time = millis
+        elif my.screen.idle_timeout and my.clock.millis_since(my.last_user_event_time) > my.screen.idle_timeout:
+            my.set_screen(my.home_screen)
+            my.last_user_event_time = millis
 
-        if self.rotary.has_update():
-            self.last_user_event_time = millis
-        elif millis > self.last_user_event_time + self.screen.idle_timeout:
-            self.set_screen(self.home_screen)
-            self.last_user_event_time = millis
+        my.screen.update()
+        my.rotary.rest()
 
-        self.screen.update()
-        self.rotary.rest()
-
-    def balance(self, secs):
-        if conf.BALANCE_ENABLED and secs > self.next_balance_time:
+    def balance(self):
+        millis = self.clock.millis()
+        if conf.BALANCE_ENABLED and millis > self.next_balance_time:
             if self.in_balance_rest:
                 self.in_balance_rest = False
                 self.cells.update_balancing(self.bq)
-                self.next_balance_time = secs + 60000
+                self.next_balance_time = self.clock.millis_after(millis, 60000)
             else:
                 self.in_balance_rest = True
                 self.cells.reset_balancing(self.bq)
-                self.next_balance_time = secs + 3000
+                self.next_balance_time = self.clock.millis_after(millis, 3000)

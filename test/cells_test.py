@@ -188,3 +188,18 @@ class CellsTest(unittest.TestCase):
         for cell in self.cells:
             self.assertEqual(False, cell.balancing)
         self.assertEqual([], self.bq.balancing_cells)
+
+    def test_has_low_voltage(self):
+        for cell in self.cells:
+            cell.voltage = 3.6
+
+        self.assertEqual(False, self.cells.has_low_voltage())
+
+        self.cells[5].voltage = 2.5
+        self.assertEqual(True, self.cells.has_low_voltage())
+
+        self.cells[5].voltage = 2.51
+        self.assertEqual(False, self.cells.has_low_voltage())
+
+        self.cells[8].voltage = 2.49
+        self.assertEqual(True, self.cells.has_low_voltage())

@@ -43,7 +43,7 @@ UV = const((SYS_STAT << 8) | (1 << 3))
 OV = const((SYS_STAT << 8) | (1 << 2))
 SCD = const((SYS_STAT << 8) | (1 << 1))
 OCD = const((SYS_STAT << 8) | (1 << 0))
-LOAD_PRESENT = const((SYS_CTRL1 << 8) | (1 << 7)) # Don't think it applies to FelxBMS v1.1 PCB
+LOAD_PRESENT = const((SYS_CTRL1 << 8) | (1 << 7))  # Don't think it applies to FelxBMS v1.1 PCB
 ADC_EN = const((SYS_CTRL1 << 8) | (1 << 4))
 TEMP_SEL = const((SYS_CTRL1 << 8) | (1 << 3))
 SHUT_A = const((SYS_CTRL1 << 8) | (1 << 1))
@@ -150,10 +150,10 @@ class BQ:
         self.set_protect2(BQ_OCD_DELAY, BQ_OCD_THRESH)
         self.set_protect3(BQ_UV_DELAY, BQ_OV_DELAY)
         self.reset_balancing()
-        self.set_reg_bit(DSG_ON, False)
-        self.set_reg_bit(CHG_ON, False)
-        self.set_reg_bit(ADC_EN, True)
-        self.set_reg_bit(CC_EN, True)
+        self.discharge(False)
+        self.charge(False)
+        self.adc(True)
+        self.cc(True)
 
         # TODO - verify ADC enabled
         # TODO - verify CC enabled
@@ -266,7 +266,8 @@ class BQ:
             i2 = i * 2
             crc = crc8(buf[i2:i2 + 1])
             if crc != buf[i2 + 1]:
-                print("CRC failed on cell_voltages byte " + str(i) + ". got: " + str(buf[i + 1]) + " expected: " + str(crc))
+                print("CRC failed on cell_voltages byte " + str(i) + ". got: " + str(buf[i + 1]) + " expected: " + str(
+                    crc))
 
         adc_to_v = self.adc_to_v
         for cell in cells:
@@ -305,14 +306,26 @@ class BQ:
         self.write_register(CELLBAL2, 0)
         self.write_register(CELLBAL3, 0)
 
-    def dsg(self, on=None):
-        if on == None:
+    def discharge(self, on=None):
+        if on is None:
             return self.get_reg_bit(DSG_ON)
         else:
             self.set_reg_bit(DSG_ON, on)
 
-    def chg(self, on=None):
-        if on == None:
+    def charge(self, on=None):
+        if on is None:
             return self.get_reg_bit(CHG_ON)
         else:
             self.set_reg_bit(CHG_ON, on)
+
+    def adc(self, on=None):
+        if on is None:
+            return self.get_reg_bit(ADC_EN)
+        else:
+            self.set_reg_bit(ADC_EN, on)
+
+    def cc(self, on=None):
+        if on is None:
+            return self.get_reg_bit(CC_EN)
+        else:
+            self.set_reg_bit(CC_EN, on)

@@ -3,6 +3,7 @@ from bms.util import clocked_fn, ON_BOARD
 
 if not ON_BOARD:
     from bms.util import const
+    from bms import micropython
 
 FONT_META_OFFSET = const(2)
 SSD1306_CMND = const(0x00)
@@ -95,6 +96,7 @@ class Display:
                 i += 1
                 byxel_i += 1
 
+    @micropython.native
     def draw_text(self, x, r, msg):
         l = len(msg)
         font_w = self.font_width()

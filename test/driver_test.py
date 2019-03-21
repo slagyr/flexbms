@@ -21,21 +21,21 @@ class DriverTest(unittest.TestCase):
 
     def test_charge_pump(self):
         self.driver.setup()
-        self.assertEqual(False, self.driver.get_cp_en())
-        self.driver.set_cp_en(True)
-        self.assertEqual(True, self.driver.get_cp_en())
+        self.assertEqual(False, self.driver.chargepump())
+        self.driver.chargepump(True)
+        self.assertEqual(True, self.driver.chargepump())
 
     def test_precharge(self):
         self.driver.setup()
-        self.assertEqual(False, self.driver.get_pchg_en())
-        self.driver.set_pchg_en(True)
-        self.assertEqual(True, self.driver.get_pchg_en())
+        self.assertEqual(False, self.driver.precharge())
+        self.driver.precharge(True)
+        self.assertEqual(True, self.driver.precharge())
 
     def test_pack_monitor(self):
         self.driver.setup()
-        self.assertEqual(False, self.driver.get_pmon_en())
-        self.driver.set_pmon_en(True)
-        self.assertEqual(True, self.driver.get_pmon_en())
+        self.assertEqual(False, self.driver.packmonitor())
+        self.driver.packmonitor(True)
+        self.assertEqual(True, self.driver.packmonitor())
 
     def test_pack_voltage(self):
         cases = [(125, 0.0),

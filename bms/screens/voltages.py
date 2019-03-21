@@ -4,7 +4,7 @@ from bms import fonts
 class VoltagesScreen:
     def __init__(self, controller):
         self.controller = controller
-        self.idle_timeout = 6000000
+        self.idle_timeout = None
         self.display_cells = None
 
     def menu_name(self):
@@ -14,7 +14,7 @@ class VoltagesScreen:
         self.controller.set_screen(self)
 
     def enter(self):
-        self.display_cells = self.controller.home_screen.reset_display_cells()
+        self.display_cells = self.controller.bargraph_screen.reset_display_cells()
         display = self.controller.display
         display.font = fonts.font6x8()
         display.inverted = False

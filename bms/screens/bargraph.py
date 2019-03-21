@@ -12,10 +12,10 @@ class DisplayCell:
         self.bal = bal
 
 
-class HomeScreen:
+class BargraphScreen:
     def __init__(self, controller):
         self.controller = controller
-        self.idle_timeout = 6000000
+        self.idle_timeout = None
         self.col_width = 7
         self.col_text_offset = 0
         self.display_cells = None

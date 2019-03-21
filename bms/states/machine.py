@@ -9,8 +9,8 @@ from bms.util import log
 
 
 class Statemachine:
-    def __init__(self, context):
-        self.context = context
+    def __init__(self, controller):
+        self.controller = controller
 
         self._eval = EvalState(self)
         self._empty = EmptyState(self)
@@ -37,7 +37,7 @@ class Statemachine:
             _end = self.__getattribute__("_" + end)
             _start = self.__getattribute__("_" + start) if start != "*" else "*"
             self.__getattribute__(event) # just to make sure it exists
-            _action = self.context.__getattribute__(action) if action else None
+            _action = self.controller.__getattribute__(action) if action else None
             self.trans[(_start, event)] = (_end, _action)
 
     def set_state(self, state):
@@ -62,8 +62,8 @@ class Statemachine:
                 action()
             self.set_state(end)
 
-    def tick(self, millis):
-        self.state.tick(millis)
+    def tick(self):
+        self.state.tick()
 
     def low_v(self):
         log("SM event: low_v")

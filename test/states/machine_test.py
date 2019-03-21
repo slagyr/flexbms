@@ -8,22 +8,23 @@ from bms.states.empty import EmptyState
 from bms.states.machine import Statemachine
 from bms.states.normal import NormalState
 from bms.states.prechg import PreChgState
-from test.states.mock_context import MockContext
+from test.mock_controller import MockController
+from test.states.mock_state import MockState
 
 
 class StatemachineTest(unittest.TestCase):
 
     def setUp(self):
-        self.context = MockContext()
-        self.sm = Statemachine(self.context)
+        self.controller = MockController()
+        self.sm = Statemachine(self.controller)
         self.sm.setup()
 
     def test_creation(self):
-        self.assertEqual(self.context, self.sm.context)
+        self.assertEqual(self.controller, self.sm.controller)
 
     def test_start_state(self):
         self.assertEqual(EvalState, self.sm.state.__class__)
-        
+
     def test_eval_to_life_support(self):
         self.sm.low_v()
         self.assertEqual(EmptyState, self.sm.state.__class__)
@@ -63,7 +64,7 @@ class StatemachineTest(unittest.TestCase):
         self.sm.norm_v()
         self.assertEqual(ChargeState, self.sm.state.__class__)
 
-    def test_naormal_to_alert_and_back(self):
+    def test_normal_to_alert_and_back(self):
         self.sm.norm_v()
         self.sm.alert()
         self.assertEqual(AlertState, self.sm.state.__class__)
@@ -76,3 +77,21 @@ class StatemachineTest(unittest.TestCase):
         self.assertEqual(ErrorState, self.sm.state.__class__)
         self.sm.clear()
         self.assertEqual(EvalState, self.sm.state.__class__)
+
+    def test_states_are_entered_and_exited(self):
+        start = MockState()
+        end = MockState()
+        action_called = False
+
+        def foey():
+            nonlocal action_called
+            action_called = True
+
+        self.sm.trans = {(start, "foo"): (end, foey)}
+        self.sm.state = start
+        self.sm.handle_event("foo")
+        
+        self.assertEqual(end, self.sm.state)
+        self.assertEqual(True, action_called)
+        self.assertEqual(True, start.exited)
+        self.assertEqual(True, end.entered)

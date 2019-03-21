@@ -38,7 +38,6 @@ class Cell:
         self.balancing = on
 
 
-
 def ids_to_cells(ids):
     cells = []
     for i in range(len(ids)):
@@ -84,6 +83,9 @@ class Cells:
             sum += cell.voltage
         return sum
 
+    def max_serial_voltage(self):
+        return self.count * CELL_MAX_V
+
     def soc(self):
         result = 2
         for cell in self:
@@ -110,3 +112,9 @@ class Cells:
     def reset_balancing(self, bq):
         for cell in self:
             cell.set_balance(bq, False)
+
+    def has_low_voltage(self):
+        for cell in self:
+            if cell.voltage <= CELL_MIN_V:
+                return True
+        return False

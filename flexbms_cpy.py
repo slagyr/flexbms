@@ -34,7 +34,7 @@ def init():
     # events = Events(gamepad.GamePad(digitalio.DigitalInOut(board.D9)))
     events.listeners.append(rotary)
 
-    controller = Controller()
+    controller = Controller(util.clock)
     controller.display = display
     controller.bq = bq
     controller.driver = driver
@@ -53,7 +53,7 @@ def loop(controller):
     global OK
     while OK:
         before = time.monotonic()
-        controller.tick(before)
+        controller.tick()
         tick_duration = time.monotonic() - before
         if tick_duration < TICK_INTERVAL:
             time.sleep(TICK_INTERVAL - tick_duration)

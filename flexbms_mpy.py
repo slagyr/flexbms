@@ -16,7 +16,6 @@ from bms.cells import Cells
 from bms.display import Display
 from bms.driver import Driver
 from bms.rotary import Rotary
-from bms.states.machine import Statemachine
 
 TICK_INTERVAL = 500
 
@@ -27,6 +26,9 @@ class Clock:
 
     def millis_since(self, then):
         return utime.ticks_diff(utime.ticks_ms(), then)
+
+    def millis_after(self, time, millis):
+        return utime.tick_add(time, millis)
 
     def sleep(self, millis):
         utime.sleep_ms(millis)
@@ -55,7 +57,7 @@ class Debouncer:
 
 class FlexBMS:
     def __init__(self):
-        self.controller = Controller()
+        self.controller = Controller(bms.util.clock)
         self.tick_interval = 500
         self.ok = True
         self.rot_rot_db = None
@@ -71,14 +73,12 @@ class FlexBMS:
         display = Display(i2c)
         cells = Cells(CELL_COUNT)
         rotary = Rotary(Pin("X2", Pin.IN), Pin("X3", Pin.IN))
-        # statemachine = Statemachine(self.controller)
 
         self.controller.display = display
         self.controller.bq = bq
         self.controller.driver = driver
         self.controller.cells = cells
         self.controller.rotary = rotary
-        # self.controller.statemachine = statemachine
 
         rotary_button = Pin("X1", Pin.IN)
         self.rot_rot_db = Debouncer(rotary.clk, ExtInt.IRQ_FALLING, 1, rotary.handle_rotate)
@@ -87,7 +87,7 @@ class FlexBMS:
     def loop(self):
         while self.ok:
             before = utime.ticks_ms()
-            self.controller.tick(before)
+            self.controller.tick()
             tick_duration = utime.ticks_diff(utime.ticks_ms(), before)
             if tick_duration < TICK_INTERVAL:
                 utime.sleep_ms(TICK_INTERVAL - tick_duration)

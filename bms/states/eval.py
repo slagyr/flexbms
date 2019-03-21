@@ -2,6 +2,21 @@ class EvalState():
     def __init__(self, sm):
         self.sm = sm
 
-    def tick(self, millis):
-        pass
+    def enter(self):
+        bq = self.sm.controller.bq
+        bq.discharge(False)
+        bq.charge(False)
+
+    def tick(self):
+        controller = self.sm.controller
+        cells = controller.cells
+        driver = controller.driver
+        controller.bq.load_cell_voltages(cells)
+
+        if cells.has_low_voltage():
+            self.sm.low_v()
+        elif driver.pack_voltage() > cells.serial_voltage():
+            self.sm.pow_on()
+        else:
+            self.sm.norm_v()
 

@@ -4,7 +4,7 @@ from bms import fonts
 class ErrorScreen:
     def __init__(self, controller):
         self.controller = controller
-        self.idle_timeout = 999999999
+        self.idle_timeout = None
         self.trace_lines = None
 
     def enter(self):

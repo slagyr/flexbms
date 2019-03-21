@@ -1,6 +1,7 @@
 from bms.controller import Controller
 from test.mock_bq import MockBQ
 from test.mock_cells import MockCells
+from test.mock_clock import MockClock
 from test.mock_display import MockDisplay
 from test.mock_driver import MockDriver
 from test.mock_rotary import MockRotary
@@ -13,7 +14,7 @@ class MockController(Controller):
     home_screen = "home"
 
     def __init__(self):
-        super().__init__()
+        super().__init__(MockClock())
         self.display = MockDisplay()
         self.bq = MockBQ()
         self.cells = MockCells(9)
