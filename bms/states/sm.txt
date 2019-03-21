@@ -1,0 +1,16 @@
+eval    low_v   empty
+eval    norm_v  normal
+eval    pow_on  charge
+normal  low_v   empty
+normal  pow_on  charge
+empty   norm_v  normal
+empty   pow_on  prechg
+prechg  pow_off empty
+prechg  norm_v  charge
+charge  pow_off normal
+charge  norm_v  normal
+charge  low_v   prechg
+*       alert   alert
+*       error   error
+alert   clear   eval
+error   clear   eval

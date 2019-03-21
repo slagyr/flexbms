@@ -16,6 +16,7 @@ class Controller:
         self.cells = None
         self.screen = None
         self.rotary = None
+        self.statemachine = None
 
         self.last_user_event_time = 0
         self.splash_screen = SplashScreen(self)

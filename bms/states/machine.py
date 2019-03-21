@@ -1,9 +1,10 @@
-from bms.states.boot import BootState
+from bms.states.alert import AlertState
 from bms.states.charge import ChargeState
+from bms.states.error import ErrorState
 from bms.states.eval import EvalState
-from bms.states.lifesaver import LifeSaverState
+from bms.states.empty import EmptyState
 from bms.states.normal import NormalState
-from bms.states.precharge import PrechargeState
+from bms.states.prechg import PreChgState
 from bms.util import log
 
 
@@ -11,39 +12,83 @@ class Statemachine:
     def __init__(self, context):
         self.context = context
 
-        self.boot = BootState(self)
-        self.eval = EvalState(self)
-        self.lifesaver = LifeSaverState(self)
-        self.precharge = PrechargeState(self)
-        self.charge = ChargeState(self)
-        self.normal = NormalState(self)
+        self._eval = EvalState(self)
+        self._empty = EmptyState(self)
+        self._prechg = PreChgState(self)
+        self._charge = ChargeState(self)
+        self._normal = NormalState(self)
+        self._alert = AlertState(self)
+        self._error = ErrorState(self)
 
-        self.state = self.boot
+        self.state = self._eval
+        self.trans = {}
+
+    def setup(self):
+        with open('bms/states/sm.txt', "r") as f:
+            lines = f.readlines()
+        for line in lines:
+            parts = line.strip().split()
+            if len(parts) < 3 or len(parts) > 4:
+                raise RuntimeError("Invalid statemachine transition: " + line)
+            start = parts[0]
+            event = parts[1]
+            end = parts[2]
+            action = parts[3] if len(parts) == 4 else None
+            _end = self.__getattribute__("_" + end)
+            _start = self.__getattribute__("_" + start) if start != "*" else "*"
+            self.__getattribute__(event) # just to make sure it exists
+            _action = self.context.__getattribute__(action) if action else None
+            self.trans[(_start, event)] = (_end, _action)
 
     def set_state(self, state):
         log("\tleaving: " + str(self.state))
-        self.state.exit()
+        if hasattr(self.state, "exit"):
+            self.state.exit()
         log("\tentering: " + str(state))
         self.state = state
-        self.state.enter()
+        if hasattr(self.state, "enter"):
+            self.state.enter()
+
+    def handle_event(self, event):
+        t = self.trans.get((self.state, event))
+        if not t:
+            t = self.trans.get(("*", event))
+        if not t:
+            log("Unimplemented transition!: " + str(self.__class__.__name__) + ":" + event)
+        else:
+            end = t[0]
+            action = t[1]
+            if action:
+                action()
+            self.set_state(end)
 
     def tick(self, millis):
-        log("SM event: tick")
         self.state.tick(millis)
 
     def low_v(self):
         log("SM event: low_v")
-        self.state.low_v()
+        self.handle_event("low_v")
 
     def norm_v(self):
         log("SM event: norm_v")
-        self.state.norm_v()
+        self.handle_event("norm_v")
 
     def pow_on(self):
         log("SM event: pow_on")
-        self.state.pow_on()
+        self.handle_event("pow_on")
 
     def pow_off(self):
         log("SM event: pow_off")
-        self.state.pow_off()
+        self.handle_event("pow_off")
 
+    def alert(self):
+        log("SM event: alert")
+        self.handle_event("alert")
+
+    def error(self):
+        log("SM event: error")
+        self.handle_event("error")
+
+    def clear(self):
+        log("SM event: clear")
+        self.handle_event("clear")

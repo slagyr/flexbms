@@ -16,6 +16,7 @@ from bms.cells import Cells
 from bms.display import Display
 from bms.driver import Driver
 from bms.rotary import Rotary
+from bms.states.machine import Statemachine
 
 TICK_INTERVAL = 500
 
@@ -70,12 +71,14 @@ class FlexBMS:
         display = Display(i2c)
         cells = Cells(CELL_COUNT)
         rotary = Rotary(Pin("X2", Pin.IN), Pin("X3", Pin.IN))
+        # statemachine = Statemachine(self.controller)
 
         self.controller.display = display
         self.controller.bq = bq
         self.controller.driver = driver
         self.controller.cells = cells
         self.controller.rotary = rotary
+        # self.controller.statemachine = statemachine
 
         rotary_button = Pin("X1", Pin.IN)
         self.rot_rot_db = Debouncer(rotary.clk, ExtInt.IRQ_FALLING, 1, rotary.handle_rotate)
@@ -106,6 +109,7 @@ class FlexBMS:
             if self.controller:
                 self.controller.set_screen(self.controller.error_screen)
 
+        gc.collect()
         print("gc.mem_alloc(): " + str(gc.mem_alloc()))
         print("gc.mem_free():  " + str(gc.mem_free()))
 
