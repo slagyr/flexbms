@@ -38,12 +38,14 @@ class DriverTest(unittest.TestCase):
         self.assertEqual(True, self.driver.get_pmon_en())
 
     def test_pack_voltage(self):
-        cases = [(250, 0.0),
-                 (840, 10.0),
-                 (1425, 20.0),
-                 (2015, 30.0),
-                 (2600, 40.0),
-                 (3190, 50.0)]
+        cases = [(125, 0.0),
+                 # (790, 10.0),
+                 # (1375, 20.0),
+                 # (1965, 30.0),
+                 (2075, 34.3)
+                 # (2550, 40.0),
+                 # (3140, 50.0)
+                 ]
         for case in cases:
             adc = case[0]
             self.packdiv.value = adc

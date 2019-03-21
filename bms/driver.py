@@ -1,12 +1,14 @@
 import time
 
-from bms.util import ON_BOARD
+from bms import util
+from bms.util import ON_BOARD, log
+
 if not ON_BOARD:
     from bms.util import const
 
 # These values need to be calculated with soldered board
-GAIN = 0.01701
-OFFSET = 250
+GAIN = 0.0176
+OFFSET = 125
 # To measure:
 #   Turn off BQ CHG_ON and DSH_ON
 #   Connected known voltage to Pack+ and -
@@ -45,7 +47,8 @@ class Driver:
         sum = 0
         self.set_pmon_en(True)
         for i in range(10):
-            sum += self._packdiv.read()
+            adc = self._packdiv.read()
+            sum += adc
         self.set_pmon_en(False)
         avg = sum / 10
         return (avg - OFFSET) * GAIN

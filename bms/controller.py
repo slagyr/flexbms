@@ -44,6 +44,9 @@ class Controller:
 
         self.wire_menus()
 
+        # TODO - Delete Me
+        self.bq.dsg(True)
+
     def set_screen(self, screen):
         self.screen = screen
         self.screen.enter()
@@ -71,8 +74,8 @@ class Controller:
             if self.in_balance_rest:
                 self.in_balance_rest = False
                 self.cells.update_balancing(self.bq)
-                self.next_balance_time = secs + 60
+                self.next_balance_time = secs + 60000
             else:
                 self.in_balance_rest = True
                 self.cells.reset_balancing(self.bq)
-                self.next_balance_time = secs + 3
+                self.next_balance_time = secs + 3000

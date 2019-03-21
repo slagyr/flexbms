@@ -27,6 +27,9 @@ class Clock:
     def millis_since(self, then):
         return utime.ticks_diff(utime.ticks_ms(), then)
 
+    def sleep(self, millis):
+        utime.sleep_ms(millis)
+
 
 bms.util.clock = Clock()
 
@@ -67,15 +70,12 @@ class FlexBMS:
         display = Display(i2c)
         cells = Cells(CELL_COUNT)
         rotary = Rotary(Pin("X2", Pin.IN), Pin("X3", Pin.IN))
-        events = Events(None)
-        events.listeners.append(rotary)
 
         self.controller.display = display
         self.controller.bq = bq
         self.controller.driver = driver
         self.controller.cells = cells
         self.controller.rotary = rotary
-        self.controller.events = events
 
         rotary_button = Pin("X1", Pin.IN)
         self.rot_rot_db = Debouncer(rotary.clk, ExtInt.IRQ_FALLING, 1, rotary.handle_rotate)

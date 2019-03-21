@@ -25,6 +25,9 @@ if not ON_BOARD:
             now = int(round(time.time() * 1000))
             return now - then
 
+        def sleep(self, millis):
+            time.sleep(millis / 1000)
+
 
     clock = Clock()
 

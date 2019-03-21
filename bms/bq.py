@@ -304,3 +304,15 @@ class BQ:
         self.write_register(CELLBAL1, 0)
         self.write_register(CELLBAL2, 0)
         self.write_register(CELLBAL3, 0)
+
+    def dsg(self, on=None):
+        if on == None:
+            return self.get_reg_bit(DSG_ON)
+        else:
+            self.set_reg_bit(DSG_ON, on)
+
+    def chg(self, on=None):
+        if on == None:
+            return self.get_reg_bit(CHG_ON)
+        else:
+            self.set_reg_bit(CHG_ON, on)
