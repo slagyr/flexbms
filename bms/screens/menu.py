@@ -8,6 +8,7 @@ class Menu:
         self.items = []
         self.highlighted = 0
         self.idle_timeout = 5000
+        self.previous = None
 
     def enter(self):
         self.highlighted = 0
@@ -17,11 +18,9 @@ class Menu:
         display.clear()
         self.draw_all(display)
 
-    def update(self):
+    def user_input(self):
         rotary = self.controller.rotary
         my = self
-        if not rotary.has_update():
-            return
         if rotary.clicked:
             item = my.items[my.highlighted]
             item.menu_sel()
@@ -32,9 +31,9 @@ class Menu:
             elif highlighted > len(my.items) - 1:
                 highlighted = len(my.items) - 1
             if my.highlighted != highlighted:
-                previous = my.highlighted
+                my.previous = my.highlighted
                 my.highlighted = highlighted
-                my.draw_update(previous)
+                my.controller.screen_outdated(True)
 
     def add(self, item):
         self.items.append(item)
@@ -45,21 +44,24 @@ class Menu:
         display.draw_text(offset * 6, 0, title)
         for i in range(len(self.items)):
             if i == self.highlighted:
-                self.draw_highlted_item(display, i)
+                self.draw_highlighted(display, i)
             else:
                 self.draw_item(display, i)
         display.show()
 
-    def draw_update(self, previous):
+    def update(self):
+        if self.previous is None:
+            return
         display = self.controller.display
-        display.erase(0, (previous + 1) * 8, 128, 8)
-        self.draw_item(display, previous)
-        self.draw_highlted_item(display, self.highlighted)
+        display.erase(0, (self.previous + 1) * 8, 128, 8)
+        self.draw_item(display, self.previous)
+        self.draw_highlighted(display, self.highlighted)
+        self.previous = None
         display.show()
 
-    def draw_highlted_item(self, display, i):
+    def draw_highlighted(self, display, i):
         item = self.items[i]
-        text = str(i + 1) + ") " + item.menu_name()[:21]
+        text = str(i + 1) + ") " + item.menu_name()[:18]
         display.fill_rect(0, (i + 1) * 8, 128, 8)
         display.inverted = True
         display.draw_text(0, i + 1, text)
@@ -67,5 +69,5 @@ class Menu:
 
     def draw_item(self, display, i):
         item = self.items[i]
-        text = str(i + 1) + ") " + item.menu_name()[:21]
+        text = str(i + 1) + ") " + item.menu_name()[:18]
         display.draw_text(0, i + 1, text)

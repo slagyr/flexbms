@@ -16,6 +16,9 @@ class SplashScreen:
         display.draw_text(56, 7, "FlexBMS v1.0")
         display.show()
 
+    def user_input(self):
+        pass
+
     def update(self):
         pass
 

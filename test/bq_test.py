@@ -47,19 +47,19 @@ class BQ76940Test(unittest.TestCase):
         self.assertEqual(124, crc8(bytearray([16, 1, 247])))
         self.assertEqual(52, crc8(bytearray([16, 1, 239])))
 
-    def test_setup_enables_ADC(self):
+    def test_setup_disables_ADC(self):
         self.assertEqual(False, self.bq.get_reg_bit(ADC_EN))
 
         self.bq.setup()
-        self.assertTrue(self.i2c.registers[0x04] & (1 << 4))
-        self.assertEqual(True, self.bq.get_reg_bit(ADC_EN))
+        self.assertEqual(0, self.i2c.registers[0x04] & (1 << 4))
+        self.assertEqual(False, self.bq.get_reg_bit(ADC_EN))
 
-    def test_setup_enables_CC_continuous(self):
+    def test_setup_disables_CC_continuous(self):
         self.assertEqual(False, self.bq.get_reg_bit(CC_EN))
 
         self.bq.setup()
-        self.assertTrue(self.i2c.registers[0x05] & (1 << 6))
-        self.assertEqual(True, self.bq.get_reg_bit(CC_EN))
+        self.assertEqual(0, self.i2c.registers[0x05] & (1 << 6))
+        self.assertEqual(False, self.bq.get_reg_bit(CC_EN))
 
     def test_ADCGAIN(self):
         self.bq.setup()
@@ -145,21 +145,26 @@ class BQ76940Test(unittest.TestCase):
         ov_delay = (protect3 & 0b00110000) >> 4
         self.assertEqual(BQ_UV_DELAY, uv_delay)
         self.assertEqual(BQ_OV_DELAY, ov_delay)
-        
-    def test_sys_stat_no_faults(self):
-        self.i2c.registers[0x0] = 0b00000000
-        self.bq.check_sys_stat()
-        self.assertFalse(self.bq.cc_ready)
-        self.assertEqual([], self.bq.faults)
 
+    def test_process_alert_with_cc_ready(self):
         self.i2c.registers[0x0] = 0b10000000
-        self.bq.check_sys_stat()
-        self.assertTrue(self.bq.cc_ready)
+        self.i2c.registers[0x32] = 0x7D
+        self.i2c.registers[0x33] = 0x0
+        self.bq.process_alert()
+
+        self.assertEqual(0b10000000, self.i2c.registers[0x0])
+        self.assertEqual([], self.bq.faults)
+        self.assertAlmostEqual(270.1, self.bq.amperage, 1)
+        
+    def test_process_alert_faults(self):
+        self.i2c.registers[0x32] = 0
+        self.i2c.registers[0x33] = 0
+        self.i2c.registers[0x0] = 0b00000000
+        self.bq.process_alert()
         self.assertEqual([], self.bq.faults)
 
         self.i2c.registers[0x0] = 0b10111111
-        self.bq.check_sys_stat()
-        self.assertTrue(self.bq.cc_ready)
+        self.bq.process_alert()
         self.assertTrue(self.bq.faults)
         self.assertEqual([OVRD_ALERT, UV, OV, SCD, OCD], self.bq.faults)
 
@@ -301,4 +306,43 @@ class BQ76940Test(unittest.TestCase):
         self.bq.setup()
         self.assertEqual(False, self.bq.get_reg_bit(DSG_ON))
         self.assertEqual(False, self.bq.get_reg_bit(CHG_ON))
+
+    def test_clear_sys_stat(self):
+        self.bq.clear_sys_stat()
+        self.assertEqual(0xBF, self.i2c.registers[0x0])
+
+    def test_clears_sys_stat_on_setup(self):
+        self.bq.setup()
+        self.assertEqual(0xBF, self.i2c.registers[0x0])
+
+    def test_reading_amperage(self):
+        self.i2c.registers[0x32] = 0
+        self.i2c.registers[0x33] = 0
+        self.bq.load_amperage()
+        self.assertAlmostEqual(0, self.bq.amperage, 1)
+
+        self.i2c.registers[0x32] = 0x7D
+        self.i2c.registers[0x33] = 0x0
+        self.bq.load_amperage()
+        self.assertAlmostEqual(270.1, self.bq.amperage, 1)
+
+        self.i2c.registers[0x32] = 0x83
+        self.i2c.registers[0x33] = 0x0
+        self.bq.load_amperage()
+        self.assertAlmostEqual(-270.1, self.bq.amperage, 1)
+
+        self.i2c.registers[0x32] = 0xFF
+        self.i2c.registers[0x33] = 0xFF
+        self.bq.load_amperage()
+        self.assertAlmostEqual(0, self.bq.amperage, 1)
+
+    def test_process_alert_with_cc_ready(self):
+        self.i2c.registers[0x0] = 0b10000000
+        self.i2c.registers[0x32] = 0x7D
+        self.i2c.registers[0x33] = 0x0
+        self.bq.process_alert()
+
+        self.assertEqual(0b10000000, self.i2c.registers[0x0])
+        self.assertEqual([], self.bq.faults)
+        self.assertAlmostEqual(270.1, self.bq.amperage, 1)
 

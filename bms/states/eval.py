@@ -3,9 +3,11 @@ class EvalState():
         self.sm = sm
 
     def enter(self):
-        bq = self.sm.controller.bq
+        controller = self.sm.controller
+        bq = controller.bq
         bq.discharge(False)
         bq.charge(False)
+        controller.sm_tick_interval(500)
 
     def tick(self):
         controller = self.sm.controller
@@ -19,4 +21,3 @@ class EvalState():
             self.sm.pow_on()
         else:
             self.sm.norm_v()
-

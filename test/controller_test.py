@@ -11,6 +11,7 @@ from test.mock_display import MockDisplay
 from test.mock_driver import MockDriver
 from test.mock_rotary import MockRotary
 from test.screens.mock_screen import MockScreen
+from test.states.mock_machine import MockStatemachine
 from test.states.mock_state import MockState
 
 
@@ -86,18 +87,19 @@ class ControllerTest(unittest.TestCase):
         self.assertEqual(True, screen.was_updated)
 
         screen.was_updated = False
+        self.controller.screen_outdated(True)
         self.controller.tick()
         self.assertEqual(True, screen.was_updated)
         
-    def test_updates_cells_on_tick(self):
-        self.assertFalse(self.bq.voltages_loaded)
-        self.controller.tick()
-        self.assertTrue(self.bq.voltages_loaded)
+    # def test_updates_cells_on_tick(self):
+    #     self.assertFalse(self.bq.voltages_loaded)
+    #     self.controller.tick()
+    #     self.assertTrue(self.bq.voltages_loaded)
 
-    def test_updates_balancing(self):
-        self.assertFalse(self.cells.balancing_updated)
-        self.controller.tick()
-        self.assertTrue(self.cells.balancing_updated)
+    # def test_updates_balancing(self):
+    #     self.assertFalse(self.cells.balancing_updated)
+    #     self.controller.tick()
+    #     self.assertTrue(self.cells.balancing_updated)
 
     def test_updates_balancing_when_disabled(self):
         conf.BALANCE_ENABLED = False
@@ -121,6 +123,7 @@ class ControllerTest(unittest.TestCase):
     #     self.assertEqual(True, self.cells.balancing_updated)
         
     def test_rotary_gets_rested(self):
+        self.rotary.clicked = True
         self.controller.tick()
         self.assertEqual(True, self.rotary.was_rested)
         
@@ -139,14 +142,74 @@ class ControllerTest(unittest.TestCase):
         self.controller.setup()
         self.assertTrue(len(self.controller.sm.trans) > 0)
 
-    def test_statemachine_gets_ticks(self):
-        state = MockState()
-        self.assertEqual(0, state.tick_count)
-
-        self.controller.sm.state = state
+    def test_screen_updated_when_needed(self):
+        screen = MockScreen()
+        self.controller.set_screen(screen)
+        self.controller.screen_outdated(True)
         self.controller.tick()
+        self.assertEqual(False, self.controller.screen_outdated())
+        self.assertEqual(True, screen.was_updated)
 
+    def test_screen_not_updated_when_not_needed(self):
+        screen = MockScreen()
+        self.controller.set_screen(screen)
+        screen.was_updated = False
+        self.controller.screen_outdated(False)
+        self.controller.tick()
+        self.assertEqual(False, self.controller.screen_outdated())
+        self.assertEqual(False, screen.was_updated)
+
+    def test_sm_tick_interval(self):
+        self.assertEqual(500, self.controller.sm_tick_interval())
+        self.controller.sm_tick_interval(1000)
+        self.assertEqual(1000, self.controller.sm_tick_interval())
+
+    def test_sm_ticks_at_assigned_interval(self):
+        state = MockState()
+        self.controller.sm.state = state
+        self.clock.mils = 2000
+        self.controller.sm_tick_interval(1234)
+
+        self.assertEqual(0, state.tick_count)
+        self.controller.tick()
         self.assertEqual(1, state.tick_count)
+
+        self.clock.mils = 3222
+        self.controller.tick()
+        self.assertEqual(1, state.tick_count)
+
+        self.clock.mils = 3235
+        self.controller.tick()
+        self.assertEqual(2, state.tick_count)
+
+    def test_handle_alert(self):
+        self.assertEqual(False, self.controller._has_alert)
+        self.controller.handle_alert()
+        self.assertEqual(True, self.controller._has_alert)
+
+    def test_tick_processes_alerts(self):
+        sm = MockStatemachine()
+        self.controller.sm = sm
+
+        self.controller.tick()
+        self.assertEqual(False, self.bq.alert_processed)
+
+        self.bq.faults = []
+        self.controller.handle_alert()
+        self.controller.tick()
+        self.assertEqual(True, self.bq.alert_processed)
+        self.assertEqual(None, sm.last_event)
+
+        self.bq.faults = ["Yup"]
+        self.controller.handle_alert()
+        self.controller.tick()
+        self.assertEqual(True, self.bq.alert_processed)
+        self.assertEqual("alert", sm.last_event)
+
+
+
+
+
 
 
 

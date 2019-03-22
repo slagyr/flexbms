@@ -17,7 +17,11 @@ from bms.display import Display
 from bms.driver import Driver
 from bms.rotary import Rotary
 
-TICK_INTERVAL = 500
+# For debugging Interrupts.  Allows memory to print error.
+import micropython
+micropython.alloc_emergency_exception_buf(200)
+
+TICK_INTERVAL = 250
 
 
 class Clock:
@@ -27,8 +31,11 @@ class Clock:
     def millis_since(self, then):
         return utime.ticks_diff(utime.ticks_ms(), then)
 
-    def millis_after(self, time, millis):
-        return utime.tick_add(time, millis)
+    def millis_diff(self, after, before):
+        return utime.ticks_diff(after, before)
+
+    def millis_add(self, time, millis):
+        return utime.ticks_add(time, millis)
 
     def sleep(self, millis):
         utime.sleep_ms(millis)
@@ -84,13 +91,18 @@ class FlexBMS:
         self.rot_rot_db = Debouncer(rotary.clk, ExtInt.IRQ_FALLING, 1, rotary.handle_rotate)
         self.rot_clk_db = Debouncer(rotary_button, ExtInt.IRQ_FALLING, 4, rotary.handle_click)
 
+        def alert_handler(line):
+            self.controller.handle_alert()
+        ExtInt(Pin("X12", Pin.IN), ExtInt.IRQ_RISING, Pin.PULL_NONE, alert_handler)
+
     def loop(self):
         while self.ok:
             before = utime.ticks_ms()
             self.controller.tick()
             tick_duration = utime.ticks_diff(utime.ticks_ms(), before)
-            if tick_duration < TICK_INTERVAL:
-                utime.sleep_ms(TICK_INTERVAL - tick_duration)
+            sleepytime = TICK_INTERVAL - tick_duration
+            if sleepytime > 0:
+                utime.sleep_ms(sleepytime)
 
     def log_error(self, e):
         with open("error.txt", "a") as f:

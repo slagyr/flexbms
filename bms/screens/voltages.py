@@ -1,10 +1,11 @@
 from bms import fonts
+from bms.screens.home import HomeScreen
 
 
-class VoltagesScreen:
+class VoltagesScreen(HomeScreen):
+
     def __init__(self, controller):
-        self.controller = controller
-        self.idle_timeout = None
+        super().__init__(controller)
         self.display_cells = None
 
     def menu_name(self):
@@ -27,15 +28,9 @@ class VoltagesScreen:
                 x = 60
                 row = i - 8
             display.draw_text(x, row, label)
-        self.draw_update()
+        self.update()
 
     def update(self):
-        if self.controller.rotary.clicked:
-            self.controller.set_screen(self.controller.main_menu)
-        else:
-            self.draw_update()
-
-    def draw_update(self):
         display = self.controller.display
         for cell in self.controller.cells:
             str_val = "{0:1.3f}".format(cell.voltage)

@@ -1,4 +1,6 @@
 from bms import fonts
+from bms.screens.home import HomeScreen
+
 
 class DisplayCell:
     def __init__(self):
@@ -12,16 +14,15 @@ class DisplayCell:
         self.bal = bal
 
 
-class BargraphScreen:
+class BargraphScreen(HomeScreen):
     def __init__(self, controller):
-        self.controller = controller
-        self.idle_timeout = None
+        super().__init__(controller)
         self.col_width = 7
         self.col_text_offset = 0
         self.display_cells = None
 
     def menu_name(self):
-        return "Home"
+        return "Cell Bar Graph"
 
     def menu_sel(self):
         self.controller.set_screen(self)
@@ -42,10 +43,12 @@ class BargraphScreen:
         return self.display_cells
 
     def update(self):
-        if self.controller.rotary.clicked:
-            self.controller.set_screen(self.controller.main_menu)
-        else:
-            self.draw_update()
+        display = self.controller.display
+        self.draw_cell_levels(display)
+        display.draw_text(104, 1, "{:.1f}".format(self.controller.bq.batt_voltage()))
+        display.draw_text(104, 3, "{:.1f}".format(self.controller.cells.serial_voltage()))
+        display.draw_text(104, 5, "{:.1f}".format(self.controller.driver.pack_voltage()))
+        display.show()
 
     def draw_full(self):
         display = self.controller.display
@@ -57,15 +60,7 @@ class BargraphScreen:
         display.draw_text(0 + 104, 2, "SerV")
         display.draw_text(0 + 104, 4, "PakV")
         self.draw_graph_labels(display)
-        self.draw_update()
-
-    def draw_update(self):
-        display = self.controller.display
-        self.draw_cell_levels(display)
-        display.draw_text(104, 1, "{:.1f}".format(self.controller.bq.batt_voltage()))
-        display.draw_text(104, 3, "{:.1f}".format(self.controller.cells.serial_voltage()))
-        display.draw_text(104, 5, "{:.1f}".format(self.controller.driver.pack_voltage()))
-        display.show()
+        self.update()
 
     def draw_graph_labels(self, display):
         cell_count = len(self.display_cells)

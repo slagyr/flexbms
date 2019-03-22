@@ -25,6 +25,9 @@ if not ON_BOARD:
             now = int(round(time.time() * 1000))
             return now - then
 
+        def millis_diff(self, after, before):
+            return after - before
+
         def millis_after(self, time, millis):
             return time + millis
 

@@ -8,7 +8,10 @@ class MockClock:
     def millis_since(self, then):
         return self.mils - then
 
-    def millis_after(self, time, millis):
+    def millis_diff(self, after, before):
+        return after - before
+
+    def millis_add(self, time, millis):
         return time + millis
 
     def sleep(self, millis):

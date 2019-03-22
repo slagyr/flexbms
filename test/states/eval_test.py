@@ -24,6 +24,10 @@ class EvalStateTest(unittest.TestCase):
         self.assertEqual(False, bq.discharge())
         self.assertEqual(False, bq.charge())
 
+    def test_sets_tick_interval(self):
+        self.state.enter()
+        self.assertEqual(500, self.controller.sm_tick_interval())
+
     def test_voltages_are_loaded(self):
         self.state.tick()
 

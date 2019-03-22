@@ -1,5 +1,5 @@
 from bms.conf import *
-from bms.util import clocked_fn, ON_BOARD
+from bms.util import clocked_fn, ON_BOARD, log
 
 if not ON_BOARD:
     from bms.util import const
@@ -23,9 +23,9 @@ CC_CFG = const(0x0B)
 VC1_HI = const(0x0C)
 BAT_HI = const(0x2A)
 TS1_HI = const(0x2C)
-TS1_LO = const(0x2D)
+# TS1_LO = const(0x2D)
 CC_HI = const(0x32)
-CC_LO = const(0x33)
+# CC_LO = const(0x33)
 ADCGAIN1 = const(0x50)
 ADCOFFSET = const(0x51)
 ADCGAIN2 = const(0x59)
@@ -76,8 +76,8 @@ class BQ:
         self.i2c = i2c
         self.adc_gain = -1
         self.adc_offset = -1
-        self.cc_ready = False
         self.faults = []
+        self.amperage = 0
 
     def read_register(self, reg, buffer):
         i2c = self.i2c
@@ -152,8 +152,9 @@ class BQ:
         self.reset_balancing()
         self.discharge(False)
         self.charge(False)
-        self.adc(True)
-        self.cc(True)
+        self.adc(False)
+        self.cc(False)
+        self.clear_sys_stat()
 
         # TODO - verify ADC enabled
         # TODO - verify CC enabled
@@ -228,9 +229,18 @@ class BQ:
         protect3 |= (ov_delay & 0b11) << 4
         self.write_register(PROTECT3, protect3)
 
-    def check_sys_stat(self):
+    def clear_fault(self, fault):
+        stat = (DEVICE_XREADY & 0xFF)
+        stat |= (fault & 0xFF)
+        self.write_register(SYS_STAT, stat)
+        if fault != DEVICE_XREADY:
+            self.faults.remove(fault)
+
+    def process_alert(self):
         stat = self.read_register_single(SYS_STAT)
-        self.cc_ready = stat & (CC_READY & 0xFF)
+        if stat & (CC_READY & 0xFF):
+            self.load_amperage()
+            self.set_reg_bit(CC_READY, True)
         if stat & (DEVICE_XREADY & 0xFF):
             if stat & (OVRD_ALERT & 0xFF):
                 self.faults.append(OVRD_ALERT)
@@ -243,14 +253,11 @@ class BQ:
             if stat & (OCD & 0xFF):
                 self.faults.append(OCD)
         else:
-            assert stat & 0b00111111 == 0
+            if stat & 0b00111111 != 0:
+                log("bq.sys_stat: unusual end status: " + str(stat))
 
-    def clear_fault(self, fault):
-        stat = (DEVICE_XREADY & 0xFF)
-        stat |= (fault & 0xFF)
-        self.write_register(SYS_STAT, stat)
-        if fault != DEVICE_XREADY:
-            self.faults.remove(fault)
+    def clear_sys_stat(self):
+        self.write_register(SYS_STAT, 0xBF)
 
     def cell_voltage(self, cell_id):
         reg = VC1_HI + 2 * (cell_id - 1)
@@ -306,6 +313,17 @@ class BQ:
         self.write_register(CELLBAL2, 0)
         self.write_register(CELLBAL3, 0)
 
+    def load_amperage(self):
+        lsb = 8.44  # uV
+        sense_r = 0.001
+        adc = self.read_register_double(CC_HI)
+        if adc > 32767:  # Two's compliment
+            adc = -65536 + adc
+        v = adc * (lsb / 1000000)
+        a = v / sense_r
+        print("adc:", adc, "v:", v, "a:", a)
+        self.amperage = a
+
     def discharge(self, on=None):
         if on is None:
             return self.get_reg_bit(DSG_ON)
@@ -329,3 +347,6 @@ class BQ:
             return self.get_reg_bit(CC_EN)
         else:
             self.set_reg_bit(CC_EN, on)
+
+    def cc_oneshot(self):
+        self.set_reg_bit(CC_ONESHOT, True)

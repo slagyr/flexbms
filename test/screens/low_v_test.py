@@ -1,28 +1,17 @@
 import unittest
 
-from bms.screens.bargraph import BargraphScreen
+from bms.screens.low_v import LowVScreen
 from test.mock_controller import MockController
 
 
-class HomeTest(unittest.TestCase):
+class LowVScreenTest(unittest.TestCase):
 
     def setUp(self):
         self.controller = MockController()
         self.display = self.controller.display
         self.bq = self.controller.bq
         self.cells = self.controller.cells
-        self.screen = BargraphScreen(self.controller)
-
-
-    def test_enter_and_update(self):
-        for i in range(self.cells.count):
-            self.cells[i].voltage = 2.7 + i/10
-
-        home = self.screen
-        home.enter()
-        home.update()
-
-        # self.display.print_buffer()
+        self.screen = LowVScreen(self.controller)
 
     def test_click_enters_menu(self):
         boss = self.controller
@@ -30,5 +19,8 @@ class HomeTest(unittest.TestCase):
         self.screen.user_input()
         self.assertEqual(boss.main_menu, boss.screen)
 
-
-
+    def test_text(self):
+        self.screen.enter()
+        # self.display.print_buffer()
+        self.assertEqual("Please Charge Me!", self.display.drawn_text[0][0])
+        self.assertEqual("Pack V:", self.display.drawn_text[1][0])

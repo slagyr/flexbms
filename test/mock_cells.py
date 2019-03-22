@@ -5,6 +5,8 @@ class MockCells(Cells):
         super().__init__(count)
         self.was_setup = False
         self.balancing_updated = False
+        for cell in self:
+            cell.voltage = 3.6
 
     def setup(self):
         super().setup()

@@ -16,7 +16,7 @@ class VoltagesScreenTest(unittest.TestCase):
     def test_click_enters_menu(self):
         boss = self.controller
         boss.rotary.clicked = True
-        self.screen.update()
+        self.screen.user_input()
         self.assertEqual(boss.main_menu, boss.screen)
 
     def test_menu_itemness(self):

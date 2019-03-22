@@ -1,10 +1,11 @@
 from bms import fonts
+from bms.screens.home import HomeScreen
 
 
-class ErrorScreen:
+class ErrorScreen(HomeScreen):
+
     def __init__(self, controller):
-        self.controller = controller
-        self.idle_timeout = None
+        super().__init__(controller)
         self.trace_lines = None
 
     def enter(self):
@@ -14,6 +15,9 @@ class ErrorScreen:
         display.clear()
         self.read_error()
         self.draw_all(display)
+
+    def user_input(self):
+        pass
 
     def update(self):
         pass

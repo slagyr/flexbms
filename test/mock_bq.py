@@ -8,6 +8,7 @@ class MockBQ(BQ):
         self.voltages_loaded = False
         self.was_setup = False
         self.balancing_cells = []
+        self.alert_processed = False
         self.voltages = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5]
 
     def setup(self):
@@ -33,3 +34,9 @@ class MockBQ(BQ):
 
     def load_cell_voltages(self, cells):
         self.voltages_loaded = True
+
+    def process_alert(self):
+        super().process_alert()
+        self.alert_processed = True
+
+

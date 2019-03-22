@@ -34,10 +34,10 @@ class Statemachine:
             event = parts[1]
             end = parts[2]
             action = parts[3] if len(parts) == 4 else None
-            _end = self.__getattribute__("_" + end)
-            _start = self.__getattribute__("_" + start) if start != "*" else "*"
-            self.__getattribute__(event) # just to make sure it exists
-            _action = self.controller.__getattribute__(action) if action else None
+            _end = getattr(self, "_" + end)
+            _start = getattr(self, "_" + start) if start != "*" else "*"
+            getattr(self, event) # just to make sure it exists
+            _action = getattr(self.controller, action) if action else None
             self.trans[(_start, event)] = (_end, _action)
 
     def set_state(self, state):

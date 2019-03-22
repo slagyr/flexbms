@@ -50,7 +50,7 @@ class MenuTest(unittest.TestCase):
     def test_rotary_click_selects_item(self):
         self.menu.enter()
         self.rotary.clicked = True
-        self.menu.update()
+        self.menu.user_input()
 
         self.assertEqual(True, self.first.was_selected)
         
@@ -58,20 +58,33 @@ class MenuTest(unittest.TestCase):
         self.menu.enter()
         self.display.was_shown = False
         self.rotary.rel_pos = 1
-        self.menu.update()
+        self.menu.user_input()
 
-        self.assertEqual(True, self.display.was_shown)
+        self.assertEqual(True, self.controller.screen_outdated())
         self.assertEqual(1, self.menu.highlighted)
 
     def test_highlighted_stays_within_bounds(self):
         self.menu.enter()
         self.rotary.rel_pos = -1
-        self.menu.update()
+        self.menu.user_input()
         self.assertEqual(0, self.menu.highlighted)
 
         self.rotary.rel_pos = 10
-        self.menu.update()
+        self.menu.user_input()
         self.assertEqual(2, self.menu.highlighted)
+
+    def test_bug_were_previous_doesnt_get_unhighlighted(self):
+        self.menu.enter()
+        self.rotary.rel_pos = 1
+        self.display.drawn_text = []
+
+        self.menu.user_input()
+        self.menu.update()
+
+        # self.display.print_buffer()
+        self.assertEqual("1) first", self.display.drawn_text[0][0])
+        self.assertEqual("2) second", self.display.drawn_text[1][0])
+
 
 
 
