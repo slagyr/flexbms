@@ -45,6 +45,12 @@ class BargraphScreen(HomeScreen):
     def update(self):
         display = self.controller.display
         self.draw_cell_levels(display)
+        chg = "<" if self.controller.bq.charge() else "|"
+        dsg = ">" if self.controller.bq.discharge() else "|"
+        pchg = "P" if self.controller.driver.precharge() else "-"
+        statstr = chg + pchg + dsg
+        display.draw_text(0, 0, statstr)
+        display.draw_text(60, 0, "{:.1f}".format(self.controller.bq.amperage * -1))
         display.draw_text(104, 1, "{:.1f}".format(self.controller.bq.batt_voltage()))
         display.draw_text(104, 3, "{:.1f}".format(self.controller.cells.serial_voltage()))
         display.draw_text(104, 5, "{:.1f}".format(self.controller.driver.pack_voltage()))
@@ -55,10 +61,10 @@ class BargraphScreen(HomeScreen):
         display.inverted = False
         display.font = fonts.font6x8()
         display.clear()
-        display.draw_text(0, 0, "Flex BMS v1.0")
-        display.draw_text(0 + 104, 0, "BatV")
-        display.draw_text(0 + 104, 2, "SerV")
-        display.draw_text(0 + 104, 4, "PakV")
+        display.draw_text(24, 0, "Amps:")
+        display.draw_text(104, 0, "BatV")
+        display.draw_text(104, 2, "SerV")
+        display.draw_text(104, 4, "PakV")
         self.draw_graph_labels(display)
         self.update()
 

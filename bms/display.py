@@ -75,6 +75,7 @@ class Display:
         for i in range(8):
             buffer[(i * 128):(i * 128 + 128)] = fill
 
+    @micropython.native
     def show(self):
         i2c = self.i2c
         i2c.send(bytearray([SSD1306_CMND, 0x21, 0, X_MAX]), SSD1306_ADDR)

@@ -7,6 +7,7 @@ class ErrorScreen(HomeScreen):
     def __init__(self, controller):
         super().__init__(controller)
         self.trace_lines = None
+        self.can_resume = False
 
     def enter(self):
         display = self.controller.display
@@ -17,7 +18,9 @@ class ErrorScreen(HomeScreen):
         self.draw_all(display)
 
     def user_input(self):
-        pass
+        if self.can_resume and self.controller.rotary.clicked:
+            self.can_resume = False
+            self.controller.sm.clear()
 
     def update(self):
         pass
@@ -40,7 +43,8 @@ class ErrorScreen(HomeScreen):
             r = 1
             line = None
             lines = self.trace_lines
-            while r < 8 and (line or lines):
+            max = 7 if self.can_resume else 8
+            while r < max and (line or lines):
                 if not line:
                     line = lines[0].strip()
                     lines = lines[1:]
@@ -52,6 +56,13 @@ class ErrorScreen(HomeScreen):
                     line = None
                 display.draw_text(0, r, txt)
                 r += 1
+
+        if self.can_resume:
+            display.fill_rect(0, 56, 128, 8)
+            display.inverted = True
+            display.draw_text(18, 7, "Click to Resume")
+            display.inverted = False
+
         display.show()
 
 

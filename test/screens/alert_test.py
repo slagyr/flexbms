@@ -1,0 +1,41 @@
+import unittest
+
+from bms import bq
+from bms.screens.alert import AlertScreen
+from test.mock_controller import MockController
+from test.states.mock_machine import MockStatemachine
+
+
+class AlertScreenTest(unittest.TestCase):
+
+    def setUp(self):
+        self.controller = MockController()
+        self.sm = MockStatemachine(self.controller)
+        self.display = self.controller.display
+        self.rotary = self.controller.rotary
+        self.screen = AlertScreen(self.controller)
+
+    def test_with_trace(self):
+        self.controller.bq.faults = [bq.OCD, bq.SCD, bq.OV, bq.UV, bq.OVRD_ALERT]
+
+        self.screen.enter()
+        # self.display.print_buffer()
+        self.assertEqual("ALERT", self.display.drawn_text[0][0])
+        self.assertEqual("Over Current in DCH", self.display.drawn_text[1][0])
+        self.assertEqual("Short Circuit in DCH", self.display.drawn_text[2][0])
+        self.assertEqual("Over Voltage", self.display.drawn_text[3][0])
+        self.assertEqual("Under Voltage", self.display.drawn_text[4][0])
+        self.assertEqual("Alert Pin Override", self.display.drawn_text[5][0])
+        self.assertEqual("Click to Resume", self.display.drawn_text[6][0])
+
+    def test_click_to_resume(self):
+        self.controller.bq.faults = [bq.OCD]
+
+        self.screen.enter()
+        self.controller.rotary.clicked = True
+        self.screen.user_input()
+        
+        self.assertEqual("clear", self.controller.sm.last_event)
+
+
+

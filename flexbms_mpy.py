@@ -98,7 +98,12 @@ class FlexBMS:
     def loop(self):
         while self.ok:
             before = utime.ticks_ms()
-            self.controller.tick()
+            try:
+                self.controller.tick()
+            except Exception as e:
+                self.log_error(e)
+                self.controller.error_screen.can_resume = True
+                self.controller.sm.error()
             tick_duration = utime.ticks_diff(utime.ticks_ms(), before)
             sleepytime = TICK_INTERVAL - tick_duration
             if sleepytime > 0:
@@ -116,10 +121,10 @@ class FlexBMS:
             self.controller.setup()
             self.controller.last_user_event_time = utime.ticks_ms()
         except Exception as e:
-            self.ok = False
             self.log_error(e)
             if self.controller:
                 self.controller.set_screen(self.controller.error_screen)
+            return -1
 
         gc.collect()
         print("gc.mem_alloc(): " + str(gc.mem_alloc()))
@@ -130,3 +135,4 @@ class FlexBMS:
         except Exception as e:
             self.log_error(e)
             self.controller.set_screen(self.controller.error_screen)
+            return -2

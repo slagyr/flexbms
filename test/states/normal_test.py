@@ -1,5 +1,6 @@
 import unittest
 
+from bms.bq import CC_ONESHOT
 from bms.states.normal import NormalState
 from test.states.mock_machine import MockStatemachine
 
@@ -17,7 +18,6 @@ class NormalStateTest(unittest.TestCase):
         bq.discharge(False)
         bq.charge(False)
         bq.adc(False)
-        # bq.cc(True)
         driver.chargepump(False)
         driver.precharge(True)
 
@@ -25,8 +25,8 @@ class NormalStateTest(unittest.TestCase):
 
         self.assertEqual(True, bq.discharge())
         self.assertEqual(False, bq.charge())
-        # self.assertEqual(False, bq.adc())
-        # self.assertEqual(False, bq.cc())
+        self.assertEqual(False, bq.adc())
+        self.assertEqual(True, bq.get_reg_bit(CC_ONESHOT))
         self.assertEqual(True, driver.chargepump())
         self.assertEqual(False, driver.precharge())
 
@@ -38,3 +38,75 @@ class NormalStateTest(unittest.TestCase):
         self.state.enter()
         self.assertEqual(self.controller.bargraph_screen, self.controller.home_screen)
 
+    def test_charge_FET_closes_when_current_detected(self):
+        bq = self.controller.bq
+        bq.amperage = 0
+        self.state.enter()
+
+        self.state.tick()
+        self.assertEqual(False, bq.charge())
+
+        bq.amperage = -0.05  # under threshold
+        self.state.tick()
+        self.assertEqual(False, bq.charge())
+
+        bq.amperage = -0.2  # surpasses threshold
+        self.state.tick()
+        self.assertEqual(True, bq.charge())
+
+    def test_charge_FET_opens_when_current_dies(self):
+        bq = self.controller.bq
+        self.state.enter()
+
+        bq.amperage = -5  # make sure FET is one
+        self.state.tick()
+        self.assertEqual(True, bq.charge())
+
+        bq.amperage = 0  # current goes away
+        self.state.tick()
+        self.assertEqual(False, bq.charge())
+        
+    def test_voltage_loaded_every_10_ticks(self):
+        bq = self.controller.bq
+
+        self.state.enter()
+        self.assertEqual(False, bq.voltages_loaded)
+        self.assertEqual(False, bq.adc())
+
+        for i in range(8):
+            self.state.tick()
+        self.assertEqual(False, bq.voltages_loaded)
+        self.assertEqual(False, bq.adc())
+
+        self.state.tick() # 9th tick : turn on ADC
+        self.assertEqual(False, bq.voltages_loaded)
+        self.assertEqual(True, bq.adc())
+        self.assertEqual(9, self.state.counter)
+
+        self.state.tick() # 10th tick : load voltage, turn off ADC
+        self.assertEqual(True, bq.voltages_loaded)
+        self.assertEqual(False, bq.adc())
+        self.assertEqual(0, self.state.counter)
+
+    def test_low_V_triggers_event(self):
+        self.state.enter()
+        self.controller.cells[5].voltage = 1.1
+
+        for i in range(10):
+            self.state.tick()
+        self.assertEqual("low_v", self.sm.last_event)
+
+    def test_pow_on_event_when_charger_detected(self):
+        driver = self.controller.driver
+        cells = self.controller.cells
+        bq = self.controller.bq
+        bq.batt_voltage_value = 30.0
+
+        self.state.enter()
+        self.state.tick()
+        self.assertEqual(None, self.sm.last_event)
+
+        driver.pack_voltage_value = cells.max_serial_voltage()
+
+        self.state.tick()
+        self.assertEqual("pow_on", self.sm.last_event)

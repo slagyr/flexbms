@@ -1,4 +1,5 @@
 import bms.conf as conf
+from bms.screens.alert import AlertScreen
 from bms.screens.error import ErrorScreen
 from bms.screens.bargraph import BargraphScreen
 from bms.screens.low_v import LowVScreen
@@ -26,6 +27,7 @@ class Controller:
         self.voltages_screen = VoltagesScreen(self)
         self.main_menu = Menu(self, "MAIN")
         self.error_screen = ErrorScreen(self)
+        self.alert_screen = AlertScreen(self)
         self.low_v_screen = LowVScreen(self)
 
         self.home_screen = self.bargraph_screen

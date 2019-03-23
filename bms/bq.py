@@ -320,8 +320,7 @@ class BQ:
         if adc > 32767:  # Two's compliment
             adc = -65536 + adc
         v = adc * (lsb / 1000000)
-        a = v / sense_r
-        print("adc:", adc, "v:", v, "a:", a)
+        a = v / sense_r # Amps going into cells (a < 0 is amp going out)
         self.amperage = a
 
     def discharge(self, on=None):

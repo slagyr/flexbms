@@ -9,6 +9,7 @@ class MockBQ(BQ):
         self.was_setup = False
         self.balancing_cells = []
         self.alert_processed = False
+        self.batt_voltage_value = 42
         self.voltages = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5]
 
     def setup(self):
@@ -18,7 +19,7 @@ class MockBQ(BQ):
         return self.voltages[id - 1]
 
     def batt_voltage(self):
-        return 42
+        return self.batt_voltage_value
 
     def set_balance_cells(self, cell_ids):
         self.balancing_cells = cell_ids
