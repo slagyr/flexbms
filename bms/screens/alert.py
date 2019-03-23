@@ -1,11 +1,11 @@
 from bms import fonts, bq
-from bms.screens.home import HomeScreen
 
 
-class AlertScreen(HomeScreen):
+class AlertScreen:
 
     def __init__(self, controller):
-        super().__init__(controller)
+        self.controller = controller
+        self.idle_timeout = None
 
     def enter(self):
         display = self.controller.display
@@ -16,6 +16,7 @@ class AlertScreen(HomeScreen):
 
     def user_input(self):
         if self.controller.rotary.clicked:
+            self.controller.alert_msg = None
             self.controller.sm.clear()
 
     def update(self):
@@ -25,17 +26,22 @@ class AlertScreen(HomeScreen):
         display.draw_text(8 * 6, 0, "ALERT")
 
         row = 2
+
+        if self.controller.alert_msg:
+            display.draw_text(0, row, self.controller.alert_msg)
+            row += 1
+
         for fault in self.controller.bq.faults:
             if fault == bq.OVRD_ALERT:
                 display.draw_text(0, row, "Alert Pin Override")
             elif fault == bq.UV:
-                display.draw_text(0, row, "Under Voltage")
+                display.draw_text(0, row, "Undervoltage")
             elif fault == bq.OV:
-                display.draw_text(0, row, "Over Voltage")
+                display.draw_text(0, row, "Overvoltage")
             elif fault == bq.SCD:
-                display.draw_text(0, row, "Short Circuit in DCH")
+                display.draw_text(0, row, "Dischg Short Circuit")
             elif fault == bq.OCD:
-                display.draw_text(0, row, "Over Current in DCH")
+                display.draw_text(0, row, "Discharge Overcurrent")
             row += 1
 
         display.fill_rect(0, 56, 128, 8)

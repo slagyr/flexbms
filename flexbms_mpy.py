@@ -102,7 +102,7 @@ class FlexBMS:
                 self.controller.tick()
             except Exception as e:
                 self.log_error(e)
-                self.controller.error_screen.can_resume = True
+                self.controller.error_resume = True
                 self.controller.sm.error()
             tick_duration = utime.ticks_diff(utime.ticks_ms(), before)
             sleepytime = TICK_INTERVAL - tick_duration

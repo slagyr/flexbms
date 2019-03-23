@@ -35,3 +35,7 @@ class AlertStateTest(unittest.TestCase):
     def test_entry_sets_home_screen_to_alertscreen(self):
         self.state.enter()
         self.assertEqual(self.controller.alert_screen, self.controller.home_screen)
+        
+    # def test_max_charge_current_exceeded_alert(self):
+    #
+    #     self.assertEqual(1, 2)

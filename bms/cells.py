@@ -118,3 +118,15 @@ class Cells:
             if cell.voltage <= CELL_MIN_V:
                 return True
         return False
+
+    def fully_charged(self):
+        for cell in self:
+            if cell.voltage < CELL_MAX_V - 0.05:
+                return False
+        return True
+
+    def any_cell_full(self):
+        for cell in self:
+            if cell.voltage >= CELL_MAX_V:
+                return True
+        return False

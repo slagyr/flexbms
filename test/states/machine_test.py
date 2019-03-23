@@ -5,6 +5,7 @@ from bms.states.charge import ChargeState
 from bms.states.error import ErrorState
 from bms.states.eval import EvalState
 from bms.states.empty import EmptyState
+from bms.states.full import FullState
 from bms.states.machine import Statemachine
 from bms.states.normal import NormalState
 from bms.states.prechg import PreChgState
@@ -95,3 +96,20 @@ class StatemachineTest(unittest.TestCase):
         self.assertEqual(True, action_called)
         self.assertEqual(True, start.exited)
         self.assertEqual(True, end.entered)
+
+    def test_fully_charged_state(self):
+        self.sm.pow_on()
+        self.sm.full_v()
+        self.assertEqual(FullState, self.sm.state.__class__)
+
+    def test_full_to_charge(self):
+        self.sm.pow_on()
+        self.sm.full_v()
+        self.sm.norm_v()
+        self.assertEqual(ChargeState, self.sm.state.__class__)
+
+    def test_full_to_normal(self):
+        self.sm.pow_on()
+        self.sm.full_v()
+        self.sm.pow_off()
+        self.assertEqual(NormalState, self.sm.state.__class__)

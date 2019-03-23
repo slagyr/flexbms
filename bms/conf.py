@@ -18,3 +18,13 @@ BQ_OCD_DELAY = 0x3  # 80ms
 BQ_OCD_THRESH = 0x8  # 61mV
 BQ_UV_DELAY = 0x2 # 0x0: 1s, 0x1:4s, 0x2: 8s, 0x3: 16s
 BQ_OV_DELAY = 0x1 # 0x0: 1s, 0x1:2s, 0x2: 4s, 0x3: 8s
+
+# cells in parallel
+# max charge current
+# cell voltage threshold for determining full or empty
+# balance duration (already above as BALANCE_INTERVAL)
+# balance rest duration
+# charger:battery V threshold to determine if charger is plugged in
+# amperage threshold to turn on CHG FET in normal state
+# normal state interval for checking cell voltages
+# threshold for acceptable charger voltage

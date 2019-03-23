@@ -1,13 +1,12 @@
 from bms import fonts
-from bms.screens.home import HomeScreen
 
 
-class ErrorScreen(HomeScreen):
+class ErrorScreen:
 
     def __init__(self, controller):
-        super().__init__(controller)
+        self.controller = controller
+        self.idle_timeout = None
         self.trace_lines = None
-        self.can_resume = False
 
     def enter(self):
         display = self.controller.display
@@ -18,8 +17,8 @@ class ErrorScreen(HomeScreen):
         self.draw_all(display)
 
     def user_input(self):
-        if self.can_resume and self.controller.rotary.clicked:
-            self.can_resume = False
+        if self.controller.error_resume and self.controller.rotary.clicked:
+            self.controller.error_resume = False
             self.controller.sm.clear()
 
     def update(self):
@@ -43,7 +42,7 @@ class ErrorScreen(HomeScreen):
             r = 1
             line = None
             lines = self.trace_lines
-            max = 7 if self.can_resume else 8
+            max = 7 if self.controller.error_resume else 8
             while r < max and (line or lines):
                 if not line:
                     line = lines[0].strip()
@@ -57,7 +56,7 @@ class ErrorScreen(HomeScreen):
                 display.draw_text(0, r, txt)
                 r += 1
 
-        if self.can_resume:
+        if self.controller.error_resume:
             display.fill_rect(0, 56, 128, 8)
             display.inverted = True
             display.draw_text(18, 7, "Click to Resume")

@@ -1,5 +1,4 @@
 from bms import fonts
-from bms.screens.home import HomeScreen
 
 
 class DisplayCell:
@@ -14,9 +13,10 @@ class DisplayCell:
         self.bal = bal
 
 
-class BargraphScreen(HomeScreen):
+class BargraphScreen:
     def __init__(self, controller):
-        super().__init__(controller)
+        self.controller = controller
+        self.idle_timeout = None
         self.col_width = 7
         self.col_text_offset = 0
         self.display_cells = None
@@ -26,6 +26,10 @@ class BargraphScreen(HomeScreen):
 
     def menu_sel(self):
         self.controller.set_screen(self)
+
+    def user_input(self):
+        if self.controller.rotary.clicked:
+            self.controller.set_screen(self.controller.main_menu)
 
     def enter(self):
         self.reset_display_cells()

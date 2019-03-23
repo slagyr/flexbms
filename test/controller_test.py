@@ -103,9 +103,9 @@ class ControllerTest(unittest.TestCase):
 
     def test_updates_balancing_when_disabled(self):
         conf.BALANCE_ENABLED = False
-        self.assertFalse(self.cells.balancing_updated)
+        self.assertFalse(self.cells.was_balancing_updated)
         self.controller.tick()
-        self.assertFalse(self.cells.balancing_updated)
+        self.assertFalse(self.cells.was_balancing_updated)
         
     # def test_balancing_only_updates_by_interval(self):
     #     conf.BALANCE_ENABLED = True

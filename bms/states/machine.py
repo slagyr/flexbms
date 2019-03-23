@@ -3,6 +3,7 @@ from bms.states.charge import ChargeState
 from bms.states.error import ErrorState
 from bms.states.eval import EvalState
 from bms.states.empty import EmptyState
+from bms.states.full import FullState
 from bms.states.normal import NormalState
 from bms.states.prechg import PreChgState
 from bms.util import log
@@ -16,6 +17,7 @@ class Statemachine:
         self._empty = EmptyState(self)
         self._prechg = PreChgState(self)
         self._charge = ChargeState(self)
+        self._full = FullState(self)
         self._normal = NormalState(self)
         self._alert = AlertState(self)
         self._error = ErrorState(self)
@@ -72,6 +74,10 @@ class Statemachine:
     def norm_v(self):
         log("SM event: norm_v")
         self.handle_event("norm_v")
+
+    def full_v(self):
+        log("SM event: full_v")
+        self.handle_event("full_v")
 
     def pow_on(self):
         log("SM event: pow_on")

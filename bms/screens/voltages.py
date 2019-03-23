@@ -1,12 +1,16 @@
 from bms import fonts
-from bms.screens.home import HomeScreen
 
 
-class VoltagesScreen(HomeScreen):
+class VoltagesScreen:
 
     def __init__(self, controller):
-        super().__init__(controller)
+        self.controller = controller
+        self.idle_timeout = None
         self.display_cells = None
+
+    def user_input(self):
+        if self.controller.rotary.clicked:
+            self.controller.set_screen(self.controller.main_menu)
 
     def menu_name(self):
         return "Cell Voltages"

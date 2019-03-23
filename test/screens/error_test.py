@@ -43,7 +43,7 @@ class ErrorScreenTest(unittest.TestCase):
         self.assertEqual("error.txt", self.display.drawn_text[2][0])
 
     def test_click_to_resume(self):
-        self.screen.can_resume = True
+        self.controller.error_resume = True
         self.screen.enter()
         self.assertEqual("Click to Resume", self.display.drawn_text[3][0])
 
@@ -51,4 +51,4 @@ class ErrorScreenTest(unittest.TestCase):
         self.screen.user_input()
 
         self.assertEqual("clear", self.controller.sm.last_event)
-        self.assertEqual(False, self.screen.can_resume)
+        self.assertEqual(False, self.controller.error_resume)

@@ -37,6 +37,8 @@ class Controller:
         self._last_sm_tick = 0
         self._screen_outdated = True
         self._has_alert = False
+        self.alert_msg = None
+        self.error_resume = False
 
         self.next_balance_time = -1
         self.in_balance_rest = True

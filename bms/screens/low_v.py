@@ -1,11 +1,15 @@
 from bms import fonts
-from bms.screens.home import HomeScreen
 
 
-class LowVScreen(HomeScreen):
+class LowVScreen:
     def __init__(self, controller):
-        super().__init__(controller)
+        self.controller = controller
+        self.idle_timeout = None
         self.pack_v = "???"
+
+    def user_input(self):
+        if self.controller.rotary.clicked:
+            self.controller.set_screen(self.controller.main_menu)
 
     def menu_name(self):
         return "Low Voltage"
