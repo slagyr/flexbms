@@ -121,7 +121,7 @@ class Cells:
 
     def fully_charged(self):
         for cell in self:
-            if cell.voltage < CELL_MAX_V - 0.05:
+            if cell.voltage < CELL_MAX_V - 0.01:
                 return False
         return True
 

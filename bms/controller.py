@@ -1,9 +1,11 @@
 import bms.conf as conf
 from bms.screens.alert import AlertScreen
+from bms.screens.charged import ChargedScreen
 from bms.screens.error import ErrorScreen
 from bms.screens.bargraph import BargraphScreen
 from bms.screens.low_v import LowVScreen
 from bms.screens.menu import Menu
+from bms.screens.prechg import PrechargeScreen
 from bms.screens.splash import SplashScreen
 from bms.screens.voltages import VoltagesScreen
 from bms.states.machine import Statemachine
@@ -29,6 +31,8 @@ class Controller:
         self.error_screen = ErrorScreen(self)
         self.alert_screen = AlertScreen(self)
         self.low_v_screen = LowVScreen(self)
+        self.charged_screen = ChargedScreen(self)
+        self.prechg_screen = PrechargeScreen(self)
 
         self.home_screen = self.bargraph_screen
 
@@ -48,7 +52,6 @@ class Controller:
         main.add(self.bargraph_screen)
         main.add(self.voltages_screen)
         main.add(self.splash_screen)
-        main.add(self.low_v_screen)
 
     def setup(self):
         self.display.setup()

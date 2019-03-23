@@ -148,10 +148,34 @@ class ChargeStateTest(unittest.TestCase):
             self.state.tick()
         self.assertEqual(True, bq.charge())
 
-    #
-    # def test_incorrect_charge_voltage(self):
-    #
-    #     self.assertEqual(1, 2)
+    def test_incorrect_charge_voltage_on_enter(self):
+        driver = self.controller.driver
+        cells = self.controller.cells
+        bq = self.controller.bq
+        bq.charge(False)
+        driver.pack_voltage_value = 86
+        bq.batt_voltage_value = cells.max_serial_voltage()
+        self.state.enter()
+        
+        self.assertEqual("alert", self.sm.last_event)
+        self.assertEqual("Wrong Charge V: 86.0", self.controller.alert_msg)
+        self.assertEqual(False, bq.charge())
+
+    def test_incorrect_charge_voltage_on_tick(self):
+        driver = self.controller.driver
+        cells = self.controller.cells
+        bq = self.controller.bq
+        bq.charge(False)
+        driver.pack_voltage_value = cells.max_serial_voltage()
+        bq.batt_voltage_value = cells.max_serial_voltage()
+        self.state.enter()
+        self.assertEqual(True, bq.charge())
+
+        driver.pack_voltage_value = cells.max_serial_voltage() + 0.6
+        self.state.tick()
+        self.assertEqual("alert", self.sm.last_event)
+        self.assertEqual("Wrong Charge V: 38.4", self.controller.alert_msg)
+
 
 
 

@@ -214,7 +214,7 @@ class CellsTest(unittest.TestCase):
         self.cells[5].voltage = 4.1
         self.assertEqual(False, self.cells.fully_charged())
 
-        self.cells[5].voltage = 4.16
+        self.cells[5].voltage = 4.19
         self.assertEqual(True, self.cells.fully_charged())
 
         self.cells[2].voltage = 4.1
