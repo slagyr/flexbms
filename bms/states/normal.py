@@ -1,5 +1,5 @@
 from bms import util
-
+from bms.util import log
 
 
 class NormalState:
@@ -42,6 +42,8 @@ class NormalState:
 
         pack_V = controller.driver.pack_voltage()
         batt_V = bq.batt_voltage()
+        cells_V = cells.serial_voltage()
+        log("Normal: pack_V:", pack_V, "batt_V:", batt_V, "cells_V: ", cells_V)
         if pack_V > batt_V:
             my.sm.pow_on()
         elif my.counter == 8:

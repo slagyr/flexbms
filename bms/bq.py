@@ -1,4 +1,4 @@
-from bms.conf import *
+from bms.conf import CONF
 from bms.util import clocked_fn, ON_BOARD, log
 
 if not ON_BOARD:
@@ -86,7 +86,7 @@ class BQ:
         return buffer
 
     def read_register_single(self, reg):
-        for attempt in range(BQ_CRC_ATTEMPTS):
+        for attempt in range(CONF.BQ_CRC_ATTEMPTS):
             buffer = self.read_register(reg, bytearray([0, 0]))
             crc = crc8(bytearray([17, buffer[0]]))
             if buffer[1] != crc:
@@ -98,7 +98,7 @@ class BQ:
         return buffer[0]
 
     def read_register_double(self, reg):
-        for attempt in range(BQ_CRC_ATTEMPTS):
+        for attempt in range(CONF.BQ_CRC_ATTEMPTS):
             buffer = self.read_register(reg, bytearray(4))
             crc1 = crc8(bytearray([17, buffer[0]]))
             crc2 = crc8(bytearray([buffer[2]]))
@@ -144,11 +144,11 @@ class BQ:
         self.write_register(CC_CFG, 0x19)
         self.adc_gain = self.read_adc_gain()
         self.adc_offset = self.read_adc_offset()
-        self.set_ov_trip(CELL_MAX_V)
-        self.set_uv_trip(CELL_MIN_V)
-        self.set_protect1(BQ_RSNS, BQ_SCD_DELAY, BQ_SCD_THRESH)
-        self.set_protect2(BQ_OCD_DELAY, BQ_OCD_THRESH)
-        self.set_protect3(BQ_UV_DELAY, BQ_OV_DELAY)
+        self.set_ov_trip(CONF.CELL_MAX_V)
+        self.set_uv_trip(CONF.CELL_MIN_V)
+        self.set_protect1(CONF.BQ_RSNS, CONF.BQ_SCD_DELAY, CONF.BQ_SCD_THRESH)
+        self.set_protect2(CONF.BQ_OCD_DELAY, CONF.BQ_OCD_THRESH)
+        self.set_protect3(CONF.BQ_UV_DELAY, CONF.BQ_OV_DELAY)
         self.reset_balancing()
         self.discharge(False)
         self.charge(False)
@@ -238,9 +238,6 @@ class BQ:
 
     def process_alert(self):
         stat = self.read_register_single(SYS_STAT)
-        if stat & (CC_READY & 0xFF):
-            self.load_amperage()
-            self.set_reg_bit(CC_READY, True)
         if stat & (DEVICE_XREADY & 0xFF):
             if stat & (OVRD_ALERT & 0xFF):
                 self.faults.append(OVRD_ALERT)
@@ -253,6 +250,9 @@ class BQ:
             if stat & (OCD & 0xFF):
                 self.faults.append(OCD)
         else:
+            if stat & (CC_READY & 0xFF):
+                self.load_amperage()
+                self.set_reg_bit(CC_READY, True)
             if stat & 0b00111111 != 0:
                 log("bq.sys_stat: unusual end status: " + str(stat))
 
@@ -285,7 +285,7 @@ class BQ:
 
     def batt_voltage(self):
         adc = self.read_register_double(BAT_HI)
-        return ((adc * 4 * self.adc_gain / 1000) + (self.adc_offset * CELL_COUNT)) / 1000
+        return ((adc * 4 * self.adc_gain / 1000) + (self.adc_offset * CONF.CELL_COUNT)) / 1000
 
     def set_balance_cell(self, id, on):
         if id < 1 or id > 15:

@@ -1,4 +1,4 @@
-from bms.conf import *
+from bms.conf import CONF
 
 
 class Cell:
@@ -11,7 +11,7 @@ class Cell:
         self.right = None
 
     def soc(self):
-        return (self.voltage - CELL_MIN_V) / (CELL_MAX_V - CELL_MIN_V)
+        return (self.voltage - CONF.CELL_MIN_V) / (CONF.CELL_MAX_V - CONF.CELL_MIN_V)
 
     def adjacent_to(self, other):
         if abs(other.index - self.index) != 1:
@@ -25,7 +25,7 @@ class Cell:
 
     def should_balance(self, min_v):
         my = self
-        if (my.voltage - min_v) <= BALANCE_THRESH:
+        if (my.voltage - min_v) <= CONF.BALANCE_THRESH:
             return False
         if my.left and my.left.balancing and my.left.voltage >= my.voltage:
             return False
@@ -84,7 +84,7 @@ class Cells:
         return sum
 
     def max_serial_voltage(self):
-        return self.count * CELL_MAX_V
+        return self.count * CONF.CELL_MAX_V
 
     def soc(self):
         result = 2
@@ -115,18 +115,18 @@ class Cells:
 
     def has_low_voltage(self):
         for cell in self:
-            if cell.voltage <= CELL_MIN_V:
+            if cell.voltage <= CONF.CELL_MIN_V:
                 return True
         return False
 
     def fully_charged(self):
         for cell in self:
-            if cell.voltage < CELL_MAX_V - 0.01:
+            if cell.voltage < CONF.CELL_MAX_V - 0.01:
                 return False
         return True
 
     def any_cell_full(self):
         for cell in self:
-            if cell.voltage >= CELL_MAX_V:
+            if cell.voltage >= CONF.CELL_MAX_V:
                 return True
         return False

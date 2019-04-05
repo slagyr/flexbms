@@ -7,14 +7,20 @@ if not ON_BOARD:
     from bms.util import const
 
 # These values need to be calculated with soldered board
-GAIN = 0.0176
-OFFSET = 125
+GAIN = 0.017496341463415
+OFFSET = 3
 
 
 # To measure:
 #   Turn off BQ CHG_ON and DSH_ON
 #   Connected known voltage to Pack+ and -
 #   Measure the ADC value
+
+# ADC: 0 - 4096
+# REF V: 3.3V
+# R1: 20k
+# R2: 1.1k
+
 
 
 class Driver:
@@ -31,6 +37,10 @@ class Driver:
         pass
 
     def pack_voltage(self):
+        avg = self.sample_adc()
+        return (avg - OFFSET) * GAIN
+
+    def sample_adc(self):
         sum = 0
         self.packmonitor(True)
         for i in range(10):
@@ -38,4 +48,4 @@ class Driver:
             sum += adc
         self.packmonitor(False)
         avg = sum / 10
-        return (avg - OFFSET) * GAIN
+        return avg

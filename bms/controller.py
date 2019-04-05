@@ -44,9 +44,6 @@ class Controller:
         self.alert_msg = None
         self.error_resume = False
 
-        self.next_balance_time = -1
-        self.in_balance_rest = True
-
     def wire_menus(self):
         main = self.main_menu
         main.add(self.bargraph_screen)
@@ -100,9 +97,6 @@ class Controller:
             if my.bq.faults:
                 my.sm.alert()
 
-        # my.bq.load_cell_voltages(my.cells)
-        # my.balance()
-
         if my.rotary.has_update():
             my.last_user_event_time = millis
             my.screen.user_input()
@@ -121,15 +115,3 @@ class Controller:
         if my._screen_outdated:
             my.screen.update()
             my._screen_outdated = False
-
-    def balance(self):
-        millis = self.clock.millis()
-        if conf.BALANCE_ENABLED and millis > self.next_balance_time:
-            if self.in_balance_rest:
-                self.in_balance_rest = False
-                self.cells.update_balancing(self.bq)
-                self.next_balance_time = self.clock.millis_add(millis, 60000)
-            else:
-                self.in_balance_rest = True
-                self.cells.reset_balancing(self.bq)
-                self.next_balance_time = self.clock.millis_add(millis, 3000)

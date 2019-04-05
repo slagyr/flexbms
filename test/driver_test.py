@@ -38,11 +38,11 @@ class DriverTest(unittest.TestCase):
         self.assertEqual(True, self.driver.packmonitor())
 
     def test_pack_voltage(self):
-        cases = [(125, 0.0),
+        cases = [(5, 0.0),
                  # (790, 10.0),
                  # (1375, 20.0),
                  # (1965, 30.0),
-                 (2075, 34.3)
+                 (2075, 36.3)
                  # (2550, 40.0),
                  # (3140, 50.0)
                  ]

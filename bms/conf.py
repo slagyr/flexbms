@@ -1,23 +1,63 @@
-# TODO - Load from a config file
-# TODO - Make it saveable to config file
-# TODO - Store in an instance object so tests dont interfere
+def _parse(s):
+    if s == "True":
+        return True
+    elif s == "False":
+        return False
+    elif s[0] == "'":
+        return s[1::-1]
+    elif "." in s:
+        return float(s)
+    else:
+        return int(s)
 
-CELL_COUNT = 10
-CELL_MAX_V = 4.2
-CELL_MIN_V = 2.5
 
-BALANCE_THRESH = 0.01
-BALANCE_ENABLED = True
-BALANCE_INTERVAL = 60000 # 1 min
+class Config:
+    def __init__(self):
+        self.CELL_COUNT = 10
+        self.CELL_MAX_V = 4.2
+        self.CELL_MIN_V = 2.5
 
-BQ_CRC_ATTEMPTS = 5
-BQ_RSNS = 1
-BQ_SCD_DELAY = 0x1  # 100us
-BQ_SCD_THRESH = 0x2  # 89mV
-BQ_OCD_DELAY = 0x3  # 80ms
-BQ_OCD_THRESH = 0x8  # 61mV
-BQ_UV_DELAY = 0x2 # 0x0: 1s, 0x1:4s, 0x2: 8s, 0x3: 16s
-BQ_OV_DELAY = 0x1 # 0x0: 1s, 0x1:2s, 0x2: 4s, 0x3: 8s
+        self.BALANCE_ENABLED = True
+        self.BALANCE_THRESH = 0.01
+
+        self.BQ_CRC_ATTEMPTS = 5
+        self.BQ_RSNS = 1
+        self.BQ_SCD_DELAY = 0x1  # 100us
+        self.BQ_SCD_THRESH = 0x2  # 89mV
+        self.BQ_OCD_DELAY = 0x3  # 80ms
+        self.BQ_OCD_THRESH = 0x8  # 61mV
+        self.BQ_UV_DELAY = 0x2  # 0x0: 1s, 0x1:4s, 0x2: 8s, 0x3: 16s
+        self.BQ_OV_DELAY = 0x1  # 0x0: 1s, 0x1:2s, 0x2: 4s, 0x3: 8s
+
+    def save(self):
+        with open(CONF_FILE, "w") as f:
+            for field in self.__dict__:
+                value = self.__dict__[field]
+                line = field + ": " + str(value) + "\n"
+                f.write(line)
+
+    def load(self):
+        with open(CONF_FILE, "r") as f:
+            line = f.readline()
+            while line:
+                tokens = line.split(":", 1)
+                field = tokens[0]
+                value = _parse(tokens[1].strip())
+                setattr(self, field, value)
+                line = f.readline()
+
+    def startup(self):
+        try:
+            self.load()
+        except RuntimeError:
+            self.save()
+
+    def reset(self):
+        new = Config()
+        for f in new.__dict__:
+            v = getattr(new, f)
+            setattr(self, f, v)
+
 
 # cells in parallel
 # max charge current
@@ -28,3 +68,8 @@ BQ_OV_DELAY = 0x1 # 0x0: 1s, 0x1:2s, 0x2: 4s, 0x3: 8s
 # amperage threshold to turn on CHG FET in normal state
 # normal state interval for checking cell voltages
 # threshold for acceptable charger voltage
+
+
+CONF = Config()
+CONF_FILE = "bms.conf"
+

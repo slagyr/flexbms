@@ -71,6 +71,7 @@ class FlexBMS:
         self.rot_clk_db = None
 
     def init(self):
+        CONF.startup()
         i2c = I2C(1, I2C.MASTER, baudrate=100000)
         bq = BQ(i2c)
         driver = Driver(Pin("Y8", Pin.OUT_PP),
@@ -78,8 +79,8 @@ class FlexBMS:
                         Pin("Y6", Pin.OUT_PP),
                         ADC(Pin("X11")))
         display = Display(i2c)
-        cells = Cells(CELL_COUNT)
-        rotary = Rotary(Pin("X2", Pin.IN), Pin("X3", Pin.IN))
+        cells = Cells(CONF.CELL_COUNT)
+        rotary = Rotary(Pin("X2", Pin.IN), Pin("X1", Pin.IN))
 
         self.controller.display = display
         self.controller.bq = bq
@@ -87,7 +88,7 @@ class FlexBMS:
         self.controller.cells = cells
         self.controller.rotary = rotary
 
-        rotary_button = Pin("X1", Pin.IN)
+        rotary_button = Pin("X3", Pin.IN)
         self.rot_rot_db = Debouncer(rotary.clk, ExtInt.IRQ_FALLING, 1, rotary.handle_rotate)
         self.rot_clk_db = Debouncer(rotary_button, ExtInt.IRQ_FALLING, 4, rotary.handle_click)
 
