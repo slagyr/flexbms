@@ -3,17 +3,15 @@ import tempfile
 import unittest
 
 from bms import conf
-from bms.conf import CONF
+from bms.conf import CONF, CONF_FILE
 
 
 class ConfTest(unittest.TestCase):
 
     def setUp(self):
         CONF.reset()
-        self.conf_filename = tempfile.gettempdir() + "/bms_test.conf"
-        if os.path.exists(self.conf_filename):
-            os.remove(self.conf_filename)
-        conf.CONF_FILE = self.conf_filename
+        if os.path.exists(CONF_FILE):
+            os.remove(CONF_FILE)
 
     def test_cell_defaults(self):
         self.assertEqual(10, CONF.CELL_COUNT)
@@ -37,13 +35,13 @@ class ConfTest(unittest.TestCase):
 
     def test_saving_to_file(self):
         CONF.save()
-        self.assertEqual(True, os.path.exists(self.conf_filename))
-        with open(self.conf_filename, "r") as f:
+        self.assertEqual(True, os.path.exists(CONF_FILE))
+        with open(CONF_FILE, "r") as f:
             lines = f.readlines()
         self.assertIn("CELL_COUNT: 10\n", lines)
 
     def test_reading_from_file(self):
-        with open(self.conf_filename, "w") as f:
+        with open(CONF_FILE, "w") as f:
             f.write("CELL_COUNT: 25\n")
             f.write("BALANCE_ENABLED: False\n")
 

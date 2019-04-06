@@ -82,34 +82,34 @@ def clocked_fn(f, *args, **kwargs):
 
     return new_func
 
-
-BYTEARRAY1 = bytearray(1)
-BYTEARRAY2 = bytearray(2)
-BYTEARRAY3 = bytearray(3)
-BYTEARRAY4 = bytearray(4)
-
-
-def bytearray1(a):
-    BYTEARRAY1[0] = a
-    return BYTEARRAY1
-
-
-def bytearray2(a, b):
-    BYTEARRAY2[0] = a
-    BYTEARRAY2[1] = b
-    return BYTEARRAY2
-
-
-def bytearray3(a, b, c):
-    BYTEARRAY3[0] = a
-    BYTEARRAY3[1] = b
-    BYTEARRAY3[2] = c
-    return BYTEARRAY3
-
-
-def bytearray4(a, b, c, d):
-    BYTEARRAY4[0] = a
-    BYTEARRAY4[1] = b
-    BYTEARRAY4[2] = c
-    BYTEARRAY4[3] = d
-    return BYTEARRAY4
+#
+# BYTEARRAY1 = bytearray(1)
+# BYTEARRAY2 = bytearray(2)
+# BYTEARRAY3 = bytearray(3)
+# BYTEARRAY4 = bytearray(4)
+#
+#
+# def bytearray1(a):
+#     BYTEARRAY1[0] = a
+#     return BYTEARRAY1
+#
+#
+# def bytearray2(a, b):
+#     BYTEARRAY2[0] = a
+#     BYTEARRAY2[1] = b
+#     return BYTEARRAY2
+#
+#
+# def bytearray3(a, b, c):
+#     BYTEARRAY3[0] = a
+#     BYTEARRAY3[1] = b
+#     BYTEARRAY3[2] = c
+#     return BYTEARRAY3
+#
+#
+# def bytearray4(a, b, c, d):
+#     BYTEARRAY4[0] = a
+#     BYTEARRAY4[1] = b
+#     BYTEARRAY4[2] = c
+#     BYTEARRAY4[3] = d
+#     return BYTEARRAY4

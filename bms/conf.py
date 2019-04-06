@@ -1,3 +1,6 @@
+from bms.util import ON_BOARD, log
+
+
 def _parse(s):
     if s == "True":
         return True
@@ -29,6 +32,9 @@ class Config:
         self.BQ_UV_DELAY = 0x2  # 0x0: 1s, 0x1:4s, 0x2: 8s, 0x3: 16s
         self.BQ_OV_DELAY = 0x1  # 0x0: 1s, 0x1:2s, 0x2: 4s, 0x3: 8s
 
+        self.PACK_V_OFFSET = 0
+        self.PACK_V_GAIN = 0.017496341463415
+
     def save(self):
         with open(CONF_FILE, "w") as f:
             for field in self.__dict__:
@@ -49,7 +55,9 @@ class Config:
     def startup(self):
         try:
             self.load()
-        except RuntimeError:
+        except Exception as e:
+            log("Failed to load config file.  Rewriting it.")
+            log(e)
             self.save()
 
     def reset(self):
@@ -71,5 +79,10 @@ class Config:
 
 
 CONF = Config()
-CONF_FILE = "bms.conf"
+if ON_BOARD:
+    CONF_FILE = "bms.conf"
+else:
+    import tempfile
+    CONF_FILE = tempfile.gettempdir() + "/bms_test.conf"
+
 

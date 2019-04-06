@@ -69,6 +69,8 @@ class FlexBMS:
         self.ok = True
         self.rot_rot_db = None
         self.rot_clk_db = None
+        self._hardware = None
+        self.conf = CONF
 
     def init(self):
         CONF.startup()
@@ -137,3 +139,11 @@ class FlexBMS:
             self.log_error(e)
             self.controller.set_screen(self.controller.error_screen)
             return -2
+
+    def hardware(self):
+        if self._hardware is None:
+            from bms.hardware import Hardware
+            self._hardware = Hardware(self.controller)
+        return self._hardware
+
+
