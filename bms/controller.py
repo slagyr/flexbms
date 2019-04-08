@@ -1,6 +1,7 @@
 import bms.conf as conf
 from bms.screens.alert import AlertScreen
 from bms.screens.charged import ChargedScreen
+from bms.screens.dev import DevScreen
 from bms.screens.error import ErrorScreen
 from bms.screens.bargraph import BargraphScreen
 from bms.screens.low_v import LowVScreen
@@ -12,6 +13,15 @@ from bms.states.machine import Statemachine
 
 from bms.util import clocked_fn
 
+class HomeMenuItem:
+    def __init__(self, controller):
+        self.controller = controller
+
+    def menu_name(self):
+        return "Home Screen"
+
+    def menu_sel(self):
+        self.controller.set_screen(self.controller.home_screen)
 
 class Controller:
     def __init__(self, clock):
@@ -33,6 +43,7 @@ class Controller:
         self.low_v_screen = LowVScreen(self)
         self.charged_screen = ChargedScreen(self)
         self.prechg_screen = PrechargeScreen(self)
+        self.dev_screen = DevScreen(self)
 
         self.home_screen = self.bargraph_screen
 
@@ -46,8 +57,10 @@ class Controller:
 
     def wire_menus(self):
         main = self.main_menu
+        main.add(HomeMenuItem(self))
         main.add(self.bargraph_screen)
         main.add(self.voltages_screen)
+        main.add(self.dev_screen)
         main.add(self.splash_screen)
 
     def setup(self):

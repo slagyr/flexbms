@@ -1,3 +1,6 @@
+from bms.conf import CONF
+
+
 class PreChgState:
 
     def __init__(self, sm):
@@ -23,7 +26,7 @@ class PreChgState:
         cells = controller.cells
         driver = controller.driver
 
-        if driver.pack_voltage() < bq.batt_voltage():
+        if (driver.pack_voltage() + CONF.PACK_V_TOLERANCE) < bq.batt_voltage():
             my.sm.pow_off()
         elif not cells.has_low_voltage():
             my.sm.norm_v()

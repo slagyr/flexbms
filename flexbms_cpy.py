@@ -29,7 +29,7 @@ def init():
                     digitalio.DigitalInOut(board.D12),
                     analogio.AnalogIn(board.A0))
     display = Display(i2c)
-    cells = Cells(CELL_COUNT)
+    cells = Cells(CELL_SERIES)
     rotary = Rotary(rotaryio.IncrementalEncoder(board.D6, board.D5))
     # events = Events(gamepad.GamePad(digitalio.DigitalInOut(board.D9)))
     events.listeners.append(rotary)

@@ -238,7 +238,7 @@ class BQ76940Test(unittest.TestCase):
         self.i2c.registers[0x2A] = 97
         self.i2c.registers[0x2B] = 215
 
-        self.assertEqual(10, CONF.CELL_COUNT) # otherwise calculation doesn't work
+        self.assertEqual(10, CONF.CELL_SERIES) # otherwise calculation doesn't work
         self.assertAlmostEqual(38.227, self.bq.batt_voltage(), 1)
         
     def test_setting_cells_to_balance(self):

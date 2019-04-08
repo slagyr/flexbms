@@ -285,7 +285,7 @@ class BQ:
 
     def batt_voltage(self):
         adc = self.read_register_double(BAT_HI)
-        return ((adc * 4 * self.adc_gain / 1000) + (self.adc_offset * CONF.CELL_COUNT)) / 1000
+        return ((adc * 4 * self.adc_gain / 1000) + (self.adc_offset * CONF.CELL_SERIES)) / 1000
 
     def set_balance_cell(self, id, on):
         if id < 1 or id > 15:

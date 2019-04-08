@@ -81,7 +81,7 @@ class FlexBMS:
                         Pin("Y6", Pin.OUT_PP),
                         ADC(Pin("X11")))
         display = Display(i2c)
-        cells = Cells(CONF.CELL_COUNT)
+        cells = Cells(CONF.CELL_SERIES)
         rotary = Rotary(Pin("X2", Pin.IN), Pin("X1", Pin.IN))
 
         self.controller.display = display

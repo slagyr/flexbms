@@ -90,37 +90,12 @@ class ControllerTest(unittest.TestCase):
         self.controller.screen_outdated(True)
         self.controller.tick()
         self.assertEqual(True, screen.was_updated)
-        
-    # def test_updates_cells_on_tick(self):
-    #     self.assertFalse(self.bq.voltages_loaded)
-    #     self.controller.tick()
-    #     self.assertTrue(self.bq.voltages_loaded)
-
-    # def test_updates_balancing(self):
-    #     self.assertFalse(self.cells.balancing_updated)
-    #     self.controller.tick()
-    #     self.assertTrue(self.cells.balancing_updated)
 
     def test_updates_balancing_when_disabled(self):
         conf.BALANCE_ENABLED = False
         self.assertFalse(self.cells.was_balancing_updated)
         self.controller.tick()
         self.assertFalse(self.cells.was_balancing_updated)
-        
-    # def test_balancing_only_updates_by_interval(self):
-    #     conf.BALANCE_ENABLED = True
-    #     conf.BALANCE_INTERVAL = 60
-    #     self.controller.tick(0)
-    #     self.assertEqual(True, self.cells.balancing_updated)
-    #
-    #     self.cells.balancing_updated = False
-    #     self.controller.tick(1)
-    #     self.assertEqual(False, self.cells.balancing_updated)
-    #     self.controller.tick(2)
-    #     self.assertEqual(False, self.cells.balancing_updated)
-    #
-    #     self.controller.tick(61)
-    #     self.assertEqual(True, self.cells.balancing_updated)
         
     def test_rotary_gets_rested(self):
         self.rotary.clicked = True

@@ -1,3 +1,4 @@
+from bms.conf import CONF
 from bms.util import log
 
 
@@ -9,7 +10,7 @@ class ChargeState():
     def check_charger_voltage(self):
         controller = self.sm.controller
         voltage = controller.driver.pack_voltage()
-        if voltage > controller.cells.max_serial_voltage() + 0.5:
+        if voltage > controller.cells.max_serial_voltage() + CONF.PACK_V_TOLERANCE:
             controller.alert_msg = "Wrong Charge V: {0:.1f}".format(voltage)
             self.sm.alert()
             return False
@@ -41,6 +42,7 @@ class ChargeState():
         bq = controller.bq
         cells = controller.cells
         driver = controller.driver
+        conf = CONF
 
         bq.cc_oneshot()
         bq.load_cell_voltages(cells)
@@ -49,12 +51,12 @@ class ChargeState():
         batt_V = bq.batt_voltage()
         cells_V = cells.serial_voltage()
         log("Charge: pack_V:", pack_V, "batt_V:", batt_V, "cells_V: ", cells_V)
-        if bq.amperage > 1.5:
+        if bq.amperage > (conf.CELL_MAX_CHG_I * conf.CELL_PARALLEL):
             controller.alert_msg = "Charge Overcurrent"
             my.sm.alert()
         elif cells.has_low_voltage():
             my.sm.low_v()
-        elif pack_V < batt_V:
+        elif bq.amperage < (0 + CONF.PACK_I_TOLERANCE):
             my.sm.pow_off()
         elif not self.check_charger_voltage():
             pass # alert event already triggered

@@ -1,3 +1,6 @@
+from bms.conf import CONF
+
+
 class FullState:
     def __init__(self, sm):
         self.sm = sm
@@ -23,5 +26,5 @@ class FullState:
 
         if not cells.fully_charged():
             my.sm.norm_v()
-        elif driver.pack_voltage() < bq.batt_voltage():
+        elif (driver.pack_voltage() + CONF.PACK_V_TOLERANCE) < bq.batt_voltage():
             my.sm.pow_off()

@@ -16,9 +16,12 @@ def _parse(s):
 
 class Config:
     def __init__(self):
-        self.CELL_COUNT = 10
+        self.CELL_SERIES = 10
+        self.CELL_PARALLEL = 1
         self.CELL_MAX_V = 4.2
         self.CELL_MIN_V = 2.5
+        self.CELL_MAX_CHG_I = 1.5
+        self.CELL_MAX_DSG_I = 10
 
         self.BALANCE_ENABLED = True
         self.BALANCE_THRESH = 0.01
@@ -32,12 +35,14 @@ class Config:
         self.BQ_UV_DELAY = 0x2  # 0x0: 1s, 0x1:4s, 0x2: 8s, 0x3: 16s
         self.BQ_OV_DELAY = 0x1  # 0x0: 1s, 0x1:2s, 0x2: 4s, 0x3: 8s
 
+        self.PACK_V_TOLERANCE = 0.5
         self.PACK_V_OFFSET = 0
         self.PACK_V_GAIN = 0.017496341463415
+        self.PACK_I_TOLERANCE = 0.05
 
     def save(self):
         with open(CONF_FILE, "w") as f:
-            for field in self.__dict__:
+            for field in sorted(self.__dict__.keys()):
                 value = self.__dict__[field]
                 line = field + ": " + str(value) + "\n"
                 f.write(line)

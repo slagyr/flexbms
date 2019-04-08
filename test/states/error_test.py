@@ -35,6 +35,7 @@ class ErrorStateTest(unittest.TestCase):
     def test_entry_sets_home_screen_to_alertscreen(self):
         self.state.enter()
         self.assertEqual(self.controller.error_screen, self.controller.home_screen)
+        self.assertEqual(self.controller.error_screen, self.controller.screen)
 
 
 
