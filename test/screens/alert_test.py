@@ -16,7 +16,7 @@ class AlertScreenTest(unittest.TestCase):
         self.screen = AlertScreen(self.controller)
 
     def test_bq_faults(self):
-        self.controller.bq.faults = [bq.OCD, bq.SCD, bq.OV, bq.UV, bq.OVRD_ALERT]
+        self.controller.bq.faults = [bq.OCD, bq.SCD, bq.OV, bq.UV, bq.OVRD_ALERT, bq.DEVICE_XREADY]
 
         self.screen.enter()
         # self.display.print_buffer()
@@ -26,7 +26,8 @@ class AlertScreenTest(unittest.TestCase):
         self.assertEqual("Overvoltage", self.display.drawn_text[3][0])
         self.assertEqual("Undervoltage", self.display.drawn_text[4][0])
         self.assertEqual("Alert Pin Override", self.display.drawn_text[5][0])
-        self.assertEqual("Click to Resume", self.display.drawn_text[6][0])
+        self.assertEqual("Device Not Ready", self.display.drawn_text[6][0])
+        self.assertEqual("Click to Resume", self.display.drawn_text[7][0])
 
     def test_click_to_resume(self):
         self.controller.bq.faults = [bq.OCD]

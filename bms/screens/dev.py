@@ -51,6 +51,6 @@ class DevScreen:
         display.draw_text(42, 5, "{0:2.3f}".format(driver.pack_voltage()))
         display.draw_text(42, 6, "{0:2.3f}".format(bq.batt_voltage()))
         display.draw_text(42, 7, "{0:2.3f}".format(controller.cells.serial_voltage()))
-        display.draw_text(90, 1, "{0:2.1f}".format(bq.amperage))
+        display.draw_text(90, 1, "{0:2.2f}".format(bq.amperage))
 
         display.show()

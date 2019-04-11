@@ -1,5 +1,6 @@
 from bms.conf import CONF
 from bms.util import clocked_fn, ON_BOARD, log
+import math
 
 if not ON_BOARD:
     from bms.util import const
@@ -23,9 +24,7 @@ CC_CFG = const(0x0B)
 VC1_HI = const(0x0C)
 BAT_HI = const(0x2A)
 TS1_HI = const(0x2C)
-# TS1_LO = const(0x2D)
 CC_HI = const(0x32)
-# CC_LO = const(0x33)
 ADCGAIN1 = const(0x50)
 ADCOFFSET = const(0x51)
 ADCGAIN2 = const(0x59)
@@ -53,6 +52,41 @@ CC_EN = const((SYS_CTRL2 << 8) | (1 << 6))
 CC_ONESHOT = const((SYS_CTRL2 << 8) | (1 << 5))
 DSG_ON = const((SYS_CTRL2 << 8) | (1 << 1))
 CHG_ON = const((SYS_CTRL2 << 8) | (1 << 0))
+
+# From: http: // www.rapidonline.com / pdf / 61 - 0500e.pdf
+THERM_TABLE = [(329500, -50.0),
+               (247700, -45.0),
+               (188500, -40.0),
+               (144100, -35.0),
+               (111300, -30.0),
+               (86430, -25.0),
+               (67770, -20.0),
+               (53410, -15.0),
+               (42470, -10.0),
+               (33900, -5.0),
+               (27280, 0.0),
+               (22050, 5.0),
+               (17960, 10.0),
+               (14690, 15.0),
+               (12090, 20.0),
+               (10000, 25.0),
+               (8313, 30.0),
+               (6940, 35.0),
+               (5827, 40.0),
+               (4911, 45.0),
+               (4160, 50.0),
+               (3536, 55.0),
+               (3020, 60.0),
+               (2588, 65.0),
+               (2228, 70.0),
+               (1924, 75.0),
+               (1668, 80.0),
+               (1451, 85.0),
+               (1266, 90.0),
+               (1108, 95.0),
+               (973, 100.0),
+               (857, 105.0),
+               (757, 110.0)]
 
 
 def crc8(data):
@@ -94,8 +128,7 @@ class BQ:
                 print("\texpected: " + str(crc) + " got: " + str(buffer[1]))
                 print("\tregister: " + hex(reg) + " data: " + str(list(buffer)))
             else:
-                break
-        return buffer[0]
+                return buffer[0]
 
     def read_register_double(self, reg):
         for attempt in range(CONF.BQ_CRC_ATTEMPTS):
@@ -106,7 +139,8 @@ class BQ:
                 print("CRC failed.  attempt: " + str(attempt + 1))
                 print("\texpected: " + str([crc1, crc2]) + " got: " + str([buffer[1], buffer[3]]))
                 print("\tregister: " + hex(reg) + " data: " + str(list(buffer)))
-        return (buffer[0] << 8) | buffer[2]
+            else:
+                return (buffer[0] << 8) | buffer[2]
 
     def write_register(self, reg, byte):
         crc = crc8(bytearray([16, reg, byte]))
@@ -149,6 +183,7 @@ class BQ:
         self.set_protect1(CONF.BQ_RSNS, CONF.BQ_SCD_DELAY, CONF.BQ_SCD_THRESH)
         self.set_protect2(CONF.BQ_OCD_DELAY, CONF.BQ_OCD_THRESH)
         self.set_protect3(CONF.BQ_UV_DELAY, CONF.BQ_OV_DELAY)
+        self.set_reg_bit(TEMP_SEL, True)
         self.reset_balancing()
         self.discharge(False)
         self.charge(False)
@@ -239,22 +274,22 @@ class BQ:
     def process_alert(self):
         stat = self.read_register_single(SYS_STAT)
         if stat & (DEVICE_XREADY & 0xFF):
-            if stat & (OVRD_ALERT & 0xFF):
-                self.faults.append(OVRD_ALERT)
-            if stat & (UV & 0xFF):
-                self.faults.append(UV)
-            if stat & (OV & 0xFF):
-                self.faults.append(OV)
-            if stat & (SCD & 0xFF):
-                self.faults.append(SCD)
-            if stat & (OCD & 0xFF):
-                self.faults.append(OCD)
-        else:
-            if stat & (CC_READY & 0xFF):
-                self.load_amperage()
-                self.set_reg_bit(CC_READY, True)
-            if stat & 0b00111111 != 0:
-                log("bq.sys_stat: unusual end status: " + str(stat))
+            self.faults.append(DEVICE_XREADY)
+        if stat & (OVRD_ALERT & 0xFF):
+            self.faults.append(OVRD_ALERT)
+        if stat & (UV & 0xFF):
+            self.faults.append(UV)
+        if stat & (OV & 0xFF):
+            self.faults.append(OV)
+        if stat & (SCD & 0xFF):
+            self.faults.append(SCD)
+        if stat & (OCD & 0xFF):
+            self.faults.append(OCD)
+        if stat & (CC_READY & 0xFF):
+            self.load_amperage()
+            self.set_reg_bit(CC_READY, True)
+        # if stat & 0b00111111 != 0:
+        #     log("bq.sys_stat: unusual end status: " + str(stat))
 
     def clear_sys_stat(self):
         self.write_register(SYS_STAT, 0xBF)
@@ -320,7 +355,7 @@ class BQ:
         if adc > 32767:  # Two's compliment
             adc = -65536 + adc
         v = adc * (lsb / 1000000)
-        a = v / sense_r # Amps going into cells (a < 0 is amp going out)
+        a = v / sense_r  # Amps going into cells (a < 0 is amp going out)
         self.amperage = a
 
     def discharge(self, on=None):
@@ -349,3 +384,35 @@ class BQ:
 
     def cc_oneshot(self):
         self.set_reg_bit(CC_ONESHOT, True)
+
+    def thermistor1(self):
+        return self._thermistor(TS1_HI)
+
+    def thermistor2(self):
+        return self._thermistor(TS1_HI + 2)
+
+    def thermistor3(self):
+        return self._thermistor(TS1_HI + 4)
+
+    def _thermistor(self, reg):
+        adc = self.read_register_double(reg)
+        vtx = adc * 382 / 1000000
+        res = (10000 * vtx) / (3.3 - vtx)
+        return self.therm_r_to_c(res)
+
+    def therm_r_to_c(self, r):
+        table = THERM_TABLE
+        (pr, pt) = table[0]
+        if r >= pr:
+            return pt
+        for i in range(1, len(table)):
+            (nr, nt) = table[i]
+            if r >= nr:
+                diff = r - nr
+                perc = diff / (pr - nr)
+                return nt - ((nt - pt) * perc)
+            else:
+                pr = nr
+                pt = nt
+        return table[-1][1]
+

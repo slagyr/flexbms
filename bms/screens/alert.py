@@ -32,7 +32,9 @@ class AlertScreen:
             row += 1
 
         for fault in self.controller.bq.faults:
-            if fault == bq.OVRD_ALERT:
+            if fault == bq.DEVICE_XREADY:
+                display.draw_text(0, row, "Device Not Ready")
+            elif fault == bq.OVRD_ALERT:
                 display.draw_text(0, row, "Alert Pin Override")
             elif fault == bq.UV:
                 display.draw_text(0, row, "Undervoltage")
