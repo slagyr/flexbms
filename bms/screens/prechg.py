@@ -28,6 +28,8 @@ class PrechargeScreen:
 
     def update(self):
         display = self.controller.display
-        batt_v = self.controller.bq.batt_voltage()
-        display.draw_text(84, 5, "{0:.1f}".format(batt_v))
+        pack = self.controller.pack
+        pack.load()
+
+        display.draw_text(84, 5, "{0:.1f}".format(pack.batt_v))
         display.show()

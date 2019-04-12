@@ -26,7 +26,11 @@ class EmptyState():
         controller = self.sm.controller
         if self.in_wake_cycle:
             self.in_wake_cycle = False
-            controller.bq.load_cell_voltages(controller.cells)
+
+            controller.loaded_pack()
+            controller.loaded_cells()
+            controller.loaded_temps()
+
             controller.bq.adc(False)
             controller.sm_tick_interval(600000)
             controller.screen_outdated(True)

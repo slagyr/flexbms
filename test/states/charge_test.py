@@ -49,14 +49,16 @@ class ChargeStateTest(unittest.TestCase):
         cells = self.controller.cells
         bq = self.controller.bq
         bq.amperage = 1.5
-        bq.batt_voltage_value = 30.0
-        driver.pack_voltage_value = cells.max_serial_voltage()
+        bq.stub_batt_v = 30.0
+        driver.stub_pack_v = cells.max_serial_voltage()
 
         self.state.enter()
         self.state.tick()
         self.assertEqual(None, self.sm.last_event)
 
+        self.controller.pack.expire()
         bq.amperage = 0
+
         self.state.tick()
         self.assertEqual("pow_off", self.sm.last_event)
         
@@ -64,15 +66,17 @@ class ChargeStateTest(unittest.TestCase):
         driver = self.controller.driver
         cells = self.controller.cells
         bq = self.controller.bq
-        bq.batt_voltage_value = 30.0
-        driver.pack_voltage_value = cells.max_serial_voltage()
+        bq.stub_batt_v = 30.0
+        driver.stub_pack_v = cells.max_serial_voltage()
         bq.amperage = 1.5
 
         self.state.enter()
         self.state.tick()
         self.assertEqual(None, self.sm.last_event)
 
+        self.controller.pack.expire()
         bq.amperage = 1.511
+
         self.state.enter()
         self.state.tick()
         self.assertEqual("alert", self.sm.last_event)
@@ -86,8 +90,8 @@ class ChargeStateTest(unittest.TestCase):
         driver = self.controller.driver
         cells = self.controller.cells
         bq = self.controller.bq
-        bq.batt_voltage_value = 30.0
-        driver.pack_voltage_value = cells.max_serial_voltage()
+        bq.stub_batt_v = 30.0
+        driver.stub_pack_v = cells.max_serial_voltage()
         bq.amperage = 1.5
 
         self.state.enter()
@@ -121,8 +125,8 @@ class ChargeStateTest(unittest.TestCase):
         driver = self.controller.driver
         cells = self.controller.cells
         bq = self.controller.bq
-        driver.pack_voltage_value = cells.max_serial_voltage()
-        bq.batt_voltage_value = cells.max_serial_voltage()
+        driver.stub_pack_v = cells.max_serial_voltage()
+        bq.stub_batt_v = cells.max_serial_voltage()
         bq.amperage = 1.5
         for cell in cells:
             cell.voltage = 4.2
@@ -135,8 +139,8 @@ class ChargeStateTest(unittest.TestCase):
         driver = self.controller.driver
         cells = self.controller.cells
         bq = self.controller.bq
-        driver.pack_voltage_value = cells.max_serial_voltage()
-        bq.batt_voltage_value = cells.max_serial_voltage()
+        driver.stub_pack_v = cells.max_serial_voltage()
+        bq.stub_batt_v = cells.max_serial_voltage()
         bq.amperage = 1.5
         self.state.enter()
 
@@ -157,8 +161,8 @@ class ChargeStateTest(unittest.TestCase):
         cells = self.controller.cells
         bq = self.controller.bq
         bq.charge(False)
-        driver.pack_voltage_value = 86
-        bq.batt_voltage_value = cells.max_serial_voltage()
+        driver.stub_pack_v = 86
+        bq.stub_batt_v = cells.max_serial_voltage()
         self.state.enter()
         
         self.assertEqual("alert", self.sm.last_event)
@@ -170,14 +174,14 @@ class ChargeStateTest(unittest.TestCase):
         cells = self.controller.cells
         bq = self.controller.bq
         bq.charge(False)
-        driver.pack_voltage_value = cells.max_serial_voltage()
-        bq.batt_voltage_value = cells.max_serial_voltage()
+        driver.stub_pack_v = cells.max_serial_voltage()
+        bq.stub_batt_v = cells.max_serial_voltage()
         bq.amperage = 1.5
 
         self.state.enter()
         self.assertEqual(True, bq.charge())
 
-        driver.pack_voltage_value = cells.max_serial_voltage() + 0.6
+        driver.stub_pack_v = cells.max_serial_voltage() + 0.6
         self.state.tick()
         self.assertEqual("alert", self.sm.last_event)
         self.assertEqual("Wrong Charge V: 38.4", self.controller.alert_msg)

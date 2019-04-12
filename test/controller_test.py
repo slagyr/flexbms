@@ -2,8 +2,10 @@ import unittest
 import bms.conf as conf
 from bms import util
 from bms.controller import Controller
+from bms.pack import Pack
 from bms.screens.bargraph import BargraphScreen
 from bms.screens.splash import SplashScreen
+from bms.temps import Temps
 from test.mock_cells import MockCells
 from test.mock_bq import MockBQ
 from test.mock_clock import MockClock
@@ -22,9 +24,11 @@ class ControllerTest(unittest.TestCase):
         self.logger = MockLogger()
         self.display = MockDisplay()
         self.bq = MockBQ()
-        self.cells = MockCells(9)
         self.rotary = MockRotary()
         self.driver = MockDriver()
+        self.cells = MockCells(self.bq, 9)
+        self.temps = Temps(self.bq)
+        self.pack = Pack(self.bq, self.driver)
 
         self.clock = MockClock()
         util.clock = self.clock
@@ -33,9 +37,11 @@ class ControllerTest(unittest.TestCase):
         self.controller.logger = self.logger
         self.controller.display = self.display
         self.controller.bq = self.bq
-        self.controller.cells = self.cells
         self.controller.rotary = self.rotary
         self.controller.driver = self.driver
+        self.controller.cells = self.cells
+        self.controller.temps = self.temps
+        self.controller.pack = self.pack
 
         self.controller.setup()
 
@@ -188,6 +194,17 @@ class ControllerTest(unittest.TestCase):
         self.controller.setup()
 
         self.assertEqual(True, self.logger.was_setup)
+
+    def test_caches_expire_after_tick(self):
+        self.cells.loaded = True
+        self.temps.loaded = True
+        self.pack.loaded = True
+
+        self.controller.tick()
+
+        self.assertEqual(False, self.cells.loaded)
+        self.assertEqual(False, self.temps.loaded)
+        self.assertEqual(False, self.pack.loaded)
 
 
 

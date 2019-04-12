@@ -14,9 +14,11 @@ class EvalState():
 
     def tick(self):
         controller = self.sm.controller
-        cells = controller.cells
         driver = controller.driver
-        controller.bq.load_cell_voltages(cells)
+
+        controller.loaded_pack()
+        cells = controller.loaded_cells()
+        controller.loaded_temps()
 
         if cells.has_low_voltage():
             self.sm.low_v()

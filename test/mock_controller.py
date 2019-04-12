@@ -21,9 +21,9 @@ class MockController(Controller):
         self.logger = MockLogger()
         self.display = MockDisplay()
         self.bq = MockBQ()
-        self.cells = MockCells(9)
         self.rotary = MockRotary()
         self.driver = MockDriver()
+        self.cells = MockCells(self.bq, 9)
         self.temps = Temps(self.bq)
         self.pack = Pack(self.bq, self.driver)
 

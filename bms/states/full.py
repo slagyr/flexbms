@@ -20,11 +20,14 @@ class FullState:
 
     def tick(self):
         my = self
-        cells = my.sm.controller.cells
-        driver = my.sm.controller.driver
-        bq = my.sm.controller.bq
+        sm = my.sm
+        controller = sm.controller
+
+        pack = controller.loaded_pack()
+        cells = controller.loaded_cells()
+        controller.loaded_temps()
 
         if not cells.fully_charged():
-            my.sm.norm_v()
-        elif (driver.pack_voltage() + CONF.PACK_V_TOLERANCE) < bq.batt_voltage():
-            my.sm.pow_off()
+            sm.norm_v()
+        elif (pack.pack_v + CONF.PACK_V_TOLERANCE) < pack.batt_v:
+            sm.pow_off()

@@ -1,6 +1,4 @@
-from bms import util
 from bms.conf import CONF
-from bms.util import log
 
 
 class NormalState:
@@ -30,9 +28,9 @@ class NormalState:
         my = self
         controller = my.sm.controller
         bq = controller.bq
-        cells = controller.cells
 
         bq.cc_oneshot()
+        pack = controller.loaded_pack()
 
         if not my.chg_fet_on and bq.amperage < -0.1: # outbound current detected
             bq.charge(True)
@@ -41,16 +39,13 @@ class NormalState:
             bq.charge(False)
             my.chg_fet_on = False
 
-        pack_V = controller.driver.pack_voltage()
-        batt_V = bq.batt_voltage()
-        cells_V = cells.serial_voltage()
-        log("Normal: pack_V:", pack_V, "batt_V:", batt_V, "cells_V: ", cells_V)
-        if (pack_V - CONF.PACK_V_TOLERANCE) > batt_V:
+        if (pack.pack_v - CONF.PACK_V_TOLERANCE) > pack.batt_v:
             my.sm.pow_on()
         elif my.counter == 8:
             bq.adc(True)
         elif my.counter == 9:
-            bq.load_cell_voltages(cells)
+            cells = controller.loaded_cells()
+            temps = controller.loaded_temps()
             bq.adc(False)
             my.counter = -1
             if cells.has_low_voltage():

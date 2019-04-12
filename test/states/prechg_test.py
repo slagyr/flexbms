@@ -9,13 +9,14 @@ class PreChgStateTest(unittest.TestCase):
     def setUp(self):
         self.sm = MockStatemachine()
         self.controller = self.sm.controller
+        self.controller.setup()
         self.state = PreChgState(self.sm)
 
         cells = self.controller.cells
-        self.controller.driver.pack_voltage_value = cells.max_serial_voltage()
+        self.controller.driver.stub_pack_v = cells.max_serial_voltage()
         for cell in cells:
             cell.voltage = 2.0
-        self.controller.bq.batt_voltage_value = 18.0
+        self.controller.bq.stub_batt_v = 18.0
 
     def test_entry_turns_stuff_on(self):
         bq = self.controller.bq
@@ -52,12 +53,11 @@ class PreChgStateTest(unittest.TestCase):
         driver = self.controller.driver
 
         self.state.enter()
-        driver.pack_voltage_value = 5
+        driver.stub_pack_v = 5
         self.state.tick()
         self.assertEqual("pow_off", self.sm.last_event)
 
     def test_norm_v_when_cells_rise(self):
-        driver = self.controller.driver
         cells = self.controller.cells
         self.state.enter()
         self.state.tick()
@@ -72,3 +72,16 @@ class PreChgStateTest(unittest.TestCase):
         cells[5].voltage = 2.6
         self.state.tick()
         self.assertEqual("norm_v", self.sm.last_event)
+
+    def test_logs_pack_info_on_tick(self):
+        self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.pack_log))
+
+    def test_logs_cells_on_tick(self):
+        self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.cell_log))
+
+    def test_logs_temps_on_tick(self):
+        self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.temp_log))
+

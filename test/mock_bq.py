@@ -9,18 +9,18 @@ class MockBQ(BQ):
         self.was_setup = False
         self.balancing_cells = []
         self.alert_processed = False
-        self.batt_voltage_value = 42
-        self.voltages = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5]
+        self.stub_batt_v = 42
+        self.stub_voltages = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5]
         self.stub_therms = [10000, 10000, 10000]
 
     def setup(self):
         self.was_setup = True
 
     def cell_voltage(self, id):
-        return self.voltages[id - 1]
+        return self.stub_voltages[id - 1]
 
     def batt_voltage(self):
-        return self.batt_voltage_value
+        return self.stub_batt_v
 
     def set_balance_cells(self, cell_ids):
         self.balancing_cells = cell_ids

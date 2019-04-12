@@ -9,6 +9,7 @@ class EmptyStateTest(unittest.TestCase):
     def setUp(self):
         self.sm = MockStatemachine()
         self.controller = self.sm.controller
+        self.controller.setup()
         self.state = EmptyState(self.sm)
 
     def test_entry_turns_off_everything(self):
@@ -59,4 +60,21 @@ class EmptyStateTest(unittest.TestCase):
         self.assertEqual(False, bq.adc())
         self.assertEqual(600000, self.controller.sm_tick_interval())
         self.assertEqual(True, self.controller.screen_outdated())
+
+
+
+    def test_logs_pack_info_on_wake_tick(self):
+        self.state.tick()
+        self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.pack_log))
+
+    def test_logs_cells_on_wake_tick(self):
+        self.state.tick()
+        self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.cell_log))
+
+    def test_logs_temps_on_wake_tick(self):
+        self.state.tick()
+        self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.temp_log))
 

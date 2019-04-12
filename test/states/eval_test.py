@@ -9,6 +9,7 @@ class EvalStateTest(unittest.TestCase):
     def setUp(self):
         self.sm = MockStatemachine()
         self.controller = self.sm.controller
+        self.controller.setup()
         self.state = EvalState(self.sm)
 
         for cell in self.controller.cells:
@@ -42,7 +43,7 @@ class EvalStateTest(unittest.TestCase):
 
     def test_charge_power_detected(self):
         driver = self.controller.driver
-        driver.pack_voltage_value = self.controller.cells.max_serial_voltage()
+        driver.stub_pack_v = self.controller.cells.max_serial_voltage()
 
         self.state.tick()
 
@@ -52,6 +53,18 @@ class EvalStateTest(unittest.TestCase):
         self.state.tick()
 
         self.assertEqual("norm_v", self.sm.last_event)
+
+    def test_logs_pack_info_on_tick(self):
+        self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.pack_log))
+
+    def test_logs_cells_on_tick(self):
+        self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.cell_log))
+
+    def test_logs_temps_on_tick(self):
+        self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.temp_log))
 
 
 

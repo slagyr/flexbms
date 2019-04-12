@@ -7,7 +7,7 @@ class MockDriver(Driver):
     def __init__(self):
         super().__init__(MockPin(), MockPin(), MockPin(), MockADC())
         self.was_setup = False
-        self.pack_voltage_value = None
+        self.stub_pack_v = None
         self.adc_samples = None
 
     def setup(self):
@@ -15,8 +15,8 @@ class MockDriver(Driver):
         self.was_setup = True
 
     def pack_voltage(self):
-        if self.pack_voltage_value:
-            return self.pack_voltage_value
+        if self.stub_pack_v:
+            return self.stub_pack_v
         else:
             return super().pack_voltage()
 

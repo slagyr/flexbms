@@ -48,16 +48,18 @@ class BargraphScreen:
 
     def update(self):
         display = self.controller.display
+        pack = self.controller.pack
+        cells = self.controller.cells
         self.draw_cell_levels(display)
         chg = "<" if self.controller.bq.charge() else "|"
         dsg = ">" if self.controller.bq.discharge() else "|"
         pchg = "P" if self.controller.driver.precharge() else "-"
         statstr = chg + pchg + dsg
         display.draw_text(0, 0, statstr)
-        display.draw_text(60, 0, "{:.1f}".format(self.controller.bq.amperage * -1))
-        display.draw_text(104, 1, "{:.1f}".format(self.controller.bq.batt_voltage()))
-        display.draw_text(104, 3, "{:.1f}".format(self.controller.cells.serial_voltage()))
-        display.draw_text(104, 5, "{:.1f}".format(self.controller.driver.pack_voltage()))
+        display.draw_text(60, 0, "{:.1f}".format(pack.amps * -1))
+        display.draw_text(104, 1, "{:.1f}".format(pack.batt_v))
+        display.draw_text(104, 3, "{:.1f}".format(cells.serial_voltage()))
+        display.draw_text(104, 5, "{:.1f}".format(pack.pack_v))
         display.show()
 
     def draw_full(self):

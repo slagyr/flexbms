@@ -46,8 +46,10 @@ def ids_to_cells(ids):
 
 
 class Cells:
-    def __init__(self, count):
+    def __init__(self, bq, count):
+        self.bq = bq
         self.count = count
+        self.loaded = False
         if count == 15:
             self._cells = ids_to_cells((1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15))
         elif count == 14:
@@ -100,18 +102,18 @@ class Cells:
         cell.left = self[i - 1] if id != 1 and id != 6 and id != 11 else None
         cell.right = self[i + 1] if id != 5 and id != 10 and id != 15 else None
 
-    def update_balancing(self, bq):
+    def update_balancing(self):
         cells = sorted(self._cells, key=lambda c: c.voltage)
         min_v = cells[0].voltage
         cells.reverse()
         for cell in cells:
             should_balance = cell.should_balance(min_v)
             if should_balance != cell.balancing:
-                cell.set_balance(bq, should_balance)
+                cell.set_balance(self.bq, should_balance)
 
-    def reset_balancing(self, bq):
+    def reset_balancing(self):
         for cell in self:
-            cell.set_balance(bq, False)
+            cell.set_balance(self.bq, False)
 
     def has_low_voltage(self):
         for cell in self:
@@ -130,3 +132,12 @@ class Cells:
             if cell.voltage >= CONF.CELL_MAX_V:
                 return True
         return False
+
+    def load(self):
+        if self.loaded:
+            return
+        self.bq.load_cell_voltages(self)
+        self.loaded = True
+
+    def expire(self):
+        self.loaded = False

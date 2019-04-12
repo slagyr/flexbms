@@ -34,29 +34,26 @@ class ChargeState():
 
 
     def exit(self):
-        self.sm.controller.cells.reset_balancing(self.sm.controller.bq)
+        self.sm.controller.cells.reset_balancing()
 
     def tick(self):
         my = self
         controller = my.sm.controller
         bq = controller.bq
         cells = controller.cells
-        driver = controller.driver
+        pack = controller.pack
         conf = CONF
 
         bq.cc_oneshot()
-        bq.load_cell_voltages(cells)
+        cells.load()
+        pack.load()
 
-        pack_V = driver.pack_voltage()
-        batt_V = bq.batt_voltage()
-        cells_V = cells.serial_voltage()
-        log("Charge: pack_V:", pack_V, "batt_V:", batt_V, "cells_V: ", cells_V)
-        if bq.amperage > (conf.CELL_MAX_CHG_I * conf.CELL_PARALLEL):
+        if pack.amps > (conf.CELL_MAX_CHG_I * conf.CELL_PARALLEL):
             controller.alert_msg = "Charge Overcurrent"
             my.sm.alert()
         elif cells.has_low_voltage():
             my.sm.low_v()
-        elif bq.amperage < (0 + CONF.PACK_I_TOLERANCE):
+        elif pack.amps < (0 + CONF.PACK_I_TOLERANCE):
             my.sm.pow_off()
         elif not self.check_charger_voltage():
             pass # alert event already triggered
@@ -64,10 +61,10 @@ class ChargeState():
             if cells.fully_charged():
                 my.sm.full_v()
             else:
-                cells.update_balancing(bq)
+                cells.update_balancing()
             bq.charge(not cells.any_cell_full())
         elif self.balance_counter == 60:
-            cells.reset_balancing(bq)
+            cells.reset_balancing()
         elif self.balance_counter == 66:
             self.balance_counter = -1
         self.balance_counter += 1

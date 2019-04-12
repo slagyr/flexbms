@@ -39,12 +39,16 @@ class Temps:
         self.temp1 = 0
         self.temp2 = 0
         self.temp3 = 0
+        self.loaded = False
 
     def load(self):
         my = self
+        if my.loaded:
+            return
         my.temp1 = my.read_temp1()
         my.temp2 = my.read_temp2()
         my.temp3 = my.read_temp3()
+        my.loaded = True
 
     def therm_r_to_c(self, r):
         table = THERM_TABLE
@@ -73,3 +77,6 @@ class Temps:
     def read_temp3(self):
         r = self.bq.therm_r(2)
         return self.therm_r_to_c(r)
+
+    def expire(self):
+        self.loaded = False

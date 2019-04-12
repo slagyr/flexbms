@@ -14,7 +14,7 @@ class Hardware():
         bq = self.controller.bq
         cells = self.controller.cells
 
-        bq.load_cell_voltages(cells)
+        cells.load()
         serial_v = cells.serial_voltage()
         batt_v = bq.batt_voltage()
         pack_v = (serial_v + batt_v) / 2

@@ -132,9 +132,24 @@ class Controller:
             my.screen.update()
             my._screen_outdated = False
 
-    def load_temps(self):
+        my.cells.expire()
+        my.temps.expire()
+        my.pack.expire()
+
+    def loaded_cells(self):
         my = self
-        my.temps[0] = my.bq.thermistor1()
-        my.temps[1] = my.bq.thermistor2()
-        my.temps[2] = my.bq.thermistor3()
+        my.cells.load()
+        my.logger.cells(my.cells)
+        return my.cells
+
+    def loaded_pack(self):
+        my = self
+        my.pack.load()
+        my.logger.pack(my.pack)
+        return my.pack
+
+    def loaded_temps(self):
+        my = self
+        my.temps.load()
+        my.logger.temps(my.temps)
         return my.temps

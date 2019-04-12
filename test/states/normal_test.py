@@ -10,6 +10,7 @@ class NormalStateTest(unittest.TestCase):
     def setUp(self):
         self.sm = MockStatemachine()
         self.controller = self.sm.controller
+        self.controller.logger.setup()
         self.state = NormalState(self.sm)
 
     def test_entry_turns_stuff_on(self):
@@ -100,13 +101,28 @@ class NormalStateTest(unittest.TestCase):
         driver = self.controller.driver
         cells = self.controller.cells
         bq = self.controller.bq
-        bq.batt_voltage_value = 30.0
+        bq.stub_batt_v = 30.0
 
         self.state.enter()
         self.state.tick()
         self.assertEqual(None, self.sm.last_event)
 
-        driver.pack_voltage_value = cells.max_serial_voltage()
+        self.controller.pack.expire()
+        driver.stub_pack_v = cells.max_serial_voltage()
 
         self.state.tick()
         self.assertEqual("pow_on", self.sm.last_event)
+
+    def test_logs_pack_info_on_tick(self):
+        self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.pack_log))
+
+    def test_logs_cells_eveny_10_ticks(self):
+        for i in range(10):
+            self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.cell_log))
+
+    def test_logs_temps_eveny_10_ticks(self):
+        for i in range(10):
+            self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.temp_log))

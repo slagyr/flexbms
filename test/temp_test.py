@@ -48,4 +48,11 @@ class TempsTest(unittest.TestCase):
         self.bq.stub_therms[2] = 6940
 
         self.assertAlmostEqual(35.0, self.temps.read_temp3(), 1)
+
+    def test_cache_set_and_reset(self):
+        self.assertEqual(False, self.temps.loaded)
+        self.temps.load()
+        self.assertEqual(True, self.temps.loaded)
+        self.temps.expire()
+        self.assertEqual(False, self.temps.loaded)
         

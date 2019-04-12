@@ -59,7 +59,7 @@ class LoggerTest(unittest.TestCase):
         self.assertEqual("1234 hello 1 2 3.14\n", lines[0])
 
     def test_logging_cell_voltages(self):
-        cells = Cells(10)
+        cells = Cells("bq", 10)
         for cell in cells:
             cell.voltage = 2.5 + (cell.id * 0.1)
 

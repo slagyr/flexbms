@@ -9,6 +9,7 @@ class FullStateTest(unittest.TestCase):
     def setUp(self):
         self.sm = MockStatemachine()
         self.controller = self.sm.controller
+        self.controller.setup()
         self.state = FullState(self.sm)
 
         for cell in self.controller.cells:
@@ -43,8 +44,8 @@ class FullStateTest(unittest.TestCase):
         driver = self.controller.driver
         cells = self.controller.cells
         bq = self.controller.bq
-        bq.batt_voltage_value = cells.max_serial_voltage()
-        driver.pack_voltage_value = cells.max_serial_voltage()
+        bq.stub_batt_v = cells.max_serial_voltage()
+        driver.stub_pack_v = cells.max_serial_voltage()
 
         self.state.enter()
         self.state.tick()
@@ -54,8 +55,8 @@ class FullStateTest(unittest.TestCase):
         driver = self.controller.driver
         cells = self.controller.cells
         bq = self.controller.bq
-        bq.batt_voltage_value = cells.max_serial_voltage()
-        driver.pack_voltage_value = cells.max_serial_voltage()
+        bq.stub_batt_v = cells.max_serial_voltage()
+        driver.stub_pack_v = cells.max_serial_voltage()
         self.state.enter()
 
         cells[5].voltage = 4.18
@@ -66,15 +67,30 @@ class FullStateTest(unittest.TestCase):
         driver = self.controller.driver
         cells = self.controller.cells
         bq = self.controller.bq
-        bq.batt_voltage_value = cells.max_serial_voltage()
-        driver.pack_voltage_value = cells.max_serial_voltage()
+        bq.stub_batt_v = cells.max_serial_voltage()
+        driver.stub_pack_v = cells.max_serial_voltage()
 
         self.state.enter()
         self.state.tick()
         self.assertEqual(None, self.sm.last_event)
 
-        driver.pack_voltage_value = 29
+        self.controller.pack.expire()
+        driver.stub_pack_v = 29
+
         self.state.tick()
         self.assertEqual("pow_off", self.sm.last_event)
+
+    def test_logs_pack_info_on_tick(self):
+        self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.pack_log))
+
+    def test_logs_cells_on_tick(self):
+        self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.cell_log))
+
+    def test_logs_temps_on_tick(self):
+        self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.temp_log))
+
 
 

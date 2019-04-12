@@ -22,11 +22,12 @@ class PreChgState:
     def tick(self):
         my = self
         controller = my.sm.controller
-        bq = controller.bq
-        cells = controller.cells
-        driver = controller.driver
 
-        if (driver.pack_voltage() + CONF.PACK_V_TOLERANCE) < bq.batt_voltage():
+        pack = controller.loaded_pack()
+        cells = controller.loaded_cells()
+        temps = controller.loaded_temps()
+
+        if (pack.pack_v + CONF.PACK_V_TOLERANCE) < pack.batt_v:
             my.sm.pow_off()
         elif not cells.has_low_voltage():
             my.sm.norm_v()

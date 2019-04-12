@@ -17,4 +17,9 @@ class AlertState():
         controller.set_screen(controller.alert_screen)
 
     def tick(self):
-        pass
+        controller = self.sm.controller
+        controller.loaded_pack()
+        controller.loaded_cells()
+        controller.loaded_temps()
+
+

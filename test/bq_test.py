@@ -198,7 +198,7 @@ class BQ76940Test(unittest.TestCase):
     def test_load_cell_voltages_15(self):
         self.bq.setup()
 
-        cells = Cells(15)
+        cells = Cells(self.bq, 15)
         self.bq.load_cell_voltages(cells)
 
         self.assertAlmostEqual(2.7, cells[0].voltage, 1)
@@ -219,7 +219,7 @@ class BQ76940Test(unittest.TestCase):
 
     def test_load_cell_voltages_9(self):
         self.bq.setup()
-        cells = Cells(9)
+        cells = Cells(self.bq, 9)
         self.bq.load_cell_voltages(cells)
 
         self.assertAlmostEqual(2.7, cells[0].voltage, 1)

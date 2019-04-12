@@ -15,7 +15,7 @@ class PrechgScreenTest(unittest.TestCase):
         self.screen = PrechargeScreen(self.controller)
 
     def test_enter(self):
-        self.controller.bq.batt_voltage_value = 22.2
+        self.controller.bq.stub_batt_v = 22.2
         self.screen.enter()
         # self.display.print_buffer()
         self.assertEqual("Pre-Charging", self.display.drawn_text[0][0])

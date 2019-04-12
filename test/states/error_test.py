@@ -9,6 +9,7 @@ class ErrorStateTest(unittest.TestCase):
     def setUp(self):
         self.sm = MockStatemachine()
         self.controller = self.sm.controller
+        self.controller.setup()
         self.state = ErrorState(self.sm)
 
     def test_entry_turns_stuff_on(self):
@@ -36,6 +37,18 @@ class ErrorStateTest(unittest.TestCase):
         self.state.enter()
         self.assertEqual(self.controller.error_screen, self.controller.home_screen)
         self.assertEqual(self.controller.error_screen, self.controller.screen)
+
+    def test_logs_pack_info_on_tick(self):
+        self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.pack_log))
+
+    def test_logs_cells_on_tick(self):
+        self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.cell_log))
+
+    def test_logs_temps_on_tick(self):
+        self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.temp_log))
 
 
 
