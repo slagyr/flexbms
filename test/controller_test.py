@@ -9,6 +9,7 @@ from test.mock_bq import MockBQ
 from test.mock_clock import MockClock
 from test.mock_display import MockDisplay
 from test.mock_driver import MockDriver
+from test.mock_logger import MockLogger
 from test.mock_rotary import MockRotary
 from test.screens.mock_screen import MockScreen
 from test.states.mock_machine import MockStatemachine
@@ -18,6 +19,7 @@ from test.states.mock_state import MockState
 class ControllerTest(unittest.TestCase):
 
     def setUp(self):
+        self.logger = MockLogger()
         self.display = MockDisplay()
         self.bq = MockBQ()
         self.cells = MockCells(9)
@@ -28,6 +30,7 @@ class ControllerTest(unittest.TestCase):
         util.clock = self.clock
 
         self.controller = Controller(util.clock)
+        self.controller.logger = self.logger
         self.controller.display = self.display
         self.controller.bq = self.bq
         self.controller.cells = self.cells
@@ -180,6 +183,11 @@ class ControllerTest(unittest.TestCase):
         self.controller.tick()
         self.assertEqual(True, self.bq.alert_processed)
         self.assertEqual("alert", sm.last_event)
+
+    def test_logger(self):
+        self.controller.setup()
+
+        self.assertEqual(True, self.logger.was_setup)
 
 
 

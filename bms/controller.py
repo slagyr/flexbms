@@ -1,4 +1,3 @@
-import bms.conf as conf
 from bms.screens.alert import AlertScreen
 from bms.screens.charged import ChargedScreen
 from bms.screens.dev import DevScreen
@@ -26,12 +25,15 @@ class HomeMenuItem:
 class Controller:
     def __init__(self, clock):
         self.clock = clock
+        self.logger = None
         self.display = None
         self.bq = None
         self.driver = None
         self.cells = None
         self.screen = None
         self.rotary = None
+        self.temps = None
+        self.pack = None
 
         self.last_user_event_time = 0
         self.splash_screen = SplashScreen(self)
@@ -64,6 +66,7 @@ class Controller:
         main.add(self.splash_screen)
 
     def setup(self):
+        self.logger.setup()
         self.display.setup()
         self.set_screen(self.splash_screen)
 
@@ -128,3 +131,10 @@ class Controller:
         if my._screen_outdated:
             my.screen.update()
             my._screen_outdated = False
+
+    def load_temps(self):
+        my = self
+        my.temps[0] = my.bq.thermistor1()
+        my.temps[1] = my.bq.thermistor2()
+        my.temps[2] = my.bq.thermistor3()
+        return my.temps

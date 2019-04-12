@@ -15,10 +15,15 @@ from bms.controller import Controller
 from bms.cells import Cells
 from bms.display import Display
 from bms.driver import Driver
+from bms.logger import Logger
+from bms.pack import Pack
 from bms.rotary import Rotary
 
 # For debugging Interrupts.  Allows memory to print error.
 import micropython
+
+from bms.temps import Temps
+
 micropython.alloc_emergency_exception_buf(200)
 
 TICK_INTERVAL = 250
@@ -74,6 +79,7 @@ class FlexBMS:
 
     def init(self):
         CONF.startup()
+        logger = Logger()
         i2c = I2C(1, I2C.MASTER, baudrate=100000)
         bq = BQ(i2c)
         driver = Driver(Pin("Y8", Pin.OUT_PP),
@@ -83,12 +89,17 @@ class FlexBMS:
         display = Display(i2c)
         cells = Cells(CONF.CELL_SERIES)
         rotary = Rotary(Pin("X2", Pin.IN), Pin("X1", Pin.IN))
+        temps = Temps(bq)
+        pack = Pack(bq, driver)
 
+        self.controller.logger = logger
         self.controller.display = display
         self.controller.bq = bq
         self.controller.driver = driver
         self.controller.cells = cells
         self.controller.rotary = rotary
+        self.controller.temps = temps
+        self.controller.pack = pack
 
         rotary_button = Pin("X3", Pin.IN)
         self.rot_rot_db = Debouncer(rotary.clk, ExtInt.IRQ_FALLING, 1, rotary.handle_rotate)

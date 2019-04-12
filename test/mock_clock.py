@@ -1,6 +1,6 @@
 class MockClock:
-    def __init__(self):
-        self.mils = 0
+    def __init__(self, mils=0):
+        self.mils = mils
 
     def millis(self):
         return self.mils

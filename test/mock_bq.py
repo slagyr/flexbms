@@ -11,6 +11,7 @@ class MockBQ(BQ):
         self.alert_processed = False
         self.batt_voltage_value = 42
         self.voltages = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5]
+        self.stub_therms = [10000, 10000, 10000]
 
     def setup(self):
         self.was_setup = True
@@ -39,5 +40,13 @@ class MockBQ(BQ):
     def process_alert(self):
         super().process_alert()
         self.alert_processed = True
+
+    def therm_r(self, id):
+        return self.stub_therms[id]
+
+
+
+
+
 
 

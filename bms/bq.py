@@ -53,41 +53,6 @@ CC_ONESHOT = const((SYS_CTRL2 << 8) | (1 << 5))
 DSG_ON = const((SYS_CTRL2 << 8) | (1 << 1))
 CHG_ON = const((SYS_CTRL2 << 8) | (1 << 0))
 
-# From: http: // www.rapidonline.com / pdf / 61 - 0500e.pdf
-THERM_TABLE = [(329500, -50.0),
-               (247700, -45.0),
-               (188500, -40.0),
-               (144100, -35.0),
-               (111300, -30.0),
-               (86430, -25.0),
-               (67770, -20.0),
-               (53410, -15.0),
-               (42470, -10.0),
-               (33900, -5.0),
-               (27280, 0.0),
-               (22050, 5.0),
-               (17960, 10.0),
-               (14690, 15.0),
-               (12090, 20.0),
-               (10000, 25.0),
-               (8313, 30.0),
-               (6940, 35.0),
-               (5827, 40.0),
-               (4911, 45.0),
-               (4160, 50.0),
-               (3536, 55.0),
-               (3020, 60.0),
-               (2588, 65.0),
-               (2228, 70.0),
-               (1924, 75.0),
-               (1668, 80.0),
-               (1451, 85.0),
-               (1266, 90.0),
-               (1108, 95.0),
-               (973, 100.0),
-               (857, 105.0),
-               (757, 110.0)]
-
 
 def crc8(data):
     crc = 0
@@ -385,34 +350,12 @@ class BQ:
     def cc_oneshot(self):
         self.set_reg_bit(CC_ONESHOT, True)
 
-    def thermistor1(self):
-        return self._thermistor(TS1_HI)
-
-    def thermistor2(self):
-        return self._thermistor(TS1_HI + 2)
-
-    def thermistor3(self):
-        return self._thermistor(TS1_HI + 4)
-
-    def _thermistor(self, reg):
+    def therm_r(self, id):
+        if id < 0 or id > 2:
+            raise RuntimeError("Thermistor id must be 0, 1, or 2")
+        reg = TS1_HI + (2 * id)
         adc = self.read_register_double(reg)
         vtx = adc * 382 / 1000000
         res = (10000 * vtx) / (3.3 - vtx)
-        return self.therm_r_to_c(res)
-
-    def therm_r_to_c(self, r):
-        table = THERM_TABLE
-        (pr, pt) = table[0]
-        if r >= pr:
-            return pt
-        for i in range(1, len(table)):
-            (nr, nt) = table[i]
-            if r >= nr:
-                diff = r - nr
-                perc = diff / (pr - nr)
-                return nt - ((nt - pt) * perc)
-            else:
-                pr = nr
-                pt = nt
-        return table[-1][1]
+        return res
 

@@ -350,28 +350,3 @@ class BQ76940Test(unittest.TestCase):
         self.bq.setup()
         self.assertEqual(8, self.i2c.registers[0x04] & 0b1000)
 
-    def test_themister_1(self):
-        self.i2c.registers[0x2C] = 16
-        self.i2c.registers[0x2D] = 90
-
-        self.assertAlmostEqual(26.7755, self.bq.thermistor1(), 1)
-
-    def test_themister_2(self):
-        self.i2c.registers[0x2E] = 16
-        self.i2c.registers[0x2F] = 90
-
-        self.assertAlmostEqual(26.7755, self.bq.thermistor2(), 1)
-
-    def test_themister_3(self):
-        self.i2c.registers[0x30] = 16
-        self.i2c.registers[0x31] = 90
-
-        self.assertAlmostEqual(26.7755, self.bq.thermistor3(), 1)
-
-    def test_therm_r_to_c(self):
-        for (r, t) in THERM_TABLE:
-            self.assertEqual(t, self.bq.therm_r_to_c(r), str(r))
-
-        # resistance values are interpolated between table values
-        self.assertAlmostEqual(27.5, self.bq.therm_r_to_c(9156.5), 1)
-
