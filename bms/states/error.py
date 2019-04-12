@@ -17,7 +17,4 @@ class ErrorState:
         controller.set_screen(controller.error_screen)
 
     def tick(self):
-        controller = self.sm.controller
-        controller.loaded_pack()
-        controller.loaded_cells()
-        controller.loaded_temps()
+        pass

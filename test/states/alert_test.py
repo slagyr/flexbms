@@ -42,14 +42,3 @@ class AlertStateTest(unittest.TestCase):
     #
     #     self.assertEqual(1, 2)
 
-    def test_logs_pack_info_on_tick(self):
-        self.state.tick()
-        self.assertEqual(1, len(self.controller.logger.pack_log))
-
-    def test_logs_cells_on_tick(self):
-        self.state.tick()
-        self.assertEqual(1, len(self.controller.logger.cell_log))
-
-    def test_logs_temps_on_tick(self):
-        self.state.tick()
-        self.assertEqual(1, len(self.controller.logger.temp_log))
