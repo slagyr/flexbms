@@ -32,14 +32,16 @@ class NormalState:
         bq.cc_oneshot()
         pack = controller.loaded_pack()
 
-        if not my.chg_fet_on and bq.amperage < -0.1: # outbound current detected
+        if not my.chg_fet_on and pack.amps < -0.1: # outbound current detected
             bq.charge(True)
             my.chg_fet_on = True
-        elif my.chg_fet_on and bq.amperage > -0.1: # current goes away
+        elif my.chg_fet_on and pack.amps > -0.1: # current goes away
             bq.charge(False)
             my.chg_fet_on = False
 
-        if (pack.pack_v - CONF.PACK_V_TOLERANCE) > pack.batt_v:
+        if pack.amps > (CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_I_TOLERANCE):
+            controller.trigger_alert("Discharge Overcurrent")
+        elif (pack.pack_v - CONF.PACK_V_TOLERANCE) > pack.batt_v:
             my.sm.pow_on()
         elif my.counter == 8:
             bq.adc(True)
@@ -50,6 +52,10 @@ class NormalState:
             my.counter = -1
             if cells.has_low_voltage():
                 my.sm.low_v()
+            elif temps.temp1 > CONF.TEMP_MAX_PACK_DSG:
+                controller.trigger_alert("Discharge Over-Temp")
+            elif temps.temp1 < CONF.TEMP_MIN_PACK_DSG:
+                controller.trigger_alert("Discharge Under-Temp")
         my.counter += 1
 
         controller.screen_outdated(True)

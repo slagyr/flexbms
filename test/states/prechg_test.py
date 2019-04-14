@@ -13,10 +13,11 @@ class PreChgStateTest(unittest.TestCase):
         self.state = PreChgState(self.sm)
 
         cells = self.controller.cells
-        self.controller.driver.stub_pack_v = cells.max_serial_voltage()
+        pack = self.controller.pack
+        pack.stub_pack_v = cells.max_serial_voltage()
         for cell in cells:
             cell.voltage = 2.0
-        self.controller.bq.stub_batt_v = 18.0
+        pack.stub_batt_v = 18.0
 
     def test_entry_turns_stuff_on(self):
         bq = self.controller.bq
@@ -50,10 +51,10 @@ class PreChgStateTest(unittest.TestCase):
         self.assertEqual(None, self.sm.last_event)
 
     def test_pow_off_event_when_charger_unplugged(self):
-        driver = self.controller.driver
+        pack = self.controller.pack
 
         self.state.enter()
-        driver.stub_pack_v = 5
+        pack.stub_pack_v = 5
         self.state.tick()
         self.assertEqual("pow_off", self.sm.last_event)
 

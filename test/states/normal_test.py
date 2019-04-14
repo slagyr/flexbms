@@ -1,6 +1,7 @@
 import unittest
 
 from bms.bq import CC_ONESHOT
+from bms.conf import CONF
 from bms.states.normal import NormalState
 from test.states.mock_machine import MockStatemachine
 
@@ -40,30 +41,32 @@ class NormalStateTest(unittest.TestCase):
         self.assertEqual(self.controller.bargraph_screen, self.controller.home_screen)
 
     def test_charge_FET_closes_when_current_detected(self):
+        pack = self.controller.pack
         bq = self.controller.bq
-        bq.amperage = 0
+        pack.stub_amps = 0
         self.state.enter()
 
         self.state.tick()
         self.assertEqual(False, bq.charge())
 
-        bq.amperage = -0.05  # under threshold
+        pack.stub_amps = -0.05  # under threshold
         self.state.tick()
         self.assertEqual(False, bq.charge())
 
-        bq.amperage = -0.2  # surpasses threshold
+        pack.stub_amps = -0.2  # surpasses threshold
         self.state.tick()
         self.assertEqual(True, bq.charge())
 
     def test_charge_FET_opens_when_current_dies(self):
         bq = self.controller.bq
+        pack = self.controller.pack
         self.state.enter()
 
-        bq.amperage = -5  # make sure FET is one
+        pack.stub_amps = -5  # make sure FET is one
         self.state.tick()
         self.assertEqual(True, bq.charge())
 
-        bq.amperage = 0  # current goes away
+        pack.stub_amps = 0  # current goes away
         self.state.tick()
         self.assertEqual(False, bq.charge())
         
@@ -126,3 +129,34 @@ class NormalStateTest(unittest.TestCase):
         for i in range(10):
             self.state.tick()
         self.assertEqual(1, len(self.controller.logger.temp_log))
+
+    def test_over_temp_alert(self):
+        temps = self.controller.temps
+        self.state.enter()
+
+        temps.stub_temp1 = CONF.TEMP_MAX_PACK_DSG + 1
+        for i in range(10):
+            self.state.tick()
+
+        self.assertEqual("alert", self.sm.last_event)
+        self.assertEqual("Discharge Over-Temp", self.controller.alert_msg)
+
+    def test_under_temp_alert(self):
+        temps = self.controller.temps
+        self.state.enter()
+
+        temps.stub_temp1 = CONF.TEMP_MIN_PACK_DSG - 1
+        for i in range(10):
+            self.state.tick()
+
+        self.assertEqual("alert", self.sm.last_event)
+        self.assertEqual("Discharge Under-Temp", self.controller.alert_msg)
+
+    def test_discharge_overcurrent(self):
+        pack = self.controller.pack
+
+        pack.stub_amps = CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_I_TOLERANCE + 0.1
+        self.state.tick()
+
+        self.assertEqual("alert", self.sm.last_event)
+        self.assertEqual("Discharge Overcurrent", self.controller.alert_msg)

@@ -1,5 +1,6 @@
 import unittest
 
+from bms.conf import CONF
 from bms.states.charge import ChargeState
 from test.states.mock_machine import MockStatemachine
 
@@ -10,6 +11,16 @@ class ChargeStateTest(unittest.TestCase):
         self.sm = MockStatemachine()
         self.controller = self.sm.controller
         self.state = ChargeState(self.sm)
+
+        self.controller.setup()
+        driver = self.controller.driver
+        cells = self.controller.cells
+        bq = self.controller.bq
+        bq.amperage = 1.5
+        bq.stub_batt_v = 30.0
+        driver.stub_pack_v = cells.max_serial_voltage()
+        bq.stub_batt_v = cells.max_serial_voltage()
+
 
     def test_entry_turns_stuff_on(self):
         bq = self.controller.bq
@@ -45,37 +56,23 @@ class ChargeStateTest(unittest.TestCase):
         self.assertEqual("low_v", self.sm.last_event)
 
     def test_pow_off_event_when_charger_unplugged(self):
-        driver = self.controller.driver
-        cells = self.controller.cells
-        bq = self.controller.bq
-        bq.amperage = 1.5
-        bq.stub_batt_v = 30.0
-        driver.stub_pack_v = cells.max_serial_voltage()
-
         self.state.enter()
         self.state.tick()
         self.assertEqual(None, self.sm.last_event)
 
         self.controller.pack.expire()
-        bq.amperage = 0
+        self.controller.bq.amperage = 0
 
         self.state.tick()
         self.assertEqual("pow_off", self.sm.last_event)
         
     def test_charge_overcurrent(self):
-        driver = self.controller.driver
-        cells = self.controller.cells
-        bq = self.controller.bq
-        bq.stub_batt_v = 30.0
-        driver.stub_pack_v = cells.max_serial_voltage()
-        bq.amperage = 1.5
-
         self.state.enter()
         self.state.tick()
         self.assertEqual(None, self.sm.last_event)
 
         self.controller.pack.expire()
-        bq.amperage = 1.511
+        self.controller.bq.amperage = 1.56
 
         self.state.enter()
         self.state.tick()
@@ -87,12 +84,7 @@ class ChargeStateTest(unittest.TestCase):
         self.assertEqual(True, self.controller.cells.was_balancing_reset)
         
     def test_balance_schedule(self):
-        driver = self.controller.driver
         cells = self.controller.cells
-        bq = self.controller.bq
-        bq.stub_batt_v = 30.0
-        driver.stub_pack_v = cells.max_serial_voltage()
-        bq.amperage = 1.5
 
         self.state.enter()
         self.assertEqual(False, cells.was_balancing_updated)
@@ -122,12 +114,8 @@ class ChargeStateTest(unittest.TestCase):
         self.assertEqual(0, self.state.balance_counter)
         
     def test_full_v_event_when_fully_charged(self):
-        driver = self.controller.driver
         cells = self.controller.cells
         bq = self.controller.bq
-        driver.stub_pack_v = cells.max_serial_voltage()
-        bq.stub_batt_v = cells.max_serial_voltage()
-        bq.amperage = 1.5
         for cell in cells:
             cell.voltage = 4.2
 
@@ -136,12 +124,8 @@ class ChargeStateTest(unittest.TestCase):
         self.assertEqual("full_v", self.sm.last_event)
 
     def test_CHG_FET_off_to_balance_off_full_cells(self):
-        driver = self.controller.driver
         cells = self.controller.cells
         bq = self.controller.bq
-        driver.stub_pack_v = cells.max_serial_voltage()
-        bq.stub_batt_v = cells.max_serial_voltage()
-        bq.amperage = 1.5
         self.state.enter()
 
         for cell in cells:
@@ -158,11 +142,9 @@ class ChargeStateTest(unittest.TestCase):
 
     def test_incorrect_charge_voltage_on_enter(self):
         driver = self.controller.driver
-        cells = self.controller.cells
         bq = self.controller.bq
         bq.charge(False)
         driver.stub_pack_v = 86
-        bq.stub_batt_v = cells.max_serial_voltage()
         self.state.enter()
         
         self.assertEqual("alert", self.sm.last_event)
@@ -174,9 +156,6 @@ class ChargeStateTest(unittest.TestCase):
         cells = self.controller.cells
         bq = self.controller.bq
         bq.charge(False)
-        driver.stub_pack_v = cells.max_serial_voltage()
-        bq.stub_batt_v = cells.max_serial_voltage()
-        bq.amperage = 1.5
 
         self.state.enter()
         self.assertEqual(True, bq.charge())
@@ -185,6 +164,38 @@ class ChargeStateTest(unittest.TestCase):
         self.state.tick()
         self.assertEqual("alert", self.sm.last_event)
         self.assertEqual("Wrong Charge V: 38.4", self.controller.alert_msg)
+
+    def test_logs_pack_info_on_tick(self):
+        self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.pack_log))
+
+    def test_logs_cells_eveny_10_ticks(self):
+        self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.cell_log))
+
+    def test_logs_temps_eveny_10_ticks(self):
+        self.state.tick()
+        self.assertEqual(1, len(self.controller.logger.temp_log))
+
+    def test_over_temp_alert(self):
+        temps = self.controller.temps
+        self.state.enter()
+
+        temps.stub_temp1 = CONF.TEMP_MAX_PACK_CHG + 1
+        self.state.tick()
+
+        self.assertEqual("alert", self.sm.last_event)
+        self.assertEqual("Charge Over-Temp", self.controller.alert_msg)
+
+    def test_under_temp_alert(self):
+        temps = self.controller.temps
+        self.state.enter()
+
+        temps.stub_temp1 = CONF.TEMP_MIN_PACK_CHG - 1
+        self.state.tick()
+
+        self.assertEqual("alert", self.sm.last_event)
+        self.assertEqual("Charge Under-Temp", self.controller.alert_msg)
 
 
 

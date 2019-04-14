@@ -40,6 +40,11 @@ class Config:
         self.PACK_V_GAIN = 0.017496341463415
         self.PACK_I_TOLERANCE = 0.05
 
+        self.TEMP_MAX_PACK_CHG = 45
+        self.TEMP_MIN_PACK_CHG = 0
+        self.TEMP_MAX_PACK_DSG = 60
+        self.TEMP_MIN_PACK_DSG = -20
+
     def save(self):
         with open(CONF_FILE, "w") as f:
             for field in sorted(self.__dict__.keys()):

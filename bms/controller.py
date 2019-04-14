@@ -153,3 +153,7 @@ class Controller:
         my.temps.load()
         my.logger.temps(my.temps)
         return my.temps
+
+    def trigger_alert(self, msg):
+        self.alert_msg = msg
+        self.sm.alert()
