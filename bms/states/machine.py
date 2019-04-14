@@ -6,7 +6,6 @@ from bms.states.empty import EmptyState
 from bms.states.full import FullState
 from bms.states.normal import NormalState
 from bms.states.prechg import PreChgState
-from bms.util import log
 
 
 class Statemachine:
@@ -43,10 +42,10 @@ class Statemachine:
             self.trans[(_start, event)] = (_end, _action)
 
     def set_state(self, state):
-        log("\tleaving: " + str(self.state))
+        self.controller.log("\tleaving: " + str(self.state))
         if hasattr(self.state, "exit"):
             self.state.exit()
-        log("\tentering: " + str(state))
+        self.controller.log("\tentering: " + str(state))
         self.state = state
         if hasattr(self.state, "enter"):
             self.state.enter()
@@ -56,7 +55,7 @@ class Statemachine:
         if not t:
             t = self.trans.get(("*", event))
         if not t:
-            log("Unimplemented transition!: " + str(self.__class__.__name__) + ":" + event)
+            self.controller.log("Unimplemented transition!: " + str(self.__class__.__name__) + ":" + event)
         else:
             end = t[0]
             action = t[1]
@@ -68,33 +67,33 @@ class Statemachine:
         self.state.tick()
 
     def low_v(self):
-        log("SM event: low_v")
+        self.controller.log("SM event: low_v")
         self.handle_event("low_v")
 
     def norm_v(self):
-        log("SM event: norm_v")
+        self.controller.log("SM event: norm_v")
         self.handle_event("norm_v")
 
     def full_v(self):
-        log("SM event: full_v")
+        self.controller.log("SM event: full_v")
         self.handle_event("full_v")
 
     def pow_on(self):
-        log("SM event: pow_on")
+        self.controller.log("SM event: pow_on")
         self.handle_event("pow_on")
 
     def pow_off(self):
-        log("SM event: pow_off")
+        self.controller.log("SM event: pow_off")
         self.handle_event("pow_off")
 
     def alert(self):
-        log("SM event: alert")
+        self.controller.log("SM event: alert")
         self.handle_event("alert")
 
     def error(self):
-        log("SM event: error")
+        self.controller.log("SM event: error")
         self.handle_event("error")
 
     def clear(self):
-        log("SM event: clear")
+        self.controller.log("SM event: clear")
         self.handle_event("clear")

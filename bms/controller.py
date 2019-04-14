@@ -67,6 +67,7 @@ class Controller:
 
     def setup(self):
         self.logger.setup()
+        self.log("setup")
         self.display.setup()
         self.set_screen(self.splash_screen)
 
@@ -157,3 +158,6 @@ class Controller:
     def trigger_alert(self, msg):
         self.alert_msg = msg
         self.sm.alert()
+
+    def log(self, *argv):
+        self.logger.msg(*argv)

@@ -37,9 +37,9 @@ class ConfTest(unittest.TestCase):
         with open(CONF_FILE, "r") as f:
             lines = f.readlines()
 
-        # # print it out
-        # for line in lines:
-        #     print(line)
+        # print it out
+        for line in lines:
+            print(line[:-1])
 
         self.assertIn("CELL_SERIES: 10\n", lines)
 

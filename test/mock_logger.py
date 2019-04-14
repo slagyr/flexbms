@@ -5,6 +5,7 @@ class MockLogger(Logger):
     def __init__(self):
         self.was_setup = False
         self.was_closed = False
+        self.setup() # so that tests don't have to
 
     def setup(self):
         self.cell_log = []

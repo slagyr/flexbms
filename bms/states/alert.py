@@ -7,6 +7,11 @@ class AlertState():
         bq = controller.bq
         driver = controller.driver
 
+        try:
+            controller.log("Alert: " + str(controller.alert_msg) + ":" + str(bq.faults))
+        except OSError:
+            pass
+
         bq.discharge(False)
         bq.charge(False)
         bq.adc(False)
