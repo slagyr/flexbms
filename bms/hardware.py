@@ -14,6 +14,7 @@ class Hardware():
         bq = self.controller.bq
         cells = self.controller.cells
 
+        cells.expire()
         cells.load()
         serial_v = cells.serial_voltage()
         batt_v = bq.batt_voltage()

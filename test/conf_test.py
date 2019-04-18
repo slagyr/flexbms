@@ -38,8 +38,8 @@ class ConfTest(unittest.TestCase):
             lines = f.readlines()
 
         # print it out
-        for line in lines:
-            print(line[:-1])
+        # for line in lines:
+        #     print(line[:-1])
 
         self.assertIn("CELL_SERIES: 10\n", lines)
 
@@ -51,3 +51,4 @@ class ConfTest(unittest.TestCase):
         CONF.load()
         self.assertEqual(25, CONF.CELL_SERIES)
         self.assertEqual(False, CONF.BALANCE_ENABLED)
+

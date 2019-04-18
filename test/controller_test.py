@@ -12,11 +12,11 @@ from test.mock_clock import MockClock
 from test.mock_display import MockDisplay
 from test.mock_driver import MockDriver
 from test.mock_logger import MockLogger
+from test.mock_rebooter import MockRebooter
 from test.mock_rotary import MockRotary
 from test.screens.mock_screen import MockScreen
 from test.states.mock_machine import MockStatemachine
 from test.states.mock_state import MockState
-
 
 class ControllerTest(unittest.TestCase):
 
@@ -205,6 +205,24 @@ class ControllerTest(unittest.TestCase):
         self.assertEqual(False, self.cells.loaded)
         self.assertEqual(False, self.temps.loaded)
         self.assertEqual(False, self.pack.loaded)
+
+    def test_controller_has_reboot_menu_item(self):
+        menu = self.controller.main_menu
+        last = menu.items[-1]
+
+        self.assertEqual("Reboot", last.menu_name())
+
+    def test_reboot_menu_item_reboots(self):
+        rebooter = MockRebooter()
+        self.controller.rebooter = rebooter
+        menu = self.controller.main_menu
+        last = menu.items[-1]
+
+        last.menu_sel()
+        
+        self.assertEqual(True, rebooter.was_rebooted)
+
+
 
 
 

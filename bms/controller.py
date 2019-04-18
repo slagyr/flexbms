@@ -22,6 +22,17 @@ class HomeMenuItem:
     def menu_sel(self):
         self.controller.set_screen(self.controller.home_screen)
 
+
+class RebootMenuItem:
+     def __init__(self,controller):
+         self.controller = controller
+
+     def menu_name(self):
+         return "Reboot"
+
+     def menu_sel(self):
+        self.controller.rebooter.reboot()
+
 class Controller:
     def __init__(self, clock):
         self.clock = clock
@@ -34,6 +45,7 @@ class Controller:
         self.rotary = None
         self.temps = None
         self.pack = None
+        self.rebooter = None
 
         self.last_user_event_time = 0
         self.splash_screen = SplashScreen(self)
@@ -64,6 +76,7 @@ class Controller:
         main.add(self.voltages_screen)
         main.add(self.dev_screen)
         main.add(self.splash_screen)
+        main.add(RebootMenuItem(self))
 
     def setup(self):
         self.logger.setup()

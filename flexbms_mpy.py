@@ -9,6 +9,7 @@ import utime
 import gc
 import sys
 
+import machine
 import bms.util
 from bms.bq import *
 from bms.controller import Controller
@@ -28,6 +29,9 @@ micropython.alloc_emergency_exception_buf(200)
 
 TICK_INTERVAL = 250
 
+class Rebooter:
+    def reboot(self):
+        machine.reset()
 
 class Clock:
     def millis(self):
@@ -100,6 +104,7 @@ class FlexBMS:
         self.controller.rotary = rotary
         self.controller.temps = temps
         self.controller.pack = pack
+        self.controller.rebooter = Rebooter()
 
         rotary_button = Pin("X3", Pin.IN)
         self.rot_rot_db = Debouncer(rotary.clk, ExtInt.IRQ_FALLING, 1, rotary.handle_rotate)
@@ -128,6 +133,10 @@ class FlexBMS:
             sys.print_exception(e, f)
             f.flush()
         sys.print_exception(e)
+        if self.controller and self.controller.logger:
+            logger = self.controller.logger
+            logger.msg("EXCEPTION!")
+            sys.print_exception(e, logger.msg_log)
 
     def main(self):
         try:
