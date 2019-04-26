@@ -86,3 +86,6 @@ class PreChgStateTest(unittest.TestCase):
         self.state.tick()
         self.assertEqual(1, len(self.controller.logger.temp_log))
 
+    def test_screen_update_needed(self):
+        self.state.tick()
+        self.assertEqual(True, self.controller.screen_outdated())

@@ -31,3 +31,5 @@ class PreChgState:
             my.sm.pow_off()
         elif not cells.has_low_voltage():
             my.sm.norm_v()
+
+        controller.screen_outdated(True)

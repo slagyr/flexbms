@@ -7,12 +7,12 @@ class ChargeState():
         self.sm = sm
         self.balance_counter = 0
 
-    def check_charger_voltage(self):
+    def check_charger_voltage(self, pack):
         controller = self.sm.controller
-        voltage = controller.driver.pack_voltage()
+        voltage = pack.pack_v
         if voltage > controller.cells.max_serial_voltage() + CONF.PACK_V_TOLERANCE:
             controller.alert_msg = "Wrong Charge V: {0:.1f}".format(voltage)
-            self.sm.alert()
+            # self.sm.alert()
             return False
         return True
 
@@ -23,7 +23,8 @@ class ChargeState():
 
         self.balance_counter = 0
 
-        if(self.check_charger_voltage()):
+        pack = controller.loaded_pack()
+        if self.check_charger_voltage(pack):
             bq.discharge(True)
             bq.charge(True)
             bq.adc(True)
@@ -57,7 +58,7 @@ class ChargeState():
             my.sm.low_v()
         elif pack.amps < (0 + CONF.PACK_I_TOLERANCE):
             my.sm.pow_off()
-        elif not self.check_charger_voltage():
+        elif not self.check_charger_voltage(pack):
             pass # alert event already triggered
         elif self.balance_counter == 0:
             if cells.fully_charged():

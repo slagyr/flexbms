@@ -35,7 +35,7 @@ class EmptyStateTest(unittest.TestCase):
         
     def test_sets_tick_interval(self):
         self.state.enter()
-        self.assertEqual(600000, self.controller.sm_tick_interval())
+        self.assertEqual(100, self.controller.sm_tick_interval())
 
     def test_entry_sets_home_screen_to_low_v(self):
         self.state.enter()
@@ -58,10 +58,21 @@ class EmptyStateTest(unittest.TestCase):
         self.assertEqual(True, bq.voltages_loaded)
         self.assertEqual(False, self.state.in_wake_cycle)
         self.assertEqual(False, bq.adc())
-        self.assertEqual(600000, self.controller.sm_tick_interval())
+        self.assertEqual(10000, self.controller.sm_tick_interval())
         self.assertEqual(True, self.controller.screen_outdated())
 
+    def test_pow_on_when_pack_v_is_high(self):
+        bq = self.controller.bq
+        pack = self.controller.pack
+        cells = self.controller.cells
+        pack.stub_pack_v = cells.max_serial_voltage() + 0.5
+        pack.stub_batt_v = cells.max_serial_voltage() / 2
 
+        self.state.enter()
+        self.state.tick()
+        self.state.tick()
+        self.assertEqual(True, bq.voltages_loaded)
+        self.assertEqual("pow_on", self.sm.last_event)
 
     def test_logs_pack_info_on_wake_tick(self):
         self.state.tick()

@@ -22,6 +22,7 @@ class Config:
         self.CELL_MIN_V = 2.5
         self.CELL_MAX_CHG_I = 1.5
         self.CELL_MAX_DSG_I = 10
+        self.CELL_V_TOLERANCE = 0.01
 
         self.BALANCE_ENABLED = True
         self.BALANCE_THRESH = 0.01

@@ -94,7 +94,7 @@ class BQ76940Test(unittest.TestCase):
         
     def test_OV_TRIP(self):
         self.bq.setup()
-        self.assertEqual(0b11000111, self.i2c.registers[0x09])
+        self.assertEqual(0b11001001, self.i2c.registers[0x09])
         self.assertAlmostEqual(4.2, self.bq.get_ov_trip(), 1)
 
         self.bq.adc_gain = 380
@@ -105,7 +105,7 @@ class BQ76940Test(unittest.TestCase):
 
     def test_UV_TRIP(self):
         self.bq.setup()
-        self.assertEqual(0b10100100, self.i2c.registers[0x0A])
+        self.assertEqual(0b10100011, self.i2c.registers[0x0A])
         self.assertAlmostEqual(2.5, self.bq.get_uv_trip(), 1)
 
         self.bq.adc_gain = 380
