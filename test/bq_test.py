@@ -154,7 +154,7 @@ class BQ76940Test(unittest.TestCase):
 
         self.assertEqual(0b10000000, self.i2c.registers[0x0])
         self.assertEqual([], self.bq.faults)
-        self.assertAlmostEqual(270.1, self.bq.amperage, 1)
+        self.assertAlmostEqual(270.1, self.bq.amps_in, 1)
         
     def test_process_alert_faults(self):
         self.i2c.registers[0x32] = 0
@@ -319,22 +319,22 @@ class BQ76940Test(unittest.TestCase):
         self.i2c.registers[0x32] = 0
         self.i2c.registers[0x33] = 0
         self.bq.load_amperage()
-        self.assertAlmostEqual(0, self.bq.amperage, 1)
+        self.assertAlmostEqual(0, self.bq.amps_in, 1)
 
         self.i2c.registers[0x32] = 0x7D
         self.i2c.registers[0x33] = 0x0
         self.bq.load_amperage()
-        self.assertAlmostEqual(270.1, self.bq.amperage, 1)
+        self.assertAlmostEqual(270.1, self.bq.amps_in, 1)
 
         self.i2c.registers[0x32] = 0x83
         self.i2c.registers[0x33] = 0x0
         self.bq.load_amperage()
-        self.assertAlmostEqual(-270.1, self.bq.amperage, 1)
+        self.assertAlmostEqual(-270.1, self.bq.amps_in, 1)
 
         self.i2c.registers[0x32] = 0xFF
         self.i2c.registers[0x33] = 0xFF
         self.bq.load_amperage()
-        self.assertAlmostEqual(0, self.bq.amperage, 1)
+        self.assertAlmostEqual(0, self.bq.amps_in, 1)
 
     def test_process_alert_with_cc_ready(self):
         self.i2c.registers[0x0] = 0b10000000
@@ -344,7 +344,7 @@ class BQ76940Test(unittest.TestCase):
 
         self.assertEqual(0b10000000, self.i2c.registers[0x0])
         self.assertEqual([], self.bq.faults)
-        self.assertAlmostEqual(270.1, self.bq.amperage, 1)
+        self.assertAlmostEqual(270.1, self.bq.amps_in, 1)
         
     def test_TEMP_SEL_set_in_setup(self):
         self.bq.setup()

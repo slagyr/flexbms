@@ -59,7 +59,7 @@ class DevScreen:
         display.draw_text(42, 5, "{0:2.3f}".format(pack.pack_v))
         display.draw_text(42, 6, "{0:2.3f}".format(pack.batt_v))
         display.draw_text(42, 7, "{0:2.3f}".format(cells.serial_voltage()))
-        display.draw_text(90, 1, "{0:2.2f}".format(pack.amps))
+        display.draw_text(90, 1, "{0:2.2f}".format(pack.amps_in))
         display.draw_text(90, 3, "{0:2.2f}".format(temps.temp1))
         display.draw_text(90, 5, "{0:2.2f}".format(temps.temp2))
         display.draw_text(90, 7, "{0:2.2f}".format(temps.temp3))

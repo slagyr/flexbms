@@ -4,7 +4,7 @@ class Pack:
         self.driver = driver
         self.batt_v = 0.0
         self.pack_v = 0.0
-        self.amps = 0.0
+        self.amps_in = 0.0
         self.loaded = False
 
     def load(self):
@@ -13,7 +13,7 @@ class Pack:
             return
         my.batt_v = my.bq.batt_voltage()
         my.pack_v = my.driver.pack_voltage()
-        my.amps = my.bq.amperage
+        my.amps_in = my.bq.amps_in
         my.loaded = True
 
     def expire(self):

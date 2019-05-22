@@ -56,7 +56,7 @@ class BargraphScreen:
         pchg = "P" if self.controller.driver.precharge() else "-"
         statstr = chg + pchg + dsg
         display.draw_text(0, 0, statstr)
-        display.draw_text(60, 0, "{:.1f}".format(pack.amps * -1))
+        display.draw_text(60, 0, "{:.1f}".format(pack.amps_in * -1))
         display.draw_text(104, 1, "{:.1f}".format(pack.batt_v))
         display.draw_text(104, 3, "{:.1f}".format(cells.serial_voltage()))
         display.draw_text(104, 5, "{:.1f}".format(pack.pack_v))

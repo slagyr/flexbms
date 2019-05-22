@@ -83,7 +83,7 @@ class LoggerTest(unittest.TestCase):
         pack = Pack("bq", "driver")
         pack.batt_v = 36.3
         pack.pack_v = 35.5
-        pack.amps = -5.4
+        pack.amps_in = -5.4
         self.logger.pack(pack)
         lines = self.readlines("pack.csv")
         self.assertEqual(1, len(lines))

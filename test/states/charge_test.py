@@ -16,7 +16,7 @@ class ChargeStateTest(unittest.TestCase):
         driver = self.controller.driver
         cells = self.controller.cells
         bq = self.controller.bq
-        bq.amperage = 1.5
+        bq.amps_in = 1.5
         bq.stub_batt_v = 30.0
         driver.stub_pack_v = cells.max_serial_voltage()
         bq.stub_batt_v = cells.max_serial_voltage()
@@ -57,12 +57,12 @@ class ChargeStateTest(unittest.TestCase):
 
     def test_pow_off_event_when_charger_unplugged(self):
         pack = self.controller.pack
-        pack.stub_amps = -1.5
+        pack.stub_amps_in = 1.5
         self.state.enter()
         self.state.tick()
         self.assertEqual(None, self.sm.last_event)
 
-        pack.stub_amps = 0
+        pack.stub_amps_in = 0
 
         self.state.tick()
         self.state.tick()
@@ -74,7 +74,7 @@ class ChargeStateTest(unittest.TestCase):
         self.assertEqual(None, self.sm.last_event)
 
         self.controller.pack.expire()
-        self.controller.bq.amperage = 1.56
+        self.controller.bq.amps_in = 1.56
 
         self.state.enter()
         self.state.tick()
@@ -132,7 +132,9 @@ class ChargeStateTest(unittest.TestCase):
 
         for cell in cells:
             cell.voltage = 4.0
-        cells[5].voltage = 4.21  # need to turn off CHG FET to prevent OV
+
+        # need to turn off CHG FET to prevent OV
+        cells[5].voltage = CONF.CELL_MAX_V + CONF.CELL_V_TOLERANCE + 0.01
 
         self.state.tick()
         self.assertEqual(False, bq.charge())

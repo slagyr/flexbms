@@ -76,7 +76,7 @@ class BQ:
         self.adc_gain = -1
         self.adc_offset = -1
         self.faults = []
-        self.amperage = 0
+        self.amps_in = 0
 
     def read_register(self, reg, buffer):
         i2c = self.i2c
@@ -322,7 +322,7 @@ class BQ:
             adc = -65536 + adc
         v = adc * (lsb / 1000000)
         a = v / sense_r  # Amps going into cells (a < 0 is amp going out)
-        self.amperage = a
+        self.amps_in = a
 
     def discharge(self, on=None):
         if on is None:

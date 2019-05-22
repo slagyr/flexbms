@@ -43,17 +43,17 @@ class NormalStateTest(unittest.TestCase):
     def test_charge_FET_closes_when_current_detected(self):
         pack = self.controller.pack
         bq = self.controller.bq
-        pack.stub_amps = 0
+        pack.stub_amps_in = 0
         self.state.enter()
 
         self.state.tick()
         self.assertEqual(False, bq.charge())
 
-        pack.stub_amps = -0.05  # under threshold
+        pack.stub_amps_in = -0.05  # under threshold
         self.state.tick()
         self.assertEqual(False, bq.charge())
 
-        pack.stub_amps = -0.2  # surpasses threshold
+        pack.stub_amps_in = -0.2  # surpasses threshold
         self.state.tick()
         self.assertEqual(True, bq.charge())
 
@@ -62,11 +62,11 @@ class NormalStateTest(unittest.TestCase):
         pack = self.controller.pack
         self.state.enter()
 
-        pack.stub_amps = -5  # make sure FET is one
+        pack.stub_amps_in = -5  # make sure FET is one
         self.state.tick()
         self.assertEqual(True, bq.charge())
 
-        pack.stub_amps = 0  # current goes away
+        pack.stub_amps_in = 0  # current goes away
         self.state.tick()
         self.assertEqual(False, bq.charge())
         
@@ -155,7 +155,7 @@ class NormalStateTest(unittest.TestCase):
     def test_discharge_overcurrent(self):
         pack = self.controller.pack
 
-        pack.stub_amps = CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_I_TOLERANCE + 0.1
+        pack.stub_amps_in = CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_I_TOLERANCE + 0.1
         self.state.tick()
 
         self.assertEqual("alert", self.sm.last_event)

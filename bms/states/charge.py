@@ -16,6 +16,7 @@ class ChargeState():
             return False
         return True
 
+
     def enter(self):
         controller = self.sm.controller
         bq = controller.bq
@@ -50,7 +51,7 @@ class ChargeState():
         pack = controller.loaded_pack()
         temps = controller.loaded_temps()
 
-        if pack.amps > (conf.CELL_MAX_CHG_I * conf.CELL_PARALLEL + CONF.PACK_I_TOLERANCE):
+        if pack.amps_in > (conf.CELL_MAX_CHG_I * conf.CELL_PARALLEL + CONF.PACK_I_TOLERANCE):
             controller.trigger_alert("Charge Overcurrent")
         elif temps.temp1 > CONF.TEMP_MAX_PACK_CHG:
             controller.trigger_alert("Charge Over-Temp")
@@ -58,8 +59,7 @@ class ChargeState():
             controller.trigger_alert("Charge Under-Temp")
         elif cells.has_low_voltage():
             my.sm.low_v()
-        elif pack.amps > (0 - CONF.PACK_I_TOLERANCE):
-            pass
+        elif pack.amps_in < (0 + CONF.PACK_I_TOLERANCE):
             my.sm.pow_off()
         elif not self.check_charger_voltage(pack):
             pass # alert event already triggered

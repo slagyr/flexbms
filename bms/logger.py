@@ -53,7 +53,7 @@ class Logger:
         self._append_line(self.temp_log, line)
 
     def pack(self, pack):
-        line = str(util.clock.millis()) + "," + str(pack.batt_v) + "," + str(pack.pack_v) + "," + str(pack.amps) + "\n"
+        line = str(util.clock.millis()) + "," + str(pack.batt_v) + "," + str(pack.pack_v) + "," + str(pack.amps_in) + "\n"
         self._append_line(self.pack_log, line)
 
 
