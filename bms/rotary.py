@@ -26,6 +26,5 @@ class Rotary:
         return "Rotary - clicked: " + str(self.clicked) + " position: " + str(self.pos) + " previous: " + str(self.prev_pos)
 
     def handle_rotate(self):
-        clk = self.clk.value()
         dt = self.dt.value()
-        self.pos += 1 if clk == dt else -1
+        self.pos += 1 if dt else -1

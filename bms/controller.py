@@ -116,7 +116,7 @@ class Controller:
     def handle_alert(self):
         self._has_alert = True
 
-    @clocked_fn
+    # @clocked_fn
     def tick(self):
         my = self
         millis = my.clock.millis()

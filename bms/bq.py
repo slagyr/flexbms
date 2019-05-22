@@ -258,6 +258,7 @@ class BQ:
 
     def clear_sys_stat(self):
         self.write_register(SYS_STAT, 0xBF)
+        self.faults.clear()
 
     def cell_voltage(self, cell_id):
         reg = VC1_HI + 2 * (cell_id - 1)

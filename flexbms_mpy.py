@@ -79,6 +79,7 @@ class FlexBMS:
         self.rot_rot_db = None
         self.rot_clk_db = None
         self._hardware = None
+        self.alert_pim = None
         self.conf = CONF
 
     def init(self):
@@ -110,9 +111,10 @@ class FlexBMS:
         self.rot_rot_db = Debouncer(rotary.clk, ExtInt.IRQ_FALLING, 1, rotary.handle_rotate)
         self.rot_clk_db = Debouncer(rotary_button, ExtInt.IRQ_FALLING, 4, rotary.handle_click)
 
+        self.alert_pin = Pin("X12", Pin.IN)
         def alert_handler(line):
             self.controller.handle_alert()
-        ExtInt(Pin("X12", Pin.IN), ExtInt.IRQ_RISING, Pin.PULL_NONE, alert_handler)
+        ExtInt(self.alert_pin, ExtInt.IRQ_RISING, Pin.PULL_NONE, alert_handler)
 
     def loop(self):
         while self.ok:

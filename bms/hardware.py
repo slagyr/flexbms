@@ -57,7 +57,27 @@ class Hardware():
                 bq.set_balance_cell(cell.id, True)
                 util.clock.sleep(1000)
                 bq.set_balance_cell(cell.id, False)
-        log("finished")
+        log("Finished")
+
+    def test_precharge(self):
+        log("Testing Precharge Circuit")
+        log("Use multimeter to measure current (mA) going into the pack.")
+        log("Fully charged batteries will see little to no precharge current.")
+        bq = self.controller.bq
+        driver = self.controller.driver
+        bq.charge(False)
+        log("   Charge FET turned off")
+        bq.discharge(True)
+        log("   Discharge FET turned on")
+        driver.precharge(True)
+        log("   Precharge FET turned on")
+        log("   Sleeping 10 seconds")
+        util.clock.sleep(10000)
+        driver.precharge(False)
+        log("   Precharge FET turned off")
+        bq.discharge(False)
+        log("   Discharge FET turned off")
+        log("Finished")
 
 
 

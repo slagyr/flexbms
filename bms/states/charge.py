@@ -12,7 +12,7 @@ class ChargeState():
         voltage = pack.pack_v
         if voltage > controller.cells.max_serial_voltage() + CONF.PACK_V_TOLERANCE:
             controller.alert_msg = "Wrong Charge V: {0:.1f}".format(voltage)
-            # self.sm.alert()
+            self.sm.alert()
             return False
         return True
 
@@ -24,14 +24,16 @@ class ChargeState():
         self.balance_counter = 0
 
         pack = controller.loaded_pack()
-        if self.check_charger_voltage(pack):
-            bq.discharge(True)
-            bq.charge(True)
-            bq.adc(True)
-            driver.chargepump(True)
-            driver.precharge(False)
-            controller.sm_tick_interval(500)
-            controller.set_home_screen(controller.voltages_screen)
+        if not self.check_charger_voltage(pack):
+            return
+
+        bq.discharge(True)
+        bq.charge(True)
+        bq.adc(True)
+        driver.chargepump(True)
+        driver.precharge(False)
+        controller.sm_tick_interval(500)
+        controller.set_home_screen(controller.voltages_screen)
 
 
     def exit(self):
@@ -56,7 +58,8 @@ class ChargeState():
             controller.trigger_alert("Charge Under-Temp")
         elif cells.has_low_voltage():
             my.sm.low_v()
-        elif pack.amps < (0 + CONF.PACK_I_TOLERANCE):
+        elif pack.amps > (0 - CONF.PACK_I_TOLERANCE):
+            pass
             my.sm.pow_off()
         elif not self.check_charger_voltage(pack):
             pass # alert event already triggered

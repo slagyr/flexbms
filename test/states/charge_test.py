@@ -56,13 +56,15 @@ class ChargeStateTest(unittest.TestCase):
         self.assertEqual("low_v", self.sm.last_event)
 
     def test_pow_off_event_when_charger_unplugged(self):
+        pack = self.controller.pack
+        pack.stub_amps = -1.5
         self.state.enter()
         self.state.tick()
         self.assertEqual(None, self.sm.last_event)
 
-        self.controller.pack.expire()
-        self.controller.bq.amperage = 0
+        pack.stub_amps = 0
 
+        self.state.tick()
         self.state.tick()
         self.assertEqual("pow_off", self.sm.last_event)
         
