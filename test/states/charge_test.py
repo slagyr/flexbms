@@ -169,17 +169,24 @@ class ChargeStateTest(unittest.TestCase):
     #     self.assertEqual("alert", self.sm.last_event)
     #     self.assertEqual("Wrong Charge V: 38.4", self.controller.alert_msg)
 
+    def count_log_type(self, type):
+        count = 0
+        for line in self.controller.logger.log:
+            if line.startswith(type):
+                count += 1
+        return count
+
     def test_logs_pack_info_on_tick(self):
         self.state.tick()
-        self.assertEqual(1, len(self.controller.logger.pack_log))
+        self.assertEqual(1, self.controller.logger.count_log_type("pack:"))
 
     def test_logs_cells_eveny_10_ticks(self):
         self.state.tick()
-        self.assertEqual(1, len(self.controller.logger.cell_log))
+        self.assertEqual(1, self.controller.logger.count_log_type("cells:"))
 
     def test_logs_temps_eveny_10_ticks(self):
         self.state.tick()
-        self.assertEqual(1, len(self.controller.logger.temp_log))
+        self.assertEqual(1, self.controller.logger.count_log_type("temps:"))
 
     def test_over_temp_alert(self):
         temps = self.controller.temps

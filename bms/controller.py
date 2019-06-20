@@ -35,6 +35,7 @@ class RebootMenuItem:
 
 class Controller:
     def __init__(self, clock):
+        self.tick_count = 0
         self.clock = clock
         self.logger = None
         self.display = None
@@ -119,7 +120,9 @@ class Controller:
     # @clocked_fn
     def tick(self):
         my = self
+        my.tick_count += 1
         millis = my.clock.millis()
+        self.logger.tick(my.tick_count, millis)
 
         if my._has_alert:
             my._has_alert = False
@@ -173,4 +176,4 @@ class Controller:
         self.sm.alert()
 
     def log(self, *argv):
-        self.logger.msg(*argv)
+        self.logger.info(*argv)

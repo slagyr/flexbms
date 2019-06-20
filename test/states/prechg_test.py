@@ -76,15 +76,15 @@ class PreChgStateTest(unittest.TestCase):
 
     def test_logs_pack_info_on_tick(self):
         self.state.tick()
-        self.assertEqual(1, len(self.controller.logger.pack_log))
+        self.assertEqual(1, self.controller.logger.count_log_type("pack:"))
 
     def test_logs_cells_on_tick(self):
         self.state.tick()
-        self.assertEqual(1, len(self.controller.logger.cell_log))
+        self.assertEqual(1, self.controller.logger.count_log_type("cells:"))
 
     def test_logs_temps_on_tick(self):
         self.state.tick()
-        self.assertEqual(1, len(self.controller.logger.temp_log))
+        self.assertEqual(1, self.controller.logger.count_log_type("temps:"))
 
     def test_screen_update_needed(self):
         self.state.tick()

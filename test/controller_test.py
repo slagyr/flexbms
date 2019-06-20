@@ -222,6 +222,13 @@ class ControllerTest(unittest.TestCase):
         
         self.assertEqual(True, rebooter.was_rebooted)
 
+    def test_logs_tick(self):
+        self.controller.tick()
+        self.assertEqual(1, self.logger.count_log_type("tick:"))
+        self.controller.tick()
+        self.assertEqual(2, self.logger.count_log_type("tick:"))
+
+
 
 
 

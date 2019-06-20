@@ -8,15 +8,19 @@ class MockLogger(Logger):
         self.setup() # so that tests don't have to
 
     def setup(self):
-        self.cell_log = []
-        self.temp_log = []
-        self.msg_log = []
-        self.pack_log = []
+        self.log = []
         self.was_setup = True
 
     def close(self):
         self.was_closed = True
 
-    def _append_line(self, f, l):
-        f.append(l)
+    def _append(self, l):
+        self.log.append(l)
+
+    def count_log_type(self, type):
+        count = 0
+        for line in self.log:
+            if line.startswith(type):
+                count += 1
+        return count
 
