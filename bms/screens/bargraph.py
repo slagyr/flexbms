@@ -55,11 +55,13 @@ class BargraphScreen:
         dsg = ">" if self.controller.bq.discharge() else "|"
         pchg = "P" if self.controller.driver.precharge() else "-"
         statstr = chg + pchg + dsg
+        percent_remaining = (((pack.batt_v / 10) - 2.95) / 1.05) * 100
         display.draw_text(0, 0, statstr)
         display.draw_text(60, 0, "{:.1f}".format(pack.amps_in * -1))
         display.draw_text(104, 1, "{:.1f}".format(pack.batt_v))
         display.draw_text(104, 3, "{:.1f}".format(cells.serial_voltage()))
         display.draw_text(104, 5, "{:.1f}".format(pack.pack_v))
+        display.draw_text(104, 7, "{:.0f}".format(percent_remaining))
         display.show()
 
     def draw_full(self):
@@ -71,6 +73,7 @@ class BargraphScreen:
         display.draw_text(104, 0, "BatV")
         display.draw_text(104, 2, "SerV")
         display.draw_text(104, 4, "PakV")
+        display.draw_text(104, 6, "%Chrg")
         self.draw_graph_labels(display)
         self.update()
 

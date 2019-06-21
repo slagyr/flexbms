@@ -10,10 +10,10 @@ class ChargeState():
     def check_charger_voltage(self, pack):
         controller = self.sm.controller
         voltage = pack.pack_v
-        if voltage > controller.cells.max_serial_voltage() + CONF.PACK_V_TOLERANCE:
-            controller.alert_msg = "Wrong Charge V: {0:.1f}".format(voltage)
-            self.sm.alert()
-            return False
+        #if voltage > controller.cells.max_serial_voltage() + CONF.PACK_V_TOLERANCE:
+        #    controller.alert_msg = "Wrong Charge V: {0:.1f}".format(voltage)
+        #    self.sm.alert()
+        #    return False
         return True
 
 
