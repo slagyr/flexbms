@@ -12,7 +12,7 @@ class AlertStateTest(unittest.TestCase):
         self.controller.setup()
         self.state = AlertState(self.sm)
 
-    def test_entry_turns_stuff_on(self):
+    def test_entry_turns_stuff_off(self):
         bq = self.controller.bq
         driver = self.controller.driver
         bq.discharge(True)
@@ -33,12 +33,19 @@ class AlertStateTest(unittest.TestCase):
         self.state.enter()
         self.assertEqual(10000, self.controller.sm_tick_interval())
 
-    def test_entry_sets_home_screen_to_alertscreen(self):
+    def test_entry_sets_home_screen_to_alert_screen(self):
         self.state.enter()
         self.assertEqual(self.controller.alert_screen, self.controller.home_screen)
         self.assertEqual(self.controller.alert_screen, self.controller.screen)
 
-    # def test_max_charge_current_exceeded_alert(self):
-    #
-    #     self.assertEqual(1, 2)
+    def test_exit_clears_alert(self):
+        self.controller.alert_msg = "fooey"
+        self.controller.bq.faults = [1, 2, 3]
+        self.state.enter()
+
+        self.state.exit()
+
+        self.assertEqual(True, self.controller.bq.was_sys_stat_cleared)
+        self.assertEqual(None, self.controller.alert_msg)
+
 

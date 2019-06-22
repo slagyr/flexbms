@@ -16,7 +16,6 @@ class AlertScreen:
 
     def user_input(self):
         if self.controller.rotary.clicked:
-            self.controller.alert_msg = None
             self.controller.sm.clear()
 
     def update(self):

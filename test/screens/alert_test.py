@@ -45,9 +45,6 @@ class AlertScreenTest(unittest.TestCase):
         self.assertEqual("ALERT", self.display.drawn_text[0][0])
         self.assertEqual("Cake is so Delicious", self.display.drawn_text[1][0])
 
-        self.controller.rotary.clicked = True
-        self.screen.user_input()
-        self.assertEqual(None, self.controller.alert_msg)
 
 
 

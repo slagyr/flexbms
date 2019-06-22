@@ -24,4 +24,7 @@ class AlertState():
     def tick(self):
         pass
 
-# TODO - Both FETS are off afert returning from Alert screen
+    def exit(self):
+        self.sm.controller.alert_msg = None
+        self.sm.controller.bq.clear_sys_stat()
+

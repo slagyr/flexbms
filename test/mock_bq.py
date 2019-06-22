@@ -12,6 +12,7 @@ class MockBQ(BQ):
         self.stub_batt_v = 42
         self.stub_voltages = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5]
         self.stub_therms = [10000, 10000, 10000]
+        self.was_sys_stat_cleared = False
 
     def setup(self):
         self.was_setup = True
@@ -43,6 +44,12 @@ class MockBQ(BQ):
 
     def therm_r(self, id):
         return self.stub_therms[id]
+
+    def clear_sys_stat(self):
+        super().clear_sys_stat()
+        self.was_sys_stat_cleared = True
+
+
 
 
 

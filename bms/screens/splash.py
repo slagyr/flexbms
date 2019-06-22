@@ -1,4 +1,4 @@
-from bms import fonts
+from bms import fonts, version
 
 from bms.util import load_binary_into
 
@@ -13,7 +13,7 @@ class SplashScreen:
         display.font = fonts.font6x8()
         display.inverted = False
         load_binary_into("splash", display.buffer)
-        display.draw_text(56, 7, "FlexBMS v1.0")
+        display.draw_text(50, 7, "FlexBMS " + version.name())
         display.show()
 
     def user_input(self):

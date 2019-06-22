@@ -82,7 +82,9 @@ class Controller:
 
     def setup(self):
         self.logger.setup()
+        self.log("--------------------------------------")
         self.log("Setup Flex BMS version", version.name())
+        self.log("--------------------------------------")
         self.display.setup()
         self.set_screen(self.splash_screen)
 
