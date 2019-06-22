@@ -24,4 +24,4 @@ class AlertState():
     def tick(self):
         pass
 
-
+# TODO - Both FETS are off afert returning from Alert screen

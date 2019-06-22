@@ -1,6 +1,4 @@
 from bms.conf import CONF
-from bms.util import log
-
 
 class ChargeState():
     def __init__(self, sm):
@@ -10,6 +8,7 @@ class ChargeState():
     def check_charger_voltage(self, pack):
         controller = self.sm.controller
         voltage = pack.pack_v
+        # TODO - Greceful handling of this... ad delay before trigger
         if voltage > controller.cells.max_serial_voltage() + CONF.PACK_V_TOLERANCE:
             controller.alert_msg = "Wrong Charge V: {0:.1f}".format(voltage)
             self.sm.alert()

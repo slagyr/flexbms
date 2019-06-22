@@ -87,12 +87,12 @@ class FlexBMS:
         logger = Logger()
         i2c = I2C(1, I2C.MASTER, baudrate=100000)
         bq = BQ(i2c)
-        driver = Driver(Pin("Y8", Pin.OUT_PP),
-                        Pin("Y7", Pin.OUT_PP),
-                        Pin("Y6", Pin.OUT_PP),
+        driver = Driver(Pin("Y8", Pin.OUT_PP, Pin.PULL_DOWN),
+                        Pin("Y7", Pin.OUT_PP, Pin.PULL_DOWN),
+                        Pin("Y6", Pin.OUT_PP, Pin.PULL_DOWN),
                         ADC(Pin("X11")))
         display = Display(i2c)
-        rotary = Rotary(Pin("X2", Pin.IN), Pin("X1", Pin.IN))
+        rotary = Rotary(Pin("X2", Pin.IN, Pin.PULL_UP), Pin("X1", Pin.IN, Pin.PULL_UP))
         cells = Cells(bq, CONF.CELL_SERIES)
         temps = Temps(bq)
         pack = Pack(bq, driver)
@@ -107,11 +107,11 @@ class FlexBMS:
         self.controller.pack = pack
         self.controller.rebooter = Rebooter()
 
-        rotary_button = Pin("X3", Pin.IN)
+        rotary_button = Pin("X3", Pin.IN, Pin.PULL_UP)
         self.rot_rot_db = Debouncer(rotary.clk, ExtInt.IRQ_FALLING, 1, rotary.handle_rotate)
         self.rot_clk_db = Debouncer(rotary_button, ExtInt.IRQ_FALLING, 4, rotary.handle_click)
 
-        self.alert_pin = Pin("X12", Pin.IN)
+        self.alert_pin = Pin("X12", Pin.IN, Pin.PULL_UP)
         def alert_handler(line):
             self.controller.handle_alert()
         ExtInt(self.alert_pin, ExtInt.IRQ_RISING, Pin.PULL_NONE, alert_handler)

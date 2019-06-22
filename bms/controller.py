@@ -9,6 +9,7 @@ from bms.screens.prechg import PrechargeScreen
 from bms.screens.splash import SplashScreen
 from bms.screens.voltages import VoltagesScreen
 from bms.states.machine import Statemachine
+import bms.version as version
 
 from bms.util import clocked_fn
 
@@ -81,7 +82,7 @@ class Controller:
 
     def setup(self):
         self.logger.setup()
-        self.log("setup")
+        self.log("Setup Flex BMS version", version.name())
         self.display.setup()
         self.set_screen(self.splash_screen)
 

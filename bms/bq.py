@@ -156,26 +156,6 @@ class BQ:
         self.cc(False)
         self.clear_sys_stat()
 
-        # TODO - verify ADC enabled
-        # TODO - verify CC enabled
-        # TODO - verify UV trip
-        # TODO - verify OV trip
-        # TODO - verify RSNS
-        # TODO - verify SCD_DELAY
-        # TODO - verify SCD_THRESH
-        # TODO - verify OCD_DELAY
-        # TODO - verify OCD_THRESH
-        # TODO - ensure DEVICE_XREADY
-        # print("GAIN: " + str(self.adc_gain))
-        # print("OFFSET: " + str(self.adc_offset))
-        # print("ADC_EN: " + str(self.get_reg_bit(ADC_EN)))
-        # print("CC_EN: " + str(self.get_reg_bit(CC_EN)))
-        # print("UV trip: " + str(self.get_uv_trip()))
-        # print("OV trip: " + str(self.get_ov_trip()))
-        # print("PROTECT1: " + str(self.read_register_single(PROTECT1)))
-        # print("PROTECT2: " + str(self.read_register_single(PROTECT2)))
-        # print("FAULTS: " + str(self.faults))
-
     def read_adc_gain(self):
         gain1 = self.read_register_single(ADCGAIN1)
         gain2 = self.read_register_single(ADCGAIN2)
