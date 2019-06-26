@@ -13,7 +13,7 @@ class NormalState:
         driver = controller.driver
 
         bq.discharge(True)
-        bq.charge(False)
+        bq.charge(True)
         bq.adc(False)
         bq.cc_oneshot()
         driver.chargepump(True)
@@ -32,12 +32,12 @@ class NormalState:
         bq.cc_oneshot()
         pack = controller.loaded_pack()
 
-        if not my.chg_fet_on and pack.amps_in < -0.1: # outbound current detected
-            bq.charge(True)
-            my.chg_fet_on = True
-        elif my.chg_fet_on and pack.amps_in > -0.1: # current goes away
-            bq.charge(False)
-            my.chg_fet_on = False
+        # if not my.chg_fet_on and pack.amps_in < -0.1: # outbound current detected
+        #     bq.charge(True)
+        #     my.chg_fet_on = True
+        # elif my.chg_fet_on and pack.amps_in > -0.1: # current goes away
+        #     bq.charge(False)
+        #     my.chg_fet_on = False
 
         if pack.amps_in > (CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_I_TOLERANCE):
             controller.trigger_alert("Discharge Overcurrent")

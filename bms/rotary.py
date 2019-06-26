@@ -25,6 +25,7 @@ class Rotary:
     def __str__(self):
         return "Rotary - clicked: " + str(self.clicked) + " position: " + str(self.pos) + " previous: " + str(self.prev_pos)
 
+    # triggered when CLK is falling.
     def handle_rotate(self):
         dt = self.dt.value()
-        self.pos += 1 if dt else -1
+        self.pos += -1 if dt else 1
