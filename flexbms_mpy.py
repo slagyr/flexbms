@@ -152,8 +152,8 @@ class FlexBMS:
             return -1
 
         gc.collect()
-        print("gc.mem_alloc(): " + str(gc.mem_alloc()))
-        print("gc.mem_free():  " + str(gc.mem_free()))
+        self.controller.logger.info("gc.mem_alloc(): " + str(gc.mem_alloc()))
+        self.controller.logger.info("gc.mem_free():  " + str(gc.mem_free()))
 
         try:
             self.loop()
