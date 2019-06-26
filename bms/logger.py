@@ -1,7 +1,6 @@
 import os
 
-from bms import util
-
+from bms import bq
 
 class Logger:
     def __init__(self, logfile="bms.log"):
@@ -41,6 +40,36 @@ class Logger:
 
     def tick(self, n, millis):
         line = "tick: " + str(n) + ", " + str(millis) + "\n"
+        self._append(line)
+
+    def bq_fault_to_string(self, fault):
+        if fault == bq.DEVICE_XREADY:
+            return "Device Not Ready"
+        elif fault == bq.OVRD_ALERT:
+            return "Alert Pin Override"
+        elif fault == bq.UV:
+            return "Undervoltage"
+        elif fault == bq.OV:
+            return "Overvoltage"
+        elif fault == bq.SCD:
+            return "Discharge Short Circuit"
+        elif fault == bq.OCD:
+            return "Discharge Overcurrent"
+        else:
+            return "UNKNOWN ALERT!!!"
+
+    def alert(self, custom, bq_faults):
+        line = "alert: "
+        names = []
+        if custom:
+            names.append(custom)
+        names += map(self.bq_fault_to_string, bq_faults)
+        line += ", ".join(names)
+        line += "\n"
+        self._append(line)
+
+    def error(self, msg):
+        line = "error: " + str(msg) + "\n"
         self._append(line)
 
 

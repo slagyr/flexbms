@@ -3,6 +3,7 @@ import unittest
 import tempfile
 
 from bms import util
+from bms import bq
 from bms.cells import Cells
 from bms.logger import Logger
 from bms.pack import Pack
@@ -88,5 +89,34 @@ class LoggerTest(unittest.TestCase):
         lines = self.readlines()
         self.assertEqual(1, len(lines))
         self.assertEqual("tick: 1, 1234\n", lines[0])
+
+    def test_logging_bq_alert(self):
+        self.logger.alert(None, [bq.DEVICE_XREADY,
+                                 bq.OVRD_ALERT,
+                                 bq.UV,
+                                 bq.OV,
+                                 bq.SCD,
+                                 bq.OCD])
+        lines = self.readlines()
+        self.assertEqual(1, len(lines))
+        self.assertEqual("alert: Device Not Ready, Alert Pin Override, Undervoltage, Overvoltage, Discharge Short Circuit, Discharge Overcurrent\n", lines[0])
+
+    def test_logging_custom(self):
+        self.logger.alert("My Alert", [])
+        lines = self.readlines()
+        self.assertEqual(1, len(lines))
+        self.assertEqual("alert: My Alert\n", lines[0])
+
+    def test_logging_custom_and_bq_fault(self):
+        self.logger.alert("My Alert", [bq.UV])
+        lines = self.readlines()
+        self.assertEqual(1, len(lines))
+        self.assertEqual("alert: My Alert, Undervoltage\n", lines[0])
+
+    def test_logging_exception(self):
+        self.logger.error("foo")
+        lines = self.readlines()
+        self.assertEqual(1, len(lines))
+        self.assertEqual("error: foo\n", lines[0])
     
 

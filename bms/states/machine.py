@@ -42,10 +42,10 @@ class Statemachine:
             self.trans[(_start, event)] = (_end, _action)
 
     def set_state(self, state):
-        self.controller.log("\tleaving: " + str(self.state))
+        self.controller.log("\tleaving: " + self.state.__class__.__name__)
         if hasattr(self.state, "exit"):
             self.state.exit()
-        self.controller.log("\tentering: " + str(state))
+        self.controller.log("\tentering: " + state.__class__.__name__)
         self.state = state
         if hasattr(self.state, "enter"):
             self.state.enter()
@@ -55,7 +55,7 @@ class Statemachine:
         if not t:
             t = self.trans.get(("*", event))
         if not t:
-            self.controller.log("Unimplemented transition!: " + str(self.__class__.__name__) + ":" + event)
+            self.controller.logger.error("Unimplemented transition!: " + str(self.__class__.__name__) + ":" + event)
         else:
             end = t[0]
             action = t[1]

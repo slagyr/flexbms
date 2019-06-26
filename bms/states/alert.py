@@ -8,7 +8,7 @@ class AlertState():
         driver = controller.driver
 
         try:
-            controller.log("Alert: " + str(controller.alert_msg) + ":" + str(bq.faults))
+            controller.logger.alert(controller.alert_msg, bq.faults)
         except OSError:
             pass
 

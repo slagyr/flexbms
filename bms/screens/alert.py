@@ -1,6 +1,5 @@
 from bms import fonts, bq
 
-
 class AlertScreen:
 
     def __init__(self, controller):
