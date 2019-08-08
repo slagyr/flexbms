@@ -79,6 +79,18 @@ class Hardware():
         log("   Discharge FET turned off")
         log("Finished")
 
+    def test_thermistors(self):
+        log("Testing Thermistors")
+        log("This test will print the temperature readings of Thermestor 1, 2 & 3 for 30 seconds.")
+        log("Use a heat gun, or ice, or your hand to change the temperature of each Thermestor.")
+        temps = self.controller.temps
+        for _ in range(30):
+            log("Therm #1: ", temps.read_temp1())
+            log("Therm #2: ", temps.read_temp2())
+            log("Therm #3: ", temps.read_temp3())
+            util.clock.sleep(1000)
+
+
 
 
 

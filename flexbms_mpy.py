@@ -138,7 +138,7 @@ class FlexBMS:
         if self.controller and self.controller.logger:
             logger = self.controller.logger
             logger.error(str(e))
-            sys.print_exception(e, logger.msg_log)
+            sys.print_exception(e, logger.log)
 
     def main(self):
         try:

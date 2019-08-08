@@ -80,3 +80,5 @@ class Temps:
 
     def expire(self):
         self.loaded = False
+
+# TODO - Investigate why changes in temp are not detected quickly.
