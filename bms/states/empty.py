@@ -21,7 +21,6 @@ class EmptyState():
         driver.precharge(False)
 
         controller.sm_tick_interval(100)
-        controller.set_home_screen(controller.low_v_screen)
 
     def tick(self):
         controller = self.sm.controller

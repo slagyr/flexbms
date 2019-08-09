@@ -43,10 +43,6 @@ class ChargeStateTest(unittest.TestCase):
         self.state.enter()
         self.assertEqual(500, self.controller.sm_tick_interval())
 
-    def test_entry_sets_home_screen_to_alertscreen(self):
-        self.state.enter()
-        self.assertEqual(self.controller.voltages_screen, self.controller.home_screen)
-
     def test_low_V_triggers_event(self):
         self.state.enter()
         self.controller.cells[5].voltage = 1.1
@@ -187,6 +183,18 @@ class ChargeStateTest(unittest.TestCase):
     def test_logs_temps_eveny_10_ticks(self):
         self.state.tick()
         self.assertEqual(1, self.controller.logger.count_log_type("temps:"))
+
+    def test_monitors_pack_info_on_tick(self):
+        self.state.tick()
+        self.assertEqual(1, self.controller.monitor.count_log_type("pack:"))
+
+    def test_monitors_cells_eveny_10_ticks(self):
+        self.state.tick()
+        self.assertEqual(1, self.controller.monitor.count_log_type("cells:"))
+
+    def test_monitors_temps_eveny_10_ticks(self):
+        self.state.tick()
+        self.assertEqual(1, self.controller.monitor.count_log_type("temps:"))
 
     def test_over_temp_alert(self):
         temps = self.controller.temps

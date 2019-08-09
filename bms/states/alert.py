@@ -9,6 +9,7 @@ class AlertState():
 
         try:
             controller.logger.alert(controller.alert_msg, bq.faults)
+            controller.monitor.alert(controller.alert_msg, bq.faults)
         except OSError:
             pass
 
@@ -18,8 +19,6 @@ class AlertState():
         driver.chargepump(False)
         driver.precharge(False)
         controller.sm_tick_interval(10000)
-        controller.set_home_screen(controller.alert_screen)
-        controller.set_screen(controller.alert_screen)
 
     def tick(self):
         pass

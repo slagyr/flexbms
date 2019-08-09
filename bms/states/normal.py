@@ -19,7 +19,6 @@ class NormalState:
         driver.chargepump(True)
         driver.precharge(False)
         controller.sm_tick_interval(500)
-        controller.set_home_screen(controller.bargraph_screen)
 
         self.chg_fet_on = False
         self.counter = 0

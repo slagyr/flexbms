@@ -2,7 +2,7 @@ import pyb
 
 FS_MODE = False
 
-fspin = pyb.Pin("Y9", pyb.Pin.IN)
+fspin = pyb.Pin("X5", pyb.Pin.IN, pyb.Pin.PULL_UP)
 pressed = fspin.value() == 0
 
 if pressed:

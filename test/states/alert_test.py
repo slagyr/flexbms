@@ -33,11 +33,6 @@ class AlertStateTest(unittest.TestCase):
         self.state.enter()
         self.assertEqual(10000, self.controller.sm_tick_interval())
 
-    def test_entry_sets_home_screen_to_alert_screen(self):
-        self.state.enter()
-        self.assertEqual(self.controller.alert_screen, self.controller.home_screen)
-        self.assertEqual(self.controller.alert_screen, self.controller.screen)
-
     def test_exit_clears_alert(self):
         self.controller.alert_msg = "fooey"
         self.controller.bq.faults = [1, 2, 3]
@@ -47,5 +42,25 @@ class AlertStateTest(unittest.TestCase):
 
         self.assertEqual(True, self.controller.bq.was_sys_stat_cleared)
         self.assertEqual(None, self.controller.alert_msg)
+
+    def test_enter_logs_alert(self):
+        logger = self.controller.logger
+        bq = self.controller.bq
+        bq.faults = [1]
+        self.controller.alert_msg = "blah"
+
+        self.state.enter()
+
+        self.assertEqual("alert: blah, Discharge Overcurrent\n", logger.log[-1])
+
+    def test_enter_monitors_alert(self):
+        monitor = self.controller.monitor
+        bq = self.controller.bq
+        bq.faults = [1]
+        self.controller.alert_msg = "blah"
+
+        self.state.enter()
+
+        self.assertEqual("alert: blah, Discharge Overcurrent\n", monitor.out[-1])
 
 

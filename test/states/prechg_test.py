@@ -39,10 +39,6 @@ class PreChgStateTest(unittest.TestCase):
     def test_sets_tick_interval(self):
         self.state.enter()
         self.assertEqual(500, self.controller.sm_tick_interval())
-
-    def test_entry_sets_home_screen_to_alertscreen(self):
-        self.state.enter()
-        self.assertEqual(self.controller.prechg_screen, self.controller.home_screen)
         
     def test_remains_in_prechage_while_cells_remain_low(self):
         self.state.enter()
@@ -86,6 +82,3 @@ class PreChgStateTest(unittest.TestCase):
         self.state.tick()
         self.assertEqual(1, self.controller.logger.count_log_type("temps:"))
 
-    def test_screen_update_needed(self):
-        self.state.tick()
-        self.assertEqual(True, self.controller.screen_outdated())

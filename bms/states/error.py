@@ -13,8 +13,6 @@ class ErrorState:
         driver.chargepump(False)
         driver.precharge(False)
         controller.sm_tick_interval(3600000)
-        controller.set_home_screen(controller.error_screen)
-        controller.set_screen(controller.error_screen)
 
     def tick(self):
         pass

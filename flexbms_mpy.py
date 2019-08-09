@@ -14,9 +14,9 @@ import bms.util
 from bms.bq import *
 from bms.controller import Controller
 from bms.cells import Cells
-from bms.display import Display
 from bms.driver import Driver
 from bms.logger import Logger
+from bms.monitor import Monitor
 from bms.pack import Pack
 from bms.rotary import Rotary
 
@@ -85,20 +85,20 @@ class FlexBMS:
     def init(self):
         CONF.startup()
         logger = Logger()
+        monitor = Monitor(sys.stdout)
         i2c = I2C(1, I2C.MASTER, baudrate=100000)
         bq = BQ(i2c)
         driver = Driver(Pin("Y8", Pin.OUT_PP, Pin.PULL_DOWN),
                         Pin("Y7", Pin.OUT_PP, Pin.PULL_DOWN),
                         Pin("Y6", Pin.OUT_PP, Pin.PULL_DOWN),
                         ADC(Pin("X11")))
-        display = Display(i2c)
         rotary = Rotary(Pin("X2", Pin.IN, Pin.PULL_UP), Pin("X1", Pin.IN, Pin.PULL_UP))
         cells = Cells(bq, CONF.CELL_SERIES)
         temps = Temps(bq)
         pack = Pack(bq, driver)
 
         self.controller.logger = logger
-        self.controller.display = display
+        self.controller.monitor = monitor
         self.controller.bq = bq
         self.controller.driver = driver
         self.controller.cells = cells
@@ -139,6 +139,8 @@ class FlexBMS:
             logger = self.controller.logger
             logger.error(str(e))
             sys.print_exception(e, logger.log)
+        if self.controller and self.controller.monitor:
+            self.controller.monitor.error(str(e))
 
     def main(self):
         try:

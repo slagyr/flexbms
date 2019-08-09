@@ -36,10 +36,6 @@ class NormalStateTest(unittest.TestCase):
         self.state.enter()
         self.assertEqual(500, self.controller.sm_tick_interval())
 
-    def test_entry_sets_home_screen_to_bargraph(self):
-        self.state.enter()
-        self.assertEqual(self.controller.bargraph_screen, self.controller.home_screen)
-
     # MDM - It seems that the Charge FET should be ON at the start
     # and stay on.  This will allow charging to begin unhindered, and
     # the charge FET may be turned OFF in the event that protection is needed.

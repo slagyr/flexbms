@@ -16,7 +16,6 @@ class FullState:
         driver.chargepump(True)
         driver.precharge(False)
         controller.sm_tick_interval(500)
-        controller.set_home_screen(controller.charged_screen)
 
     def tick(self):
         my = self

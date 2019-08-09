@@ -17,7 +17,6 @@ class PreChgState:
         driver.chargepump(True)
         driver.precharge(True)
         controller.sm_tick_interval(500)
-        controller.set_home_screen(controller.prechg_screen)
 
     def tick(self):
         my = self

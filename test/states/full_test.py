@@ -36,10 +36,6 @@ class FullStateTest(unittest.TestCase):
         self.state.enter()
         self.assertEqual(500, self.controller.sm_tick_interval())
 
-    def test_entry_sets_home_screen_to_alertscreen(self):
-        self.state.enter()
-        self.assertEqual(self.controller.charged_screen, self.controller.home_screen)
-
     def test_nothing_happens_when_cells_stay_full(self):
         driver = self.controller.driver
         cells = self.controller.cells
