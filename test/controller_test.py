@@ -9,7 +9,7 @@ from test.mock_bq import MockBQ
 from test.mock_clock import MockClock
 from test.mock_driver import MockDriver
 from test.mock_logger import MockLogger
-from test.mock_monitor import MockMonitor
+from test.mock_serial import MockSerial
 from test.states.mock_machine import MockStatemachine
 from test.states.mock_state import MockState
 
@@ -17,7 +17,7 @@ class ControllerTest(unittest.TestCase):
 
     def setUp(self):
         self.logger = MockLogger()
-        self.monitor = MockMonitor()
+        self.serial = MockSerial()
         self.bq = MockBQ()
         self.driver = MockDriver()
         self.cells = MockCells(self.bq, 9)
@@ -29,7 +29,7 @@ class ControllerTest(unittest.TestCase):
 
         self.controller = Controller(util.clock)
         self.controller.logger = self.logger
-        self.controller.monitor = self.monitor
+        self.controller.serial = self.serial
         self.controller.bq = self.bq
         self.controller.driver = self.driver
         self.controller.cells = self.cells

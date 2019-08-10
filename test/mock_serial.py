@@ -1,7 +1,7 @@
-from bms.monitor import Monitor
+from bms.serial import Serial
 
 
-class MockMonitor(Monitor):
+class MockSerial(Serial):
     def __init__(self):
         self.was_setup = False
         self.was_closed = False

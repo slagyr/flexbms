@@ -110,6 +110,19 @@ class ChargeStateTest(unittest.TestCase):
             self.assertEqual(False, cells.was_balancing_updated)
             self.assertEqual(False, cells.was_balancing_reset)
         self.assertEqual(0, self.state.balance_counter)
+
+    def test_balance_serialized(self):
+        cells = self.controller.cells
+        self.state.enter()
+        self.state.tick()
+        self.assertEqual(1, self.controller.serial.count_log_type("balance"))
+
+        cells.was_balancing_updated = False
+        for i in range(59):  # 30 seconds
+            self.state.tick()
+
+        self.state.tick()
+        self.assertEqual(2, self.controller.serial.count_log_type("balance"))
         
     def test_full_v_event_when_fully_charged(self):
         cells = self.controller.cells
@@ -186,15 +199,15 @@ class ChargeStateTest(unittest.TestCase):
 
     def test_monitors_pack_info_on_tick(self):
         self.state.tick()
-        self.assertEqual(1, self.controller.monitor.count_log_type("pack:"))
+        self.assertEqual(1, self.controller.serial.count_log_type("pack:"))
 
-    def test_monitors_cells_eveny_10_ticks(self):
+    def test_serials_cells_eveny_10_ticks(self):
         self.state.tick()
-        self.assertEqual(1, self.controller.monitor.count_log_type("cells:"))
+        self.assertEqual(1, self.controller.serial.count_log_type("cells:"))
 
-    def test_monitors_temps_eveny_10_ticks(self):
+    def test_serials_temps_eveny_10_ticks(self):
         self.state.tick()
-        self.assertEqual(1, self.controller.monitor.count_log_type("temps:"))
+        self.assertEqual(1, self.controller.serial.count_log_type("temps:"))
 
     def test_over_temp_alert(self):
         temps = self.controller.temps

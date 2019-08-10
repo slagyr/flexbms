@@ -6,7 +6,7 @@ class Controller:
         self.tick_count = 0
         self.clock = clock
         self.logger = None
-        self.monitor = None
+        self.serial = None
         self.bq = None
         self.driver = None
         self.cells = None
@@ -71,21 +71,21 @@ class Controller:
         my = self
         my.cells.load()
         my.logger.cells(my.cells)
-        my.monitor.cells(my.cells)
+        my.serial.cells(my.cells)
         return my.cells
 
     def loaded_pack(self):
         my = self
         my.pack.load()
         my.logger.pack(my.pack)
-        my.monitor.pack(my.pack)
+        my.serial.pack(my.pack)
         return my.pack
 
     def loaded_temps(self):
         my = self
         my.temps.load()
         my.logger.temps(my.temps)
-        my.monitor.temps(my.temps)
+        my.serial.temps(my.temps)
         return my.temps
 
     def trigger_alert(self, msg):

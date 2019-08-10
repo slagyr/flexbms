@@ -53,14 +53,14 @@ class AlertStateTest(unittest.TestCase):
 
         self.assertEqual("alert: blah, Discharge Overcurrent\n", logger.log[-1])
 
-    def test_enter_monitors_alert(self):
-        monitor = self.controller.monitor
+    def test_enter_serializes_alert(self):
+        serial = self.controller.serial
         bq = self.controller.bq
         bq.faults = [1]
         self.controller.alert_msg = "blah"
 
         self.state.enter()
 
-        self.assertEqual("alert: blah, Discharge Overcurrent\n", monitor.out[-1])
+        self.assertEqual("alert: blah, Discharge Overcurrent\n", serial.out[-1])
 
 

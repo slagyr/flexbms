@@ -5,6 +5,7 @@ from pyb import Pin
 from pyb import ADC
 from pyb import ExtInt
 from pyb import Timer
+from pyb import USB_VCP
 import utime
 import gc
 import sys
@@ -16,7 +17,7 @@ from bms.controller import Controller
 from bms.cells import Cells
 from bms.driver import Driver
 from bms.logger import Logger
-from bms.monitor import Monitor
+from bms.serial import Serial
 from bms.pack import Pack
 from bms.rotary import Rotary
 
@@ -85,7 +86,8 @@ class FlexBMS:
     def init(self):
         CONF.startup()
         logger = Logger()
-        monitor = Monitor(sys.stdout)
+        serial = Serial(self.controller, USB_VCP())
+        serial.silent = True
         i2c = I2C(1, I2C.MASTER, baudrate=100000)
         bq = BQ(i2c)
         driver = Driver(Pin("Y8", Pin.OUT_PP, Pin.PULL_DOWN),
@@ -98,7 +100,7 @@ class FlexBMS:
         pack = Pack(bq, driver)
 
         self.controller.logger = logger
-        self.controller.monitor = monitor
+        self.controller.serial = serial
         self.controller.bq = bq
         self.controller.driver = driver
         self.controller.cells = cells
@@ -129,6 +131,7 @@ class FlexBMS:
             sleepytime = TICK_INTERVAL - tick_duration
             if sleepytime > 0:
                 utime.sleep_ms(sleepytime)
+            self.controller.serial.read()
 
     def log_error(self, e):
         with open("error.txt", "a") as f:
@@ -139,8 +142,8 @@ class FlexBMS:
             logger = self.controller.logger
             logger.error(str(e))
             sys.print_exception(e, logger.log)
-        if self.controller and self.controller.monitor:
-            self.controller.monitor.error(str(e))
+        if self.controller and self.controller.serial:
+            self.controller.serial.error(str(e))
 
     def main(self):
         try:
@@ -149,8 +152,6 @@ class FlexBMS:
             self.controller.last_user_event_time = utime.ticks_ms()
         except Exception as e:
             self.log_error(e)
-            if self.controller:
-                self.controller.set_screen(self.controller.error_screen)
             return -1
 
         gc.collect()
@@ -161,7 +162,6 @@ class FlexBMS:
             self.loop()
         except Exception as e:
             self.log_error(e)
-            self.controller.set_screen(self.controller.error_screen)
             return -2
 
     def hardware(self):

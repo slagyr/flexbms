@@ -46,6 +46,7 @@ class Statemachine:
         if hasattr(self.state, "exit"):
             self.state.exit()
         self.controller.log("\tentering: " + state.__class__.__name__)
+        self.controller.serial.state(state.__class__.__name__)
         self.state = state
         if hasattr(self.state, "enter"):
             self.state.enter()

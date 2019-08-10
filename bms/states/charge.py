@@ -66,9 +66,11 @@ class ChargeState():
                 my.sm.full_v()
             else:
                 cells.update_balancing()
+                controller.serial.balance(cells)
             bq.charge(not cells.any_cell_full())
         elif self.balance_counter == 60:
             cells.reset_balancing()
+            controller.serial.balance(cells)
         elif self.balance_counter == 66:
             self.balance_counter = -1
         self.balance_counter += 1

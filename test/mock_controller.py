@@ -4,7 +4,7 @@ from test.mock_cells import MockCells
 from test.mock_clock import MockClock
 from test.mock_driver import MockDriver
 from test.mock_logger import MockLogger
-from test.mock_monitor import MockMonitor
+from test.mock_serial import MockSerial
 from test.mock_pack import MockPack
 from test.mock_temps import MockTemps
 
@@ -18,7 +18,7 @@ class MockController(Controller):
     def __init__(self):
         super().__init__(MockClock())
         self.logger = MockLogger()
-        self.monitor = MockMonitor()
+        self.serial = MockSerial()
         self.bq = MockBQ()
         self.driver = MockDriver()
         self.cells = MockCells(self.bq, 9)

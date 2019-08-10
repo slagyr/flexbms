@@ -3,19 +3,30 @@ import sys
 from bms import bq
 
 
-class Monitor:
+class Serial:
 
-    def __init__(self, out):
-        self.out = out
+    def __init__(self, controller, port):
+        self.controller = controller
+        self.port = port
+        self.silent = False
 
     def _append(self, l):
-        self.out.write(l)
+        if not self.silent:
+            self.port.write(l)
 
     def cells(self, cells):
         line = "cells: " + str(cells[0].voltage)
         for cell in cells[1:]:
             line += "," + str(cell.voltage)
         self._append(line + "\n")
+
+    def balance(self, cells):
+        line = "balance: "
+        balancing = []
+        for cell in cells[1:]:
+            if cell.balancing:
+                balancing.append(str(cell.index))
+        self._append(line + ",".join(balancing) + "\n")
 
     def temps(self, temps):
         line = "temps: " + str(temps.temp1) + "," + str(temps.temp2) + "," + str(temps.temp3) + "\n"
@@ -58,3 +69,18 @@ class Monitor:
     def state(self, name):
         line = "state: " + str(name) + "\n"
         self._append(line)
+
+    def read(self):
+        line = self.port.readline()
+        if line is not None:
+            cmd = line.decode("utf-8").strip()
+            self.process_command(cmd)
+
+    def process_command(self, cmd):
+        if cmd == "silence":
+            self.silent = True
+        elif cmd == "verbose":
+            self.silent = False
+        elif cmd == "clear":
+            self.controller.sm.clear()
+

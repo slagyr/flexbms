@@ -9,7 +9,7 @@ class AlertState():
 
         try:
             controller.logger.alert(controller.alert_msg, bq.faults)
-            controller.monitor.alert(controller.alert_msg, bq.faults)
+            controller.serial.alert(controller.alert_msg, bq.faults)
         except OSError:
             pass
 
