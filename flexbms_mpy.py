@@ -87,7 +87,6 @@ class FlexBMS:
         CONF.startup()
         logger = Logger()
         serial = Serial(self.controller, USB_VCP())
-        serial.silent = True
         i2c = I2C(1, I2C.MASTER, baudrate=100000)
         bq = BQ(i2c)
         driver = Driver(Pin("Y8", Pin.OUT_PP, Pin.PULL_DOWN),
