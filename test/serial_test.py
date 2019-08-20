@@ -17,6 +17,7 @@ class SerialTest(unittest.TestCase):
     def setUp(self):
         self.vcp = MockVCP()
         self.controller = MockController()
+        self.controller.sm = MockStatemachine()
         self.serial = Serial(self.controller, self.vcp)
 
     def test_creation_default(self):
@@ -122,7 +123,16 @@ class SerialTest(unittest.TestCase):
         self.assertEqual(1, len(self.vcp.output))
 
     def test_clear(self):
-        self.controller.sm = MockStatemachine()
         self.vcp.input.append("clear")
         self.serial.read()
         self.assertEqual("clear", self.controller.sm.last_event)
+
+    def test_rest(self):
+        self.vcp.input.append("rest")
+        self.serial.read()
+        self.assertEqual("rest", self.controller.sm.last_event)
+
+    def test_wake(self):
+        self.vcp.input.append("wake")
+        self.serial.read()
+        self.assertEqual("wake", self.controller.sm.last_event)

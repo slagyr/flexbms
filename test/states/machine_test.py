@@ -9,6 +9,8 @@ from bms.states.full import FullState
 from bms.states.machine import Statemachine
 from bms.states.normal import NormalState
 from bms.states.prechg import PreChgState
+from bms.states.regen import RegenState
+from bms.states.standby import StandbyState
 from test.mock_controller import MockController
 from test.states.mock_state import MockState
 
@@ -39,19 +41,24 @@ class StatemachineTest(unittest.TestCase):
         self.sm.pow_on()
         self.assertEqual(ChargeState, self.sm.state.__class__)
 
-    def test_eval_to_normal(self):
+    def test_eval_to_standby(self):
         self.sm.norm_v()
-        self.assertEqual(NormalState, self.sm.state.__class__)
+        self.assertEqual(StandbyState, self.sm.state.__class__)
 
-    def test_life_saver_to_normal(self):
+    def test_life_saver_norm_v(self):
         self.sm.low_v()
         self.sm.norm_v()
-        self.assertEqual(NormalState, self.sm.state.__class__)
+        self.assertEqual(StandbyState, self.sm.state.__class__)
 
-    def test_charge_to_normal(self):
+    def test_charge_pow_on(self):
         self.sm.pow_on()
         self.sm.pow_off()
-        self.assertEqual(NormalState, self.sm.state.__class__)
+        self.assertEqual(StandbyState, self.sm.state.__class__)
+
+    def test_charge_wake(self):
+        self.sm.pow_on()
+        self.sm.wake()
+        self.assertEqual(RegenState, self.sm.state.__class__)
 
     def test_precharge_to_lifesaver(self):
         self.sm.low_v()
@@ -64,6 +71,12 @@ class StatemachineTest(unittest.TestCase):
         self.sm.pow_on()
         self.sm.norm_v()
         self.assertEqual(ChargeState, self.sm.state.__class__)
+
+    def test_normal_pow_on(self):
+        self.sm.norm_v()
+        self.sm.wake()
+        self.sm.pow_on()
+        self.assertEqual(RegenState, self.sm.state.__class__)
 
     def test_normal_to_alert_and_back(self):
         self.sm.norm_v()
@@ -108,8 +121,13 @@ class StatemachineTest(unittest.TestCase):
         self.sm.norm_v()
         self.assertEqual(ChargeState, self.sm.state.__class__)
 
-    def test_full_to_normal(self):
+    def test_full_pow_off(self):
         self.sm.pow_on()
         self.sm.full_v()
+        self.sm.pow_off()
+        self.assertEqual(StandbyState, self.sm.state.__class__)
+
+    def test_regen_pow_off(self):
+        self.sm.state = self.sm._regen
         self.sm.pow_off()
         self.assertEqual(NormalState, self.sm.state.__class__)

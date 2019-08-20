@@ -36,39 +36,35 @@ class NormalStateTest(unittest.TestCase):
         self.state.enter()
         self.assertEqual(500, self.controller.sm_tick_interval())
 
-    # MDM - It seems that the Charge FET should be ON at the start
-    # and stay on.  This will allow charging to begin unhindered, and
-    # the charge FET may be turned OFF in the event that protection is needed.
+    def test_charge_FET_closes_when_current_detected(self):
+        pack = self.controller.pack
+        bq = self.controller.bq
+        pack.stub_amps_in = 0
+        self.state.enter()
 
-    # def test_charge_FET_closes_when_current_detected(self):
-    #     pack = self.controller.pack
-    #     bq = self.controller.bq
-    #     pack.stub_amps_in = 0
-    #     self.state.enter()
-    #
-    #     self.state.tick()
-    #     self.assertEqual(True, bq.charge())
-    #
-    #     pack.stub_amps_in = -0.05  # under threshold
-    #     self.state.tick()
-    #     self.assertEqual(True, bq.charge())
-    #
-    #     pack.stub_amps_in = -0.2  # surpasses threshold
-    #     self.state.tick()
-    #     self.assertEqual(True, bq.charge())
-    #
-    # def test_charge_FET_opens_when_current_dies(self):
-    #     bq = self.controller.bq
-    #     pack = self.controller.pack
-    #     self.state.enter()
-    #
-    #     pack.stub_amps_in = -5  # make sure FET is one
-    #     self.state.tick()
-    #     self.assertEqual(True, bq.charge())
-    #
-    #     pack.stub_amps_in = 0  # current goes away
-    #     self.state.tick()
-    #     self.assertEqual(False, bq.charge())
+        self.state.tick()
+        self.assertEqual(True, bq.charge())
+
+        pack.stub_amps_in = -0.05  # under threshold
+        self.state.tick()
+        self.assertEqual(True, bq.charge())
+
+        pack.stub_amps_in = -0.2  # surpasses threshold
+        self.state.tick()
+        self.assertEqual(True, bq.charge())
+
+    def test_charge_FET_opens_when_current_dies(self):
+        bq = self.controller.bq
+        pack = self.controller.pack
+        self.state.enter()
+
+        pack.stub_amps_in = -5  # make sure FET is one
+        self.state.tick()
+        self.assertEqual(True, bq.charge())
+
+        pack.stub_amps_in = 0  # current goes away
+        self.state.tick()
+        self.assertEqual(False, bq.charge())
         
     def test_voltage_loaded_every_10_ticks(self):
         bq = self.controller.bq

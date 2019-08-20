@@ -6,6 +6,8 @@ from bms.states.empty import EmptyState
 from bms.states.full import FullState
 from bms.states.normal import NormalState
 from bms.states.prechg import PreChgState
+from bms.states.regen import RegenState
+from bms.states.standby import StandbyState
 
 
 class Statemachine:
@@ -20,6 +22,8 @@ class Statemachine:
         self._normal = NormalState(self)
         self._alert = AlertState(self)
         self._error = ErrorState(self)
+        self._standby = StandbyState(self)
+        self._regen = RegenState(self)
 
         self.state = self._eval
         self.trans = {}
@@ -98,3 +102,11 @@ class Statemachine:
     def clear(self):
         self.controller.log("SM event: clear")
         self.handle_event("clear")
+
+    def wake(self):
+        self.controller.log("SM event: wake")
+        self.handle_event("wake")
+
+    def rest(self):
+        self.controller.log("SM event: rest")
+        self.handle_event("rest")

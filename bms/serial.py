@@ -83,4 +83,8 @@ class Serial:
             self.silent = False
         elif cmd == "clear":
             self.controller.sm.clear()
+        elif cmd == "rest":
+            self.controller.sm.rest()
+        elif cmd == "wake":
+            self.controller.sm.wake()
 
