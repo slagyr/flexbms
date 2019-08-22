@@ -60,6 +60,11 @@ class StatemachineTest(unittest.TestCase):
         self.sm.wake()
         self.assertEqual(RegenState, self.sm.state.__class__)
 
+    def test_charge_rest(self):
+        self.sm.pow_on()
+        self.sm.rest()
+        self.assertEqual(ChargeState, self.sm.state.__class__)
+
     def test_precharge_to_lifesaver(self):
         self.sm.low_v()
         self.sm.pow_on()

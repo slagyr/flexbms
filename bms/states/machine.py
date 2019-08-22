@@ -60,7 +60,7 @@ class Statemachine:
         if not t:
             t = self.trans.get(("*", event))
         if not t:
-            self.controller.logger.error("Unimplemented transition!: " + str(self.__class__.__name__) + ":" + event)
+            self.controller.logger.error("Unimplemented transition!: " + str(self.state.__class__.__name__) + ":" + event)
         else:
             end = t[0]
             action = t[1]

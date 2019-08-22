@@ -16,6 +16,7 @@ charge  pow_off standby
 charge  full_v  full
 charge  low_v   prechg
 charge  wake    regen
+charge  rest    charge
 regen   pow_off normal
 full    norm_v  charge
 full    pow_off standby
