@@ -87,4 +87,7 @@ class Serial:
             self.controller.sm.rest()
         elif cmd == "wake":
             self.controller.sm.wake()
+        elif cmd == "reboot":
+            import machine
+            machine.reset()
 
