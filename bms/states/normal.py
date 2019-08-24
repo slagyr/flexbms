@@ -6,6 +6,9 @@ class NormalState:
         self.sm = sm
         self.chg_fet_on = False
         self.counter = 0
+        self.ocd_grace_counter = 0
+        self.power_on_counter = 0
+        self.max_current = CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_I_TOLERANCE
 
     def enter(self):
         controller = self.sm.controller
@@ -22,6 +25,8 @@ class NormalState:
 
         self.chg_fet_on = False
         self.counter = 0
+        self.ocd_grace_counter = 0
+        self.power_on_counter = 0
 
     def tick(self):
         my = self
@@ -38,9 +43,9 @@ class NormalState:
             bq.charge(False)
             my.chg_fet_on = False
 
-        if pack.amps_in > (CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_I_TOLERANCE):
+        if self.is_discharge_overcurrent(pack):
             controller.trigger_alert("Discharge Overcurrent")
-        elif pack.batt_v < (pack.pack_v - CONF.PACK_V_TOLERANCE):
+        elif self.is_power_detected(pack):
             my.sm.pow_on()
         elif my.counter == 8:
             bq.adc(True)
@@ -58,3 +63,28 @@ class NormalState:
         my.counter += 1
 
         controller.screen_outdated(True)
+
+    def is_discharge_overcurrent(self, pack):
+        amps_out = pack.amps_in * -1
+        if amps_out > self.max_current + CONF.PACK_OCD_TOLERANCE:
+            return True
+        elif amps_out > self.max_current:
+            if self.ocd_grace_counter > 0:
+                return True
+            else:
+                self.ocd_grace_counter += 1
+                return False
+        else:
+            self.ocd_grace_counter = 0
+            return False
+
+    def is_power_detected(self, pack):
+        if pack.batt_v < (pack.pack_v - CONF.PACK_V_TOLERANCE) and pack.amps_in > -1.0:
+            if self.power_on_counter > 0:
+                return True
+            else:
+                self.power_on_counter += 1
+                return False
+        else:
+            self.power_on_counter = 0
+            return False

@@ -1,0 +1,10 @@
+Why does the BQ shutdown sometimes?
+
+Discharge Short Circuit...
+What to do about this?
+
+Can the MQ Controller charge at a different voltage?
+
+check OCD conf
+check SCD conf
+check charge temp

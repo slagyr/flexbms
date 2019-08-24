@@ -97,20 +97,55 @@ class NormalStateTest(unittest.TestCase):
         self.assertEqual("low_v", self.sm.last_event)
 
     def test_pow_on_event_when_charger_detected(self):
-        driver = self.controller.driver
+        pack = self.controller.pack
         cells = self.controller.cells
-        bq = self.controller.bq
-        bq.stub_batt_v = 30.0
+        pack.stub_batt_v = 30.0
+        pack.stub_amps_in = 0
 
         self.state.enter()
         self.state.tick()
         self.assertEqual(None, self.sm.last_event)
 
-        self.controller.pack.expire()
-        driver.stub_pack_v = cells.max_serial_voltage()
+        pack.stub_pack_v = cells.max_serial_voltage()
 
         self.state.tick()
+        self.assertEqual(None, self.sm.last_event) # Takes 2 ticks with high V before it believes it.
+        self.state.tick()
         self.assertEqual("pow_on", self.sm.last_event)
+
+    def test_pow_on_detection_counter_resets(self):
+        pack = self.controller.pack
+        cells = self.controller.cells
+        pack.stub_batt_v = 30.0
+        pack.stub_amps_in = 0
+        self.state.enter()
+
+        pack.stub_pack_v = cells.max_serial_voltage() # high V
+        self.state.tick()
+        self.assertEqual(None, self.sm.last_event)
+
+        pack.stub_pack_v = 30.0 # low v - counter should reset
+        self.state.tick()
+        self.assertEqual(None, self.sm.last_event)
+
+        pack.stub_pack_v = cells.max_serial_voltage() # high v, should not trigger yet
+        self.state.tick()
+        self.assertEqual(None, self.sm.last_event)
+        self.state.tick()
+        self.assertEqual("pow_on", self.sm.last_event)
+
+    def test_pow_on_event_check_for_no_outbound_current(self):
+        pack = self.controller.pack
+        cells = self.controller.cells
+        pack.stub_batt_v = 30.0
+        pack.stub_pack_v = pack.stub_pack_v = cells.max_serial_voltage()
+        pack.stub_amps_in = -1.1
+
+        self.state.enter()
+
+        self.state.tick()
+        self.state.tick()
+        self.assertEqual(None, self.sm.last_event)
 
     def test_logs_pack_info_on_tick(self):
         self.state.tick()
@@ -150,9 +185,44 @@ class NormalStateTest(unittest.TestCase):
 
     def test_discharge_overcurrent(self):
         pack = self.controller.pack
-
-        pack.stub_amps_in = CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_I_TOLERANCE + 0.1
+        pack.stub_amps_in = -1 * (CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_OCD_TOLERANCE + CONF.PACK_I_TOLERANCE + 0.1)
         self.state.tick()
 
+        self.assertEqual("alert", self.sm.last_event)
+        self.assertEqual("Discharge Overcurrent", self.controller.alert_msg)
+
+
+    def test_discharge_overcurrent_within_OCD_tolerance(self):
+        pack = self.controller.pack
+        pack.stub_amps_in = -1 * (CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_OCD_TOLERANCE + CONF.PACK_I_TOLERANCE - 0.1)
+
+        self.state.tick()
+        self.assertEqual(None, self.sm.last_event)
+        self.assertEqual(None, self.controller.alert_msg)
+
+        self.state.tick()
+        self.assertEqual("alert", self.sm.last_event)
+        self.assertEqual("Discharge Overcurrent", self.controller.alert_msg)
+
+    def test_discharge_overcurrent_within_OCD_grace_resets(self):
+        pack = self.controller.pack
+        too_high = -1 * (CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_OCD_TOLERANCE + CONF.PACK_I_TOLERANCE - 0.1)
+        normal = -1 * (CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_I_TOLERANCE - 0.1)
+        pack.stub_amps_in = too_high
+        self.state.tick()
+        self.assertEqual(None, self.sm.last_event)
+        self.assertEqual(None, self.controller.alert_msg)
+
+        pack.stub_amps_in = normal
+        self.state.tick()
+        self.assertEqual(None, self.sm.last_event)
+        self.assertEqual(None, self.controller.alert_msg)
+
+        pack.stub_amps_in = too_high
+        self.state.tick()
+        self.assertEqual(None, self.sm.last_event)
+        self.assertEqual(None, self.controller.alert_msg)
+
+        self.state.tick()
         self.assertEqual("alert", self.sm.last_event)
         self.assertEqual("Discharge Overcurrent", self.controller.alert_msg)
