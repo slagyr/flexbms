@@ -2,12 +2,16 @@ eval    low_v   empty
 eval    norm_v  standby
 eval    full_v  standby
 eval    pow_on  charge
+shut    rest    standby
+shut    wake    normal
 standby wake    normal
 standby pow_on  charge
 standby low_v   empty
+standby shut    shut
 normal  low_v   empty
 normal  pow_on  regen
 normal  rest    standby
+normal  shut    shut
 empty   norm_v  standby
 empty   pow_on  prechg
 prechg  pow_off empty
@@ -17,7 +21,9 @@ charge  full_v  full
 charge  low_v   prechg
 charge  wake    regen
 charge  rest    charge
+charge  shut    shut
 regen   pow_off normal
+regen   shut    shut
 full    norm_v  charge
 full    pow_off standby
 *       alert   alert

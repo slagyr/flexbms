@@ -10,6 +10,7 @@ from bms.states.machine import Statemachine
 from bms.states.normal import NormalState
 from bms.states.prechg import PreChgState
 from bms.states.regen import RegenState
+from bms.states.shut import ShutState
 from bms.states.standby import StandbyState
 from test.mock_controller import MockController
 from test.states.mock_state import MockState
@@ -65,6 +66,11 @@ class StatemachineTest(unittest.TestCase):
         self.sm.rest()
         self.assertEqual(ChargeState, self.sm.state.__class__)
 
+    def test_charge_shut(self):
+        self.sm.state = self.sm._charge
+        self.sm.shut()
+        self.assertEqual(ShutState, self.sm.state.__class__)
+
     def test_precharge_to_lifesaver(self):
         self.sm.low_v()
         self.sm.pow_on()
@@ -83,6 +89,11 @@ class StatemachineTest(unittest.TestCase):
         self.sm.pow_on()
         self.assertEqual(RegenState, self.sm.state.__class__)
 
+    def test_normal_shut(self):
+        self.sm.state = self.sm._normal
+        self.sm.shut()
+        self.assertEqual(ShutState, self.sm.state.__class__)
+
     def test_normal_to_alert_and_back(self):
         self.sm.norm_v()
         self.sm.alert()
@@ -90,7 +101,7 @@ class StatemachineTest(unittest.TestCase):
         self.sm.clear()
         self.assertEqual(EvalState, self.sm.state.__class__)
 
-    def test_naormal_to_error_and_back_to_eval(self):
+    def test_normal_to_error_and_back_to_eval(self):
         self.sm.norm_v()
         self.sm.error()
         self.assertEqual(ErrorState, self.sm.state.__class__)
@@ -136,3 +147,23 @@ class StatemachineTest(unittest.TestCase):
         self.sm.state = self.sm._regen
         self.sm.pow_off()
         self.assertEqual(NormalState, self.sm.state.__class__)
+
+    def test_regen_pow_off(self):
+        self.sm.state = self.sm._regen
+        self.sm.shut()
+        self.assertEqual(ShutState, self.sm.state.__class__)
+
+    def test_shut_wake(self):
+        self.sm.state = self.sm._shut
+        self.sm.wake()
+        self.assertEqual(NormalState, self.sm.state.__class__)
+
+    def test_shut_rest(self):
+        self.sm.state = self.sm._shut
+        self.sm.rest()
+        self.assertEqual(StandbyState, self.sm.state.__class__)
+
+    def test_standby_shut(self):
+        self.sm.state = self.sm._standby
+        self.sm.shut()
+        self.assertEqual(ShutState, self.sm.state.__class__)

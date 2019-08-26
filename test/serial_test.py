@@ -136,3 +136,17 @@ class SerialTest(unittest.TestCase):
         self.vcp.input.append("wake")
         self.serial.read()
         self.assertEqual("wake", self.controller.sm.last_event)
+
+    def test_shut(self):
+        self.vcp.input.append("shut")
+        self.serial.read()
+        self.assertEqual("shut", self.controller.sm.last_event)
+
+    def test_state_qmark(self):
+        self.controller.sm.state = self.controller.sm._prechg
+
+        self.vcp.input.append("state?")
+        self.serial.read()
+
+        self.assertEqual(1, len(self.vcp.output))
+        self.assertEqual("state: PreChgState\n", self.vcp.output[0])

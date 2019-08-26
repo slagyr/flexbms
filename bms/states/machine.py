@@ -7,6 +7,7 @@ from bms.states.full import FullState
 from bms.states.normal import NormalState
 from bms.states.prechg import PreChgState
 from bms.states.regen import RegenState
+from bms.states.shut import ShutState
 from bms.states.standby import StandbyState
 
 
@@ -24,6 +25,7 @@ class Statemachine:
         self._error = ErrorState(self)
         self._standby = StandbyState(self)
         self._regen = RegenState(self)
+        self._shut = ShutState(self)
 
         self.state = self._eval
         self.trans = {}
@@ -110,3 +112,7 @@ class Statemachine:
     def rest(self):
         self.controller.log("SM event: rest")
         self.handle_event("rest")
+
+    def shut(self):
+        self.controller.log("SM event: shut")
+        self.handle_event("shut")
