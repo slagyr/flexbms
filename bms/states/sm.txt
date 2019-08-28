@@ -26,6 +26,7 @@ charge  rest    charge
 charge  shut    shut
 regen   pow_off normal
 regen   shut    shut
+regen   rest    charge
 full    norm_v  charge
 full    pow_off standby
 *       alert   alert
