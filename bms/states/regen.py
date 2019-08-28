@@ -61,8 +61,8 @@ class RegenState():
             bq.charge(False)
         elif pack.batt_v > pack.pack_v + CONF.PACK_V_TOLERANCE:
             my.sm.pow_off()
-        elif not self.check_charger_voltage(pack):
-            pass # alert event already triggered in check_charger_voltage()
+        # elif not self.check_charger_voltage(pack):
+        #     pass # alert event already triggered in check_charger_voltage()
 
 
 

@@ -196,6 +196,7 @@ class NormalStateTest(unittest.TestCase):
         pack = self.controller.pack
         pack.stub_amps_in = -1 * (CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_OCD_TOLERANCE + CONF.PACK_I_TOLERANCE - 0.1)
 
+        self.state.enter()
         self.state.tick()
         self.assertEqual(None, self.sm.last_event)
         self.assertEqual(None, self.controller.alert_msg)
@@ -209,6 +210,7 @@ class NormalStateTest(unittest.TestCase):
         too_high = -1 * (CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_OCD_TOLERANCE + CONF.PACK_I_TOLERANCE - 0.1)
         normal = -1 * (CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_I_TOLERANCE - 0.1)
         pack.stub_amps_in = too_high
+        self.state.enter()
         self.state.tick()
         self.assertEqual(None, self.sm.last_event)
         self.assertEqual(None, self.controller.alert_msg)
