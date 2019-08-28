@@ -23,9 +23,9 @@ class RegenState():
 
         self.balance_counter = 0
 
-        pack = controller.loaded_pack()
-        if not self.check_charger_voltage(pack):
-            return
+        # pack = controller.loaded_pack()
+        # if not self.check_charger_voltage(pack):
+        #     return
 
         bq.discharge(True)
         bq.charge(True)
