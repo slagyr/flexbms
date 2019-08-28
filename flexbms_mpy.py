@@ -84,7 +84,7 @@ class FlexBMS:
         self.conf = CONF
 
     def init(self):
-        CONF.startup()
+        CONF.startup()  # TODO - Controller already created along with statemachine.  So any use of CONF in constructors has stale values.
         logger = Logger()
         serial = Serial(self.controller, USB_VCP())
         i2c = I2C(1, I2C.MASTER, baudrate=100000)

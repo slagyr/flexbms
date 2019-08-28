@@ -8,9 +8,12 @@ class NormalState:
         self.counter = 0
         self.ocd_grace_counter = 0
         self.power_on_counter = 0
-        self.max_current = CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_I_TOLERANCE
+        self.max_current = 0
 
     def enter(self):
+        self.max_current = CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_I_TOLERANCE
+        # TODO - Would like to put in constructor but CONF hasn't been loaded
+        
         controller = self.sm.controller
         bq = controller.bq
         driver = controller.driver
