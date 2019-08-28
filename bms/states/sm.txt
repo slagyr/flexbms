@@ -4,7 +4,9 @@ eval    full_v  standby
 eval    pow_on  charge
 shut    rest    standby
 shut    wake    normal
+shut    shut    shut
 standby wake    normal
+standby rest    standby
 standby pow_on  charge
 standby low_v   empty
 standby shut    shut

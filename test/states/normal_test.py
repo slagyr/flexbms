@@ -189,7 +189,7 @@ class NormalStateTest(unittest.TestCase):
         self.state.tick()
 
         self.assertEqual("alert", self.sm.last_event)
-        self.assertEqual("Discharge Overcurrent", self.controller.alert_msg)
+        self.assertEqual("Discharge Overcurrent (M)", self.controller.alert_msg)
 
 
     def test_discharge_overcurrent_within_OCD_tolerance(self):
@@ -202,7 +202,7 @@ class NormalStateTest(unittest.TestCase):
 
         self.state.tick()
         self.assertEqual("alert", self.sm.last_event)
-        self.assertEqual("Discharge Overcurrent", self.controller.alert_msg)
+        self.assertEqual("Discharge Overcurrent (M)", self.controller.alert_msg)
 
     def test_discharge_overcurrent_within_OCD_grace_resets(self):
         pack = self.controller.pack
@@ -225,4 +225,4 @@ class NormalStateTest(unittest.TestCase):
 
         self.state.tick()
         self.assertEqual("alert", self.sm.last_event)
-        self.assertEqual("Discharge Overcurrent", self.controller.alert_msg)
+        self.assertEqual("Discharge Overcurrent (M)", self.controller.alert_msg)

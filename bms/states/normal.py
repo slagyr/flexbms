@@ -44,7 +44,7 @@ class NormalState:
             my.chg_fet_on = False
 
         if self.is_discharge_overcurrent(pack):
-            controller.trigger_alert("Discharge Overcurrent")
+            controller.trigger_alert("Discharge Overcurrent (M)")
         elif self.is_power_detected(pack):
             my.sm.pow_on()
         elif my.counter == 8:
@@ -66,6 +66,8 @@ class NormalState:
 
     def is_discharge_overcurrent(self, pack):
         amps_out = pack.amps_in * -1
+        self.sm.controller.log("self.max_current: " + str(self.max_current))
+        self.sm.controller.log("amps_out: " + str(amps_out))
         if amps_out > self.max_current + CONF.PACK_OCD_TOLERANCE:
             return True
         elif amps_out > self.max_current:
