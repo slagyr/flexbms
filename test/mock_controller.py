@@ -1,3 +1,4 @@
+from bms.conf import CONF
 from bms.controller import Controller
 from test.mock_bq import MockBQ
 from test.mock_cells import MockCells
@@ -24,5 +25,6 @@ class MockController(Controller):
         self.cells = MockCells(self.bq, 9)
         self.temps = MockTemps(self.bq)
         self.pack = MockPack(self.bq, self.driver)
+        CONF.PACK_MAX_CHG_V = self.cells.max_serial_voltage()
 
 

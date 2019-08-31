@@ -41,6 +41,7 @@ class Config:
         self.PACK_V_GAIN = 0.017496341463415
         self.PACK_I_TOLERANCE = 0.05
         self.PACK_OCD_TOLERANCE = 10
+        self.PACK_MAX_CHG_V = 4.2
 
         self.TEMP_MAX_PACK_CHG = 45
         self.TEMP_MIN_PACK_CHG = 0
