@@ -123,13 +123,13 @@ class Cells:
 
     def fully_charged(self):
         for cell in self:
-            if cell.voltage < CONF.CELL_MAX_V - 0.01:
+            if cell.voltage < CONF.CELL_FULL_V - 0.01:
                 return False
         return True
 
     def any_cell_full(self):
         for cell in self:
-            if cell.voltage >= CONF.CELL_MAX_V:
+            if cell.voltage >= CONF.CELL_FULL_V:
                 return True
         return False
 

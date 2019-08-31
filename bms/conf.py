@@ -19,6 +19,7 @@ class Config:
         self.CELL_SERIES = 10
         self.CELL_PARALLEL = 1
         self.CELL_MAX_V = 4.2
+        self.CELL_FULL_V = 4.1
         self.CELL_MIN_V = 2.5
         self.CELL_MAX_CHG_I = 1.5
         self.CELL_MAX_DSG_I = 10
@@ -41,7 +42,6 @@ class Config:
         self.PACK_V_GAIN = 0.017496341463415
         self.PACK_I_TOLERANCE = 0.05
         self.PACK_OCD_TOLERANCE = 10
-        self.PACK_MAX_CHG_V = 4.2
 
         self.TEMP_MAX_PACK_CHG = 45
         self.TEMP_MIN_PACK_CHG = 0

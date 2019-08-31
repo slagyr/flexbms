@@ -55,7 +55,7 @@ class FullStateTest(unittest.TestCase):
         driver.stub_pack_v = cells.max_serial_voltage()
         self.state.enter()
 
-        cells[5].voltage = 4.18
+        cells[5].voltage = 4.08
         self.state.tick()
         self.assertEqual("norm_v", self.sm.last_event)
 

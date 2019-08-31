@@ -9,7 +9,7 @@ class ChargeState():
         controller = self.sm.controller
         voltage = pack.pack_v
         # TODO - Greceful handling of this... add delay before trigger
-        if voltage > CONF.PACK_MAX_CHG_V + CONF.PACK_V_TOLERANCE:
+        if voltage > controller.cells.max_serial_voltage() + CONF.PACK_V_TOLERANCE:
             controller.alert_msg = "Wrong Charge V: {0:.1f}".format(voltage)
             self.sm.alert()
             return False
