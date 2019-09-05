@@ -1,7 +1,7 @@
 import unittest
 
 from bms import util
-from bms.conf import CONF
+
 from bms.hardware import Hardware
 from test.mock_clock import MockClock
 from test.mock_controller import MockController
@@ -20,8 +20,8 @@ class HardwareTest(unittest.TestCase):
         self.driver.adc_samples = [5, 2050]
         self.hardware.calibrate_pack_v()
 
-        self.assertEqual(5, CONF.PACK_V_OFFSET)
-        self.assertAlmostEqual(0.01819, CONF.PACK_V_GAIN, 3)
+        self.assertEqual(5, self.controller.conf.PACK_V_OFFSET)
+        self.assertAlmostEqual(0.01819, self.controller.conf.PACK_V_GAIN, 3)
 
     def test_balavcers(self):
         self.hardware.test_balancers()

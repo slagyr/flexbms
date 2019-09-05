@@ -1,7 +1,7 @@
 import unittest
 
 from bms.bq import CC_ONESHOT
-from bms.conf import CONF
+
 from bms.states.normal import NormalState
 from test.states.mock_machine import MockStatemachine
 
@@ -11,6 +11,7 @@ class NormalStateTest(unittest.TestCase):
     def setUp(self):
         self.sm = MockStatemachine()
         self.controller = self.sm.controller
+        self.conf = self.controller.conf
         self.controller.logger.setup()
         self.state = NormalState(self.sm)
 
@@ -165,7 +166,7 @@ class NormalStateTest(unittest.TestCase):
         temps = self.controller.temps
         self.state.enter()
 
-        temps.stub_temp1 = CONF.TEMP_MAX_PACK_DSG + 1
+        temps.stub_temp1 = self.conf.TEMP_MAX_PACK_DSG + 1
         for i in range(10):
             self.state.tick()
 
@@ -176,7 +177,7 @@ class NormalStateTest(unittest.TestCase):
         temps = self.controller.temps
         self.state.enter()
 
-        temps.stub_temp1 = CONF.TEMP_MIN_PACK_DSG - 1
+        temps.stub_temp1 = self.conf.TEMP_MIN_PACK_DSG - 1
         for i in range(10):
             self.state.tick()
 
@@ -185,7 +186,7 @@ class NormalStateTest(unittest.TestCase):
 
     def test_discharge_overcurrent(self):
         pack = self.controller.pack
-        pack.stub_amps_in = -1 * (CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_OCD_TOLERANCE + CONF.PACK_I_TOLERANCE + 0.1)
+        pack.stub_amps_in = -1 * (self.conf.CELL_PARALLEL * self.conf.CELL_MAX_DSG_I + self.conf.PACK_OCD_TOLERANCE + self.conf.PACK_I_TOLERANCE + 0.1)
         self.state.tick()
 
         self.assertEqual("alert", self.sm.last_event)
@@ -194,7 +195,7 @@ class NormalStateTest(unittest.TestCase):
 
     def test_discharge_overcurrent_within_OCD_tolerance(self):
         pack = self.controller.pack
-        pack.stub_amps_in = -1 * (CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_OCD_TOLERANCE + CONF.PACK_I_TOLERANCE - 0.1)
+        pack.stub_amps_in = -1 * (self.conf.CELL_PARALLEL * self.conf.CELL_MAX_DSG_I + self.conf.PACK_OCD_TOLERANCE + self.conf.PACK_I_TOLERANCE - 0.1)
 
         self.state.enter()
         self.state.tick()
@@ -207,8 +208,8 @@ class NormalStateTest(unittest.TestCase):
 
     def test_discharge_overcurrent_within_OCD_grace_resets(self):
         pack = self.controller.pack
-        too_high = -1 * (CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_OCD_TOLERANCE + CONF.PACK_I_TOLERANCE - 0.1)
-        normal = -1 * (CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_I_TOLERANCE - 0.1)
+        too_high = -1 * (self.conf.CELL_PARALLEL * self.conf.CELL_MAX_DSG_I + self.conf.PACK_OCD_TOLERANCE + self.conf.PACK_I_TOLERANCE - 0.1)
+        normal = -1 * (self.conf.CELL_PARALLEL * self.conf.CELL_MAX_DSG_I + self.conf.PACK_I_TOLERANCE - 0.1)
         pack.stub_amps_in = too_high
         self.state.enter()
         self.state.tick()

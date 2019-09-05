@@ -1,5 +1,5 @@
 from bms import util
-from bms.conf import CONF, CONF_FILE
+from bms.conf import CONF_FILE
 from bms.util import log
 
 
@@ -7,6 +7,7 @@ class Hardware():
 
     def __init__(self, controller):
         self.controller = controller
+        self.conf = controller.conf
 
     def calibrate_pack_v(self):
         log("Calibrating Pack Voltage")
@@ -39,9 +40,9 @@ class Hardware():
         bq.discharge(False)
         bq.charge(False)
 
-        CONF.PACK_V_OFFSET = offset
-        CONF.PACK_V_GAIN = gain
-        CONF.save()
+        self.conf.PACK_V_OFFSET = offset
+        self.conf.PACK_V_GAIN = gain
+        self.conf.save()
         log(CONF_FILE + " updated")
 
     def test_balancers(self):

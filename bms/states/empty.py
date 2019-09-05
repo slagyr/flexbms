@@ -1,8 +1,6 @@
-from bms.conf import CONF
-from bms.util import log
 
 
-class EmptyState():
+class EmptyState:
     def __init__(self, sm):
         self.sm = sm
         self.in_wake_cycle = False
@@ -32,7 +30,7 @@ class EmptyState():
             controller.loaded_cells()
             controller.loaded_temps()
 
-            if (pack.pack_v - CONF.PACK_V_TOLERANCE) > pack.batt_v:
+            if (pack.pack_v - controller.conf.PACK_V_TOLERANCE) > pack.batt_v:
                 self.sm.pow_on()
             else:
                 controller.bq.adc(False)

@@ -1,6 +1,7 @@
 import sys
 
 from bms import bq
+from bms.util import log
 
 
 class Serial:
@@ -91,7 +92,21 @@ class Serial:
             self.controller.sm.shut()
         elif cmd == "state?":
             self.state(self.controller.sm.state.__class__.__name__)
+        elif cmd.startswith("set_cell_full_v"):
+            self.set_cell_full_v(cmd)
         elif cmd == "reboot":
             import machine
             machine.reset()
+
+    def set_cell_full_v(self, cmd):
+        tokens = cmd.split(",")
+        str_val = tokens[1].strip()
+        volts = float(str_val)
+        log("setting CELL_FULL_V:", volts)
+
+        conf = self.controller.conf
+        conf.CELL_FULL_V = volts
+        conf.save()
+
+
 

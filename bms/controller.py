@@ -2,8 +2,9 @@ from bms.states.machine import Statemachine
 import bms.version as version
 
 class Controller:
-    def __init__(self, clock):
+    def __init__(self, conf, clock):
         self.tick_count = 0
+        self.conf = conf
         self.clock = clock
         self.logger = None
         self.serial = None

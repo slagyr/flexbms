@@ -9,11 +9,13 @@ from bms.logger import Logger
 from bms.pack import Pack
 from bms.temps import Temps
 from test.mock_clock import MockClock
+from test.mock_conf import MockConfig
 
 
 class LoggerTest(unittest.TestCase):
 
     def setUp(self):
+        self.conf = MockConfig()
         self.logfile = tempfile.gettempdir() + "/bms.log"
         if os.path.exists(self.logfile):
             os.remove(self.logfile)
@@ -54,7 +56,7 @@ class LoggerTest(unittest.TestCase):
         self.assertEqual("info: hello 1 2 3.14\n", lines[0])
 
     def test_logging_cell_voltages(self):
-        cells = Cells("bq", 10)
+        cells = Cells(self.conf, "bq", 10)
         for cell in cells:
             cell.voltage = 2.5 + (cell.id * 0.1)
 

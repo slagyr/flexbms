@@ -1,4 +1,4 @@
-from bms.conf import CONF
+
 
 
 class PreChgState:
@@ -21,12 +21,13 @@ class PreChgState:
     def tick(self):
         my = self
         controller = my.sm.controller
+        conf = controller.conf
 
         pack = controller.loaded_pack()
         cells = controller.loaded_cells()
         temps = controller.loaded_temps()
 
-        if (pack.pack_v + CONF.PACK_V_TOLERANCE) < pack.batt_v:
+        if (pack.pack_v + conf.PACK_V_TOLERANCE) < pack.batt_v:
             my.sm.pow_off()
         elif not cells.has_low_voltage():
             my.sm.norm_v()

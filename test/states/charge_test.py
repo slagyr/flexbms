@@ -1,6 +1,6 @@
 import unittest
 
-from bms.conf import CONF
+
 from bms.states.charge import ChargeState
 from test.states.mock_machine import MockStatemachine
 
@@ -10,6 +10,7 @@ class ChargeStateTest(unittest.TestCase):
     def setUp(self):
         self.sm = MockStatemachine()
         self.controller = self.sm.controller
+        self.conf = self.controller.conf
         self.state = ChargeState(self.sm)
 
         self.controller.setup()
@@ -80,6 +81,7 @@ class ChargeStateTest(unittest.TestCase):
     def test_balance_disabled_on_exit(self):
         self.state.exit()
         self.assertEqual(True, self.controller.cells.was_balancing_reset)
+        self.assertEqual(1, self.controller.serial.count_log_type("balance"))
         
     def test_balance_schedule(self):
         cells = self.controller.cells
@@ -143,7 +145,7 @@ class ChargeStateTest(unittest.TestCase):
             cell.voltage = 4.0
 
         # need to turn off CHG FET to prevent OV
-        cells[5].voltage = CONF.CELL_MAX_V + CONF.CELL_V_TOLERANCE + 0.01
+        cells[5].voltage = self.conf.CELL_MAX_V + self.conf.CELL_V_TOLERANCE + 0.01
 
         self.state.tick()
         self.assertEqual(False, bq.charge())
@@ -172,7 +174,7 @@ class ChargeStateTest(unittest.TestCase):
         self.state.enter()
         self.assertEqual(True, bq.charge())
 
-        pack.stub_pack_v = CONF.PACK_MAX_CHG_V + CONF.PACK_V_TOLERANCE + 0.1
+        pack.stub_pack_v = self.conf.PACK_MAX_CHG_V + self.conf.PACK_V_TOLERANCE + 0.1
         self.state.tick()
         self.assertEqual("alert", self.sm.last_event)
         self.assertEqual("Wrong Charge V: 38.4", self.controller.alert_msg)
@@ -212,7 +214,7 @@ class ChargeStateTest(unittest.TestCase):
         temps = self.controller.temps
         self.state.enter()
 
-        temps.stub_temp1 = CONF.TEMP_MAX_PACK_CHG + 1
+        temps.stub_temp1 = self.conf.TEMP_MAX_PACK_CHG + 1
         self.state.tick()
 
         self.assertEqual("alert", self.sm.last_event)
@@ -222,7 +224,7 @@ class ChargeStateTest(unittest.TestCase):
         temps = self.controller.temps
         self.state.enter()
 
-        temps.stub_temp1 = CONF.TEMP_MIN_PACK_CHG - 1
+        temps.stub_temp1 = self.conf.TEMP_MIN_PACK_CHG - 1
         self.state.tick()
 
         self.assertEqual("alert", self.sm.last_event)

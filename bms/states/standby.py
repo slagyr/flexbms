@@ -1,4 +1,4 @@
-from bms.conf import CONF
+
 from bms.util import log
 
 
@@ -35,7 +35,7 @@ class StandbyState():
 
             if cells.has_low_voltage():
                 self.sm.low_v()
-            elif (pack.pack_v - CONF.PACK_V_TOLERANCE) > pack.batt_v:
+            elif (pack.pack_v - controller.conf.PACK_V_TOLERANCE) > pack.batt_v:
                 self.sm.pow_on()
             else:
                 controller.bq.adc(False)

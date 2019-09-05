@@ -1,7 +1,5 @@
-from bms.conf import CONF
 
-
-class EvalState():
+class EvalState:
     def __init__(self, sm):
         self.sm = sm
 
@@ -22,7 +20,7 @@ class EvalState():
 
         if cells.has_low_voltage():
             self.sm.low_v()
-        elif driver.pack_voltage() > (cells.serial_voltage() + CONF.PACK_V_TOLERANCE):
+        elif driver.pack_voltage() > (cells.serial_voltage() + controller.conf.PACK_V_TOLERANCE):
             self.sm.pow_on()
         else:
             self.sm.norm_v()

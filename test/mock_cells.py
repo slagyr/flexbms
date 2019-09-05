@@ -1,8 +1,8 @@
 from bms.cells import Cells
 
 class MockCells(Cells):
-    def __init__(self, bq, count):
-        super().__init__(bq, count)
+    def __init__(self, conf, bq, count):
+        super().__init__(conf, bq, count)
         self.was_setup = False
         self.was_balancing_updated = False
         self.was_balancing_reset = False

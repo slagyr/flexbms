@@ -1,6 +1,5 @@
-from bms.conf import CONF
+
 from bms.util import clocked_fn, ON_BOARD, log
-import math
 
 if not ON_BOARD:
     from bms.util import const
@@ -71,7 +70,8 @@ def crc8(data):
 
 
 class BQ:
-    def __init__(self, i2c):
+    def __init__(self, conf, i2c):
+        self.conf = conf
         self.i2c = i2c
         self.adc_gain = -1
         self.adc_offset = -1
@@ -85,7 +85,7 @@ class BQ:
         return buffer
 
     def read_register_single(self, reg):
-        for attempt in range(CONF.BQ_CRC_ATTEMPTS):
+        for attempt in range(self.conf.BQ_CRC_ATTEMPTS):
             buffer = self.read_register(reg, bytearray([0, 0]))
             crc = crc8(bytearray([17, buffer[0]]))
             if buffer[1] != crc:
@@ -96,7 +96,7 @@ class BQ:
                 return buffer[0]
 
     def read_register_double(self, reg):
-        for attempt in range(CONF.BQ_CRC_ATTEMPTS):
+        for attempt in range(self.conf.BQ_CRC_ATTEMPTS):
             buffer = self.read_register(reg, bytearray(4))
             crc1 = crc8(bytearray([17, buffer[0]]))
             crc2 = crc8(bytearray([buffer[2]]))
@@ -143,11 +143,11 @@ class BQ:
         self.write_register(CC_CFG, 0x19)
         self.adc_gain = self.read_adc_gain()
         self.adc_offset = self.read_adc_offset()
-        self.set_ov_trip(CONF.CELL_MAX_V + CONF.CELL_V_TOLERANCE)
-        self.set_uv_trip(CONF.CELL_MIN_V - CONF.CELL_V_TOLERANCE)
-        self.set_protect1(CONF.BQ_RSNS, CONF.BQ_SCD_DELAY, CONF.BQ_SCD_THRESH)
-        self.set_protect2(CONF.BQ_OCD_DELAY, CONF.BQ_OCD_THRESH)
-        self.set_protect3(CONF.BQ_UV_DELAY, CONF.BQ_OV_DELAY)
+        self.set_ov_trip(self.conf.CELL_MAX_V + self.conf.CELL_V_TOLERANCE)
+        self.set_uv_trip(self.conf.CELL_MIN_V - self.conf.CELL_V_TOLERANCE)
+        self.set_protect1(self.conf.BQ_RSNS, self.conf.BQ_SCD_DELAY, self.conf.BQ_SCD_THRESH)
+        self.set_protect2(self.conf.BQ_OCD_DELAY, self.conf.BQ_OCD_THRESH)
+        self.set_protect3(self.conf.BQ_UV_DELAY, self.conf.BQ_OV_DELAY)
         self.set_reg_bit(TEMP_SEL, True)
         self.reset_balancing()
         self.discharge(False)
@@ -266,7 +266,7 @@ class BQ:
 
     def batt_voltage(self):
         adc = self.read_register_double(BAT_HI)
-        return ((adc * 4 * self.adc_gain / 1000) + (self.adc_offset * CONF.CELL_SERIES)) / 1000
+        return ((adc * 4 * self.adc_gain / 1000) + (self.adc_offset * self.conf.CELL_SERIES)) / 1000
 
     def set_balance_cell(self, id, on):
         if id < 1 or id > 15:

@@ -1,10 +1,11 @@
 from bms.bq import BQ
 from test.mock_bq_i2c import MockBqI2C
+from test.mock_conf import MockConfig
 
 
 class MockBQ(BQ):
-    def __init__(self):
-        super().__init__(MockBqI2C())
+    def __init__(self, conf=MockConfig()):
+        super().__init__(conf, MockBqI2C())
         self.voltages_loaded = False
         self.was_setup = False
         self.balancing_cells = []

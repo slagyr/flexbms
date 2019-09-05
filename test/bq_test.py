@@ -3,13 +3,15 @@ import unittest
 from bms.bq import *
 from bms.cells import Cells
 from test.mock_bq_i2c import MockBqI2C
+from test.mock_conf import MockConfig
 
 
 class BQ76940Test(unittest.TestCase):
 
     def setUp(self):
         self.i2c = MockBqI2C()
-        self.bq = BQ(self.i2c)
+        self.conf = MockConfig()
+        self.bq = BQ(self.conf, self.i2c)
 
     def test_creation(self):
         self.assertEqual(self.i2c, self.bq.i2c)
@@ -119,23 +121,23 @@ class BQ76940Test(unittest.TestCase):
 
         protect1 = self.i2c.registers[0x06]
         rsns = (protect1 & 0b10000000) >> 7
-        self.assertEqual(CONF.BQ_RSNS, rsns)
+        self.assertEqual(self.conf.BQ_RSNS, rsns)
 
         scd_delay = (protect1 & 0b00011000) >> 3
-        self.assertEqual(CONF.BQ_SCD_DELAY, scd_delay)
+        self.assertEqual(self.conf.BQ_SCD_DELAY, scd_delay)
 
         scd_thresh = protect1 & 0b00000111
-        self.assertEqual(CONF.BQ_SCD_THRESH, scd_thresh)
+        self.assertEqual(self.conf.BQ_SCD_THRESH, scd_thresh)
 
     def test_PROTECT2_OCD_values(self):
         self.bq.setup()
 
         protect2 = self.i2c.registers[0x07]
         ocd_delay = (protect2 & 0b1110000) >> 4
-        self.assertEqual(CONF.BQ_OCD_DELAY, ocd_delay)
+        self.assertEqual(self.conf.BQ_OCD_DELAY, ocd_delay)
 
         ocd_thresh = (protect2 & 0b1111)
-        self.assertEqual(CONF.BQ_OCD_THRESH, ocd_thresh)
+        self.assertEqual(self.conf.BQ_OCD_THRESH, ocd_thresh)
 
     def test_PROTECT3_UV_OV_delays(self):
         self.bq.setup()
@@ -143,8 +145,8 @@ class BQ76940Test(unittest.TestCase):
         protect3 = self.i2c.registers[0x08]
         uv_delay = (protect3 & 0b11000000) >> 6
         ov_delay = (protect3 & 0b00110000) >> 4
-        self.assertEqual(CONF.BQ_UV_DELAY, uv_delay)
-        self.assertEqual(CONF.BQ_OV_DELAY, ov_delay)
+        self.assertEqual(self.conf.BQ_UV_DELAY, uv_delay)
+        self.assertEqual(self.conf.BQ_OV_DELAY, ov_delay)
 
     def test_process_alert_with_cc_ready(self):
         self.i2c.registers[0x0] = 0b10000000
@@ -198,7 +200,7 @@ class BQ76940Test(unittest.TestCase):
     def test_load_cell_voltages_15(self):
         self.bq.setup()
 
-        cells = Cells(self.bq, 15)
+        cells = Cells(self.conf, self.bq, 15)
         self.bq.load_cell_voltages(cells)
 
         self.assertAlmostEqual(2.7, cells[0].voltage, 1)
@@ -219,7 +221,7 @@ class BQ76940Test(unittest.TestCase):
 
     def test_load_cell_voltages_9(self):
         self.bq.setup()
-        cells = Cells(self.bq, 9)
+        cells = Cells(self.conf, self.bq, 9)
         self.bq.load_cell_voltages(cells)
 
         self.assertAlmostEqual(2.7, cells[0].voltage, 1)
@@ -238,7 +240,7 @@ class BQ76940Test(unittest.TestCase):
         self.i2c.registers[0x2A] = 97
         self.i2c.registers[0x2B] = 215
 
-        self.assertEqual(10, CONF.CELL_SERIES) # otherwise calculation doesn't work
+        self.assertEqual(10, self.conf.CELL_SERIES) # otherwise calculation doesn't work
         self.assertAlmostEqual(38.227, self.bq.batt_voltage(), 1)
         
     def test_setting_cells_to_balance(self):

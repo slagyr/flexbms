@@ -7,6 +7,7 @@ from bms.temps import Temps
 from test.mock_cells import MockCells
 from test.mock_bq import MockBQ
 from test.mock_clock import MockClock
+from test.mock_conf import MockConfig
 from test.mock_driver import MockDriver
 from test.mock_logger import MockLogger
 from test.mock_serial import MockSerial
@@ -18,16 +19,17 @@ class ControllerTest(unittest.TestCase):
     def setUp(self):
         self.logger = MockLogger()
         self.serial = MockSerial()
-        self.bq = MockBQ()
+        self.conf = MockConfig()
+        self.bq = MockBQ(self.conf)
         self.driver = MockDriver()
-        self.cells = MockCells(self.bq, 9)
+        self.cells = MockCells(self.conf, self.bq, 9)
         self.temps = Temps(self.bq)
         self.pack = Pack(self.bq, self.driver)
 
         self.clock = MockClock()
         util.clock = self.clock
 
-        self.controller = Controller(util.clock)
+        self.controller = Controller(self.conf, util.clock)
         self.controller.logger = self.logger
         self.controller.serial = self.serial
         self.controller.bq = self.bq

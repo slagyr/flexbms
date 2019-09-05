@@ -1,4 +1,3 @@
-from bms.conf import CONF
 
 
 class FullState:
@@ -28,5 +27,5 @@ class FullState:
 
         if not cells.fully_charged():
             sm.norm_v()
-        elif (pack.pack_v + CONF.PACK_V_TOLERANCE) < pack.batt_v:
+        elif (pack.pack_v + controller.conf.PACK_V_TOLERANCE) < pack.batt_v:
             sm.pow_off()

@@ -1,4 +1,3 @@
-from bms.conf import CONF
 
 
 class NormalState:
@@ -11,12 +10,12 @@ class NormalState:
         self.max_current = 0
 
     def enter(self):
-        self.max_current = CONF.CELL_PARALLEL * CONF.CELL_MAX_DSG_I + CONF.PACK_I_TOLERANCE
-        # TODO - Would like to put in constructor but CONF hasn't been loaded
-        
         controller = self.sm.controller
+        conf = controller.conf
         bq = controller.bq
         driver = controller.driver
+
+        self.max_current = conf.CELL_PARALLEL * conf.CELL_MAX_DSG_I + conf.PACK_I_TOLERANCE
 
         bq.discharge(True)
         bq.charge(True)
@@ -34,6 +33,7 @@ class NormalState:
     def tick(self):
         my = self
         controller = my.sm.controller
+        conf = controller.conf
         bq = controller.bq
 
         bq.cc_oneshot()
@@ -46,9 +46,9 @@ class NormalState:
             bq.charge(False)
             my.chg_fet_on = False
 
-        if self.is_discharge_overcurrent(pack):
+        if self.is_discharge_overcurrent(conf, pack):
             controller.trigger_alert("Discharge Overcurrent (M)")
-        elif self.is_power_detected(pack):
+        elif self.is_power_detected(conf, pack):
             my.sm.pow_on()
         elif my.counter == 8:
             bq.adc(True)
@@ -59,17 +59,17 @@ class NormalState:
             my.counter = -1
             if cells.has_low_voltage():
                 my.sm.low_v()
-            elif temps.temp1 > CONF.TEMP_MAX_PACK_DSG:
+            elif temps.temp1 > conf.TEMP_MAX_PACK_DSG:
                 controller.trigger_alert("Discharge Over-Temp")
-            elif temps.temp1 < CONF.TEMP_MIN_PACK_DSG:
+            elif temps.temp1 < conf.TEMP_MIN_PACK_DSG:
                 controller.trigger_alert("Discharge Under-Temp")
         my.counter += 1
 
         controller.screen_outdated(True)
 
-    def is_discharge_overcurrent(self, pack):
+    def is_discharge_overcurrent(self, conf, pack):
         amps_out = pack.amps_in * -1
-        if amps_out > self.max_current + CONF.PACK_OCD_TOLERANCE:
+        if amps_out > self.max_current + conf.PACK_OCD_TOLERANCE:
             return True
         elif amps_out > self.max_current:
             if self.ocd_grace_counter > 0:
@@ -81,8 +81,8 @@ class NormalState:
             self.ocd_grace_counter = 0
             return False
 
-    def is_power_detected(self, pack):
-        if pack.batt_v < (pack.pack_v - CONF.PACK_V_TOLERANCE) and pack.amps_in > -1.0:
+    def is_power_detected(self, conf, pack):
+        if pack.batt_v < (pack.pack_v - conf.PACK_V_TOLERANCE) and pack.amps_in > -1.0:
             if self.power_on_counter > 0:
                 return True
             else:

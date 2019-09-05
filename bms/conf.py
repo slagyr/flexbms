@@ -79,19 +79,6 @@ class Config:
             v = getattr(new, f)
             setattr(self, f, v)
 
-
-# cells in parallel
-# max charge current
-# cell voltage threshold for determining full or empty
-# balance duration (already above as BALANCE_INTERVAL)
-# balance rest duration
-# charger:battery V threshold to determine if charger is plugged in
-# amperage threshold to turn on CHG FET in normal state
-# normal state interval for checking cell voltages
-# threshold for acceptable charger voltage
-
-
-CONF = Config()
 if ON_BOARD:
     CONF_FILE = "bms.conf"
 else:

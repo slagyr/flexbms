@@ -1,6 +1,5 @@
 import unittest
 
-from bms.conf import CONF
 from bms.states.regen import RegenState
 from test.states.mock_machine import MockStatemachine
 
@@ -10,6 +9,7 @@ class RegenStateTest(unittest.TestCase):
     def setUp(self):
         self.sm = MockStatemachine()
         self.controller = self.sm.controller
+        self.conf = self.controller.conf
         self.state = RegenState(self.sm)
 
         self.controller.setup()
@@ -146,7 +146,7 @@ class RegenStateTest(unittest.TestCase):
         temps = self.controller.temps
         self.state.enter()
 
-        temps.stub_temp1 = CONF.TEMP_MAX_PACK_CHG + 1
+        temps.stub_temp1 = self.conf.TEMP_MAX_PACK_CHG + 1
         self.state.tick()
 
         self.assertEqual("alert", self.sm.last_event)
@@ -156,7 +156,7 @@ class RegenStateTest(unittest.TestCase):
         temps = self.controller.temps
         self.state.enter()
 
-        temps.stub_temp1 = CONF.TEMP_MIN_PACK_CHG - 1
+        temps.stub_temp1 = self.conf.TEMP_MIN_PACK_CHG - 1
         self.state.tick()
 
         self.assertEqual("alert", self.sm.last_event)

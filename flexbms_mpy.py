@@ -13,6 +13,7 @@ import sys
 import machine
 import bms.util
 from bms.bq import *
+from bms.conf import Config
 from bms.controller import Controller
 from bms.cells import Cells
 from bms.driver import Driver
@@ -74,27 +75,29 @@ class Debouncer:
 
 class FlexBMS:
     def __init__(self):
-        self.controller = Controller(bms.util.clock)
+        self.controller = None
         self.tick_interval = 500
         self.ok = True
         self.rot_rot_db = None
         self.rot_clk_db = None
         self._hardware = None
         self.alert_pim = None
-        self.conf = CONF
+        self.conf = None
 
     def init(self):
-        CONF.startup()  # TODO - Controller already created along with statemachine.  So any use of CONF in constructors has stale values.
+        self.conf = Config()
+        self.conf.startup()
+        self.controller = Controller(self.conf, bms.util.clock)
         logger = Logger()
         serial = Serial(self.controller, USB_VCP())
         i2c = I2C(1, I2C.MASTER, baudrate=100000)
-        bq = BQ(i2c)
+        bq = BQ(self.conf, i2c)
         driver = Driver(Pin("Y8", Pin.OUT_PP, Pin.PULL_DOWN),
                         Pin("Y7", Pin.OUT_PP, Pin.PULL_DOWN),
                         Pin("Y6", Pin.OUT_PP, Pin.PULL_DOWN),
                         ADC(Pin("X11")))
         rotary = Rotary(Pin("X2", Pin.IN, Pin.PULL_UP), Pin("X1", Pin.IN, Pin.PULL_UP))
-        cells = Cells(bq, CONF.CELL_SERIES)
+        cells = Cells(bq, self.conf.CELL_SERIES)
         temps = Temps(bq)
         pack = Pack(bq, driver)
 

@@ -1,5 +1,3 @@
-import os
-import tempfile
 import unittest
 
 from bms import bq
@@ -17,6 +15,7 @@ class SerialTest(unittest.TestCase):
     def setUp(self):
         self.vcp = MockVCP()
         self.controller = MockController()
+        self.conf = self.controller.conf
         self.controller.sm = MockStatemachine()
         self.serial = Serial(self.controller, self.vcp)
 
@@ -25,7 +24,7 @@ class SerialTest(unittest.TestCase):
         self.assertIs(self.vcp, self.serial.port)
 
     def test_serialing_cell_voltages(self):
-        cells = Cells("bq", 10)
+        cells = Cells(self.conf, "bq", 10)
         for cell in cells:
             cell.voltage = 2.5 + (cell.id * 0.1)
 
@@ -34,7 +33,7 @@ class SerialTest(unittest.TestCase):
         self.assertEqual("cells: 2.6,2.7,2.8,3.0,3.1,3.2,3.5,3.6,3.7,4.0\n", self.vcp.output[0])
 
     def test_serialing_cell_balancing(self):
-        cells = Cells("bq", 10)
+        cells = Cells(self.conf, "bq", 10)
 
         self.serial.balance(cells)
         self.assertEqual(1, len(self.vcp.output))
@@ -104,7 +103,7 @@ class SerialTest(unittest.TestCase):
         self.assertEqual("state: foo\n", self.vcp.output[0])
 
     def test_silencing(self):
-        cells = Cells("bq", 10)
+        cells = Cells(self.conf, "bq", 10)
         self.vcp.input.append("silence")
         self.serial.read()
 
@@ -112,7 +111,7 @@ class SerialTest(unittest.TestCase):
         self.assertEqual(0, len(self.vcp.output))
 
     def test_unsilencing(self):
-        cells = Cells("bq", 10)
+        cells = Cells(self.conf, "bq", 10)
         self.vcp.input.append("silence")
         self.serial.read()
 
@@ -150,3 +149,10 @@ class SerialTest(unittest.TestCase):
 
         self.assertEqual(1, len(self.vcp.output))
         self.assertEqual("state: PreChgState\n", self.vcp.output[0])
+
+    def test_set_cell_full_v(self):
+        self.vcp.input.append("set_cell_full_v, 3.14")
+        self.serial.read()
+
+        self.assertAlmostEqual(3.14, self.conf.CELL_FULL_V, 2)
+        self.assertEqual(True, self.conf.was_saved)

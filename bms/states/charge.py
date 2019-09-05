@@ -1,6 +1,6 @@
-from bms.conf import CONF
 
-class ChargeState():
+
+class ChargeState:
     def __init__(self, sm):
         self.sm = sm
         self.balance_counter = 0
@@ -9,12 +9,11 @@ class ChargeState():
         controller = self.sm.controller
         voltage = pack.pack_v
         # TODO - Greceful handling of this... add delay before trigger
-        if voltage > controller.cells.max_serial_voltage() + CONF.PACK_V_TOLERANCE:
+        if voltage > controller.cells.max_serial_voltage() + controller.conf.PACK_V_TOLERANCE:
             controller.alert_msg = "Wrong Charge V: {0:.1f}".format(voltage)
             self.sm.alert()
             return False
         return True
-
 
     def enter(self):
         controller = self.sm.controller
@@ -34,30 +33,31 @@ class ChargeState():
         driver.precharge(False)
         controller.sm_tick_interval(500)
 
-
     def exit(self):
-        self.sm.controller.cells.reset_balancing()
+        cells = self.sm.controller.cells
+        cells.reset_balancing()
+        self.sm.controller.serial.balance(cells)
 
     def tick(self):
         my = self
         controller = my.sm.controller
         bq = controller.bq
-        conf = CONF
+        conf = controller.conf
 
         bq.cc_oneshot()
         cells = controller.loaded_cells()
         pack = controller.loaded_pack()
         temps = controller.loaded_temps()
 
-        if pack.amps_in > (conf.CELL_MAX_CHG_I * conf.CELL_PARALLEL + CONF.PACK_I_TOLERANCE):
+        if pack.amps_in > (conf.CELL_MAX_CHG_I * conf.CELL_PARALLEL + conf.PACK_I_TOLERANCE):
             controller.trigger_alert("Charge Overcurrent")
-        elif temps.temp1 > CONF.TEMP_MAX_PACK_CHG:
+        elif temps.temp1 > conf.TEMP_MAX_PACK_CHG:
             controller.trigger_alert("Charge Over-Temp")
-        elif temps.temp1 < CONF.TEMP_MIN_PACK_CHG:
+        elif temps.temp1 < conf.TEMP_MIN_PACK_CHG:
             controller.trigger_alert("Charge Under-Temp")
         elif cells.has_low_voltage():
             my.sm.low_v()
-        elif pack.amps_in < (0 + CONF.PACK_I_TOLERANCE):
+        elif pack.amps_in < (0 + conf.PACK_I_TOLERANCE):
             my.sm.pow_off()
         elif not self.check_charger_voltage(pack):
             pass # alert event already triggered

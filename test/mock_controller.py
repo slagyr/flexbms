@@ -1,8 +1,9 @@
-from bms.conf import CONF
+
 from bms.controller import Controller
 from test.mock_bq import MockBQ
 from test.mock_cells import MockCells
 from test.mock_clock import MockClock
+from test.mock_conf import MockConfig
 from test.mock_driver import MockDriver
 from test.mock_logger import MockLogger
 from test.mock_serial import MockSerial
@@ -17,14 +18,14 @@ class MockController(Controller):
     home_screen = "home"
 
     def __init__(self):
-        super().__init__(MockClock())
+        super().__init__(MockConfig(), MockClock())
         self.logger = MockLogger()
         self.serial = MockSerial()
         self.bq = MockBQ()
         self.driver = MockDriver()
-        self.cells = MockCells(self.bq, 9)
+        self.cells = MockCells(self.conf, self.bq, 9)
         self.temps = MockTemps(self.bq)
         self.pack = MockPack(self.bq, self.driver)
-        CONF.PACK_MAX_CHG_V = self.cells.max_serial_voltage()
+        self.conf.PACK_MAX_CHG_V = self.cells.max_serial_voltage()
 
 
