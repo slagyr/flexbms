@@ -97,7 +97,7 @@ class FlexBMS:
                         Pin("Y6", Pin.OUT_PP, Pin.PULL_DOWN),
                         ADC(Pin("X11")))
         rotary = Rotary(Pin("X2", Pin.IN, Pin.PULL_UP), Pin("X1", Pin.IN, Pin.PULL_UP))
-        cells = Cells(bq, self.conf.CELL_SERIES)
+        cells = Cells(self.conf, bq, self.conf.CELL_SERIES)
         temps = Temps(bq)
         pack = Pack(bq, driver)
 
