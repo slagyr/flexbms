@@ -1,5 +1,3 @@
-import sys
-
 from bms import bq
 from bms.util import log
 
@@ -10,6 +8,9 @@ class Serial:
         self.controller = controller
         self.port = port
         self.silent = False
+
+    def setup(self):
+        self.cell_full_v()
 
     def _append(self, l):
         if not self.silent:
@@ -71,6 +72,10 @@ class Serial:
         line = "state: " + str(name) + "\n"
         self._append(line)
 
+    def cell_full_v(self):
+        line = "cell_full_v: " + "{0:1.2f}".format(self.controller.conf.CELL_FULL_V) + "\n"
+        self._append(line)
+
     def read(self):
         line = self.port.readline()
         if line is not None:
@@ -107,6 +112,8 @@ class Serial:
         conf = self.controller.conf
         conf.CELL_FULL_V = volts
         conf.save()
+        self.cell_full_v()
+
 
 
 

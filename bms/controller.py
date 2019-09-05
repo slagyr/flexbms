@@ -33,6 +33,7 @@ class Controller:
         self.bq.setup()
         self.driver.setup()
         self.cells.setup()
+        self.serial.setup()
 
     def sm_tick_interval(self, millis=None):
         if millis is None:

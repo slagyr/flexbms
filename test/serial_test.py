@@ -156,3 +156,17 @@ class SerialTest(unittest.TestCase):
 
         self.assertAlmostEqual(3.14, self.conf.CELL_FULL_V, 2)
         self.assertEqual(True, self.conf.was_saved)
+        self.assertEqual("cell_full_v: 3.14\n", self.vcp.output[0])
+
+    def test_serialing_cell_full_v(self):
+        self.conf.CELL_FULL_V = 3.14
+        self.serial.cell_full_v()
+        self.assertEqual(1, len(self.vcp.output))
+        self.assertEqual("cell_full_v: 3.14\n", self.vcp.output[0])
+
+    def test_setup(self):
+        self.conf.CELL_FULL_V = 3.14
+        self.serial.setup()
+
+        self.assertEqual(1, len(self.vcp.output))
+        self.assertEqual("cell_full_v: 3.14\n", self.vcp.output[0])
