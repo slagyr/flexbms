@@ -26,7 +26,7 @@ class ChargeState:
         if not self.check_charger_voltage(pack):
             return
 
-        bq.discharge(True)
+        bq.discharge(False)
         bq.charge(True)
         bq.adc(True)
         driver.chargepump(True)
@@ -35,8 +35,7 @@ class ChargeState:
 
     def exit(self):
         cells = self.sm.controller.cells
-        cells.reset_balancing()
-        self.sm.controller.serial.balance(cells)
+        self.stop_balancing(cells, self.sm.controller)
 
     def tick(self):
         my = self
@@ -55,27 +54,41 @@ class ChargeState:
             controller.trigger_alert("Charge Over-Temp")
         elif temps.temp1 < conf.TEMP_MIN_PACK_CHG:
             controller.trigger_alert("Charge Under-Temp")
-        elif cells.has_low_voltage():
-            my.sm.low_v()
-        elif pack.amps_in < (0 + conf.PACK_I_TOLERANCE):
-            my.sm.pow_off()
         elif not self.check_charger_voltage(pack):
             pass # alert event already triggered
-        elif self.balance_counter == 0:
-            if cells.fully_charged():
-                my.sm.full_v()
-            else:
-                cells.update_balancing()
-                controller.serial.balance(cells)
-            bq.charge(not cells.any_cell_full())
-        elif self.balance_counter == 60:
-            cells.reset_balancing()
-            controller.serial.balance(cells)
-        elif self.balance_counter == 66:
-            self.balance_counter = -1
-        self.balance_counter += 1
+        elif cells.has_low_voltage():
+            my.sm.low_v()
+        elif self.balance_counter == 0 and cells.fully_charged():
+            my.sm.full_v()
+        else:
+            has_charge_current = pack.amps_in > (0 + conf.PACK_I_TOLERANCE)
+            bq.discharge(has_charge_current)
+            if self.balance_counter == 0:
+                if not has_charge_current and pack.pack_v < pack.batt_v - 2:
+                    my.sm.pow_off()
+                else:
+                    self.start_balancing(bq, cells, controller)
+            elif self.balance_counter == 60:
+                self.stop_balancing(cells, controller)
+            elif self.balance_counter == 66:
+                bq.discharge(False) # So we can measure raw PackV next tick
+                self.balance_counter = -1
 
-        controller.screen_outdated(True)
+            self.balance_counter += 1
+
+    def stop_balancing(self, cells, controller):
+        cells.reset_balancing()
+        controller.serial.balance(cells)
+
+    def start_balancing(self, bq, cells, controller):
+        cells.update_balancing()
+        controller.serial.balance(cells)
+        if cells.any_cell_full():
+            bq.charge(False)
+            bq.discharge(False)
+        else:
+            bq.charge(True)
+
 
 
 

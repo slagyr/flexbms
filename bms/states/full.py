@@ -27,5 +27,5 @@ class FullState:
 
         if not cells.fully_charged():
             sm.norm_v()
-        elif (pack.pack_v + controller.conf.PACK_V_TOLERANCE) < pack.batt_v:
+        elif pack.pack_v < pack.batt_v - 2:
             sm.pow_off()

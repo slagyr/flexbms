@@ -34,7 +34,7 @@ class ChargeStateTest(unittest.TestCase):
 
         self.state.enter()
 
-        self.assertEqual(True, bq.discharge())
+        self.assertEqual(False, bq.discharge())
         self.assertEqual(True, bq.charge())
         self.assertEqual(True, bq.adc())
         self.assertEqual(True, driver.chargepump())
@@ -54,16 +54,36 @@ class ChargeStateTest(unittest.TestCase):
 
     def test_pow_off_event_when_charger_unplugged(self):
         pack = self.controller.pack
+        cells = self.controller.cells
         pack.stub_amps_in = 1.5
+        pack.stub_pack_v = cells.max_serial_voltage()
+
         self.state.enter()
         self.state.tick()
         self.assertEqual(None, self.sm.last_event)
 
         pack.stub_amps_in = 0
+        pack.stub_pack_v = cells.serial_voltage() - 5
 
-        self.state.tick()
-        self.state.tick()
+        for i in range(67):
+            self.state.tick()
+
         self.assertEqual("pow_off", self.sm.last_event)
+
+    def test_discharge_on_when_charge_current_detected(self):
+        pack = self.controller.pack
+        cells = self.controller.cells
+        bq = self.controller.bq
+        pack.stub_amps_in = 0
+        pack.stub_pack_v = cells.max_serial_voltage()
+
+        self.state.enter()
+        self.state.tick()
+        self.assertEqual(False, bq.discharge())
+
+        pack.stub_amps_in = 1
+        self.state.tick()
+        self.assertEqual(True, bq.discharge())
         
     def test_charge_overcurrent(self):
         self.state.enter()
@@ -149,6 +169,7 @@ class ChargeStateTest(unittest.TestCase):
 
         self.state.tick()
         self.assertEqual(False, bq.charge())
+        self.assertEqual(False, bq.discharge())
 
         cells[5].voltage = 4.0  # balanced to lower V
         for i in range(67): # enough ticks to get counter back to 0

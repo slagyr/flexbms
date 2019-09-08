@@ -59,22 +59,23 @@ class FullStateTest(unittest.TestCase):
         self.state.tick()
         self.assertEqual("norm_v", self.sm.last_event)
 
-    def test_pow_off_event_when_charger_unplugged(self):
-        driver = self.controller.driver
-        cells = self.controller.cells
-        bq = self.controller.bq
-        bq.stub_batt_v = cells.max_serial_voltage()
-        driver.stub_pack_v = cells.max_serial_voltage()
-
-        self.state.enter()
-        self.state.tick()
-        self.assertEqual(None, self.sm.last_event)
-
-        self.controller.pack.expire()
-        driver.stub_pack_v = 29
-
-        self.state.tick()
-        self.assertEqual("pow_off", self.sm.last_event)
+    ## Can't reliably detech when charger is unplugged.
+    # def test_pow_off_event_when_charger_unplugged(self):
+    #     driver = self.controller.driver
+    #     cells = self.controller.cells
+    #     bq = self.controller.bq
+    #     bq.stub_batt_v = cells.max_serial_voltage()
+    #     driver.stub_pack_v = cells.max_serial_voltage()
+    #
+    #     self.state.enter()
+    #     self.state.tick()
+    #     self.assertEqual(None, self.sm.last_event)
+    #
+    #     self.controller.pack.expire()
+    #     driver.stub_pack_v = 29
+    #
+    #     self.state.tick()
+    #     self.assertEqual("pow_off", self.sm.last_event)
 
     def test_logs_pack_info_on_tick(self):
         self.state.tick()
