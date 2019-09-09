@@ -58,7 +58,7 @@ class ChargeState:
             pass # alert event already triggered
         elif cells.has_low_voltage():
             my.sm.low_v()
-        elif self.balance_counter == 0 and cells.fully_charged():
+        elif self.balance_counter == 0 and cells.fully_charged(conf.CELL_V_TOLERANCE):
             my.sm.full_v()
         else:
             has_charge_current = pack.amps_in > (0 + conf.PACK_I_TOLERANCE)

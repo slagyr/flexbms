@@ -210,6 +210,7 @@ class CellsTest(unittest.TestCase):
 
 
     def test_fully_charged(self):
+        self.conf.CELL_FULL_V = 4.1
         for cell in self.cells:
             cell.voltage = 4.2
 
@@ -217,25 +218,32 @@ class CellsTest(unittest.TestCase):
 
         self.cells[5].voltage = 4.0
         self.assertEqual(False, self.cells.fully_charged())
+        self.assertEqual(True, self.cells.fully_charged(-0.1))
 
-        self.cells[5].voltage = 4.09
+        self.cells[5].voltage = 4.1
         self.assertEqual(True, self.cells.fully_charged())
+        self.assertEqual(False, self.cells.fully_charged(0.1))
 
         self.cells[2].voltage = 4.0
         self.assertEqual(False, self.cells.fully_charged())
+        self.assertEqual(True, self.cells.fully_charged(-0.1))
 
 
     def test_any_cell_full(self):
+        self.conf.CELL_FULL_V = 4.1
         for cell in self.cells:
             cell.voltage = 4.0
 
         self.assertEqual(False, self.cells.any_cell_full())
+        self.assertEqual(True, self.cells.any_cell_full(-0.11))
 
         self.cells[5].voltage = 4.2
         self.assertEqual(True, self.cells.any_cell_full())
+        self.assertEqual(False, self.cells.any_cell_full(0.2))
 
         self.cells[5].voltage = 4.1
         self.assertEqual(True, self.cells.any_cell_full())
+        self.assertEqual(False, self.cells.any_cell_full(0.1))
 
         self.cells[5].voltage = 4.09
         self.assertEqual(False, self.cells.any_cell_full())

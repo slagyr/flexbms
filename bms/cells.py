@@ -120,15 +120,15 @@ class Cells:
                 return True
         return False
 
-    def fully_charged(self):
+    def fully_charged(self, tolerance=0):
         for cell in self:
-            if cell.voltage < self.conf.CELL_FULL_V - 0.01:
+            if cell.voltage < self.conf.CELL_FULL_V + tolerance:
                 return False
         return True
 
-    def any_cell_full(self):
+    def any_cell_full(self, tolerance=0):
         for cell in self:
-            if cell.voltage >= self.conf.CELL_FULL_V:
+            if cell.voltage >= self.conf.CELL_FULL_V + tolerance:
                 return True
         return False
 
