@@ -83,7 +83,7 @@ class ChargeState:
     def start_balancing(self, bq, cells, controller):
         cells.update_balancing()
         controller.serial.balance(cells)
-        if cells.any_cell_full():
+        if cells.any_cell_full(controller.conf.CELL_V_TOLERANCE):
             bq.charge(False)
             bq.discharge(False)
         else:
