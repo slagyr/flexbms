@@ -75,7 +75,7 @@ class Display:
         for i in range(8):
             buffer[(i * 128):(i * 128 + 128)] = fill
 
-    @micropython.native
+    # @micropython.native
     def show(self):
         i2c = self.i2c
         i2c.send(bytearray([SSD1306_CMND, 0x21, 0, X_MAX]), SSD1306_ADDR)
@@ -97,7 +97,7 @@ class Display:
                 i += 1
                 byxel_i += 1
 
-    @micropython.native
+    # @micropython.native
     def draw_text(self, x, r, msg):
         l = len(msg)
         font_w = self.font_width()
