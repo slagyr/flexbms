@@ -167,3 +167,8 @@ class StatemachineTest(unittest.TestCase):
         self.sm.state = self.sm._standby
         self.sm.shut()
         self.assertEqual(ShutState, self.sm.state.__class__)
+
+    def test_full_wake(self):
+        self.sm.state = self.sm._full
+        self.sm.wake()
+        self.assertEqual(NormalState, self.sm.state.__class__)

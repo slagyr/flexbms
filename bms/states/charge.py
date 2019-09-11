@@ -31,7 +31,7 @@ class ChargeState:
         bq.adc(True)
         driver.chargepump(True)
         driver.precharge(False)
-        controller.sm_tick_interval(500)
+        controller.sm_tick_interval(1000)
 
     def exit(self):
         cells = self.sm.controller.cells

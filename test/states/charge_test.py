@@ -42,7 +42,7 @@ class ChargeStateTest(unittest.TestCase):
 
     def test_sets_tick_interval(self):
         self.state.enter()
-        self.assertEqual(500, self.controller.sm_tick_interval())
+        self.assertEqual(1000, self.controller.sm_tick_interval())
 
     def test_low_V_triggers_event(self):
         self.state.enter()
