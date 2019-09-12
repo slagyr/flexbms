@@ -94,6 +94,11 @@ class StatemachineTest(unittest.TestCase):
         self.sm.shut()
         self.assertEqual(ShutState, self.sm.state.__class__)
 
+    def test_normal_wake(self):
+        self.sm.state = self.sm._normal
+        self.sm.wake()
+        self.assertEqual(NormalState, self.sm.state.__class__)
+
     def test_normal_to_alert_and_back(self):
         self.sm.norm_v()
         self.sm.alert()

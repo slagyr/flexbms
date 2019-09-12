@@ -14,6 +14,7 @@ normal  low_v   empty
 normal  pow_on  regen
 normal  rest    standby
 normal  shut    shut
+normal  wake    normal
 empty   norm_v  standby
 empty   pow_on  prechg
 prechg  pow_off empty

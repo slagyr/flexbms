@@ -21,7 +21,11 @@ class PreChgState:
     def tick(self):
         my = self
         controller = my.sm.controller
+        bq = controller.bq
         conf = controller.conf
+
+        bq.discharge(True)
+        bq.charge(False)
 
         pack = controller.loaded_pack()
         cells = controller.loaded_cells()

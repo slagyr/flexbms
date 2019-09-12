@@ -1,6 +1,7 @@
 import unittest
 import bms.conf as conf
 from bms import util
+from bms.bq import OV
 from bms.controller import Controller
 from bms.pack import Pack
 from bms.temps import Temps
@@ -105,6 +106,18 @@ class ControllerTest(unittest.TestCase):
         self.controller.tick()
         self.assertEqual(True, self.bq.alert_processed)
         self.assertEqual("alert", sm.last_event)
+
+
+    def test_tick_handled_undervoltage_in_prechg_state(self):
+        sm = MockStatemachine()
+        self.controller.sm = sm
+        sm.state = sm._prechg
+
+        self.bq.faults = [OV]
+        self.controller.handle_alert()
+        self.controller.tick()
+        self.assertEqual(True, self.bq.alert_processed)
+        self.assertEqual(None, sm.last_event)
 
     def test_logger(self):
         self.controller.setup()

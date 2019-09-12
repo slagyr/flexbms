@@ -1,3 +1,4 @@
+from bms.bq import OV
 from bms.states.machine import Statemachine
 import bms.version as version
 
@@ -47,6 +48,12 @@ class Controller:
     def handle_alert(self):
         self._has_alert = True
 
+    def should_alert(self):
+        if self.sm.state == self.sm._prechg and self.bq.faults == [OV]:
+            return False
+        else:
+            return True
+
     # @clocked_fn
     def tick(self):
         my = self
@@ -57,7 +64,7 @@ class Controller:
         if my._has_alert:
             my._has_alert = False
             my.bq.process_alert()
-            if my.bq.faults:
+            if my.bq.faults and self.should_alert():
                 my.sm.alert()
 
         tickless_millis = my.clock.millis_diff(millis, my._last_sm_tick)
